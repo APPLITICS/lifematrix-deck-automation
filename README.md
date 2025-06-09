@@ -1,6 +1,6 @@
 # Automated Slide Deck Generation from Survey Data (Phase 2 & 3)
 
-This README describes the proposed architecture and logic for automating the creation of PowerPoint presentations from structured, preprocessed survey data. It outlines the data structure, slide generation pipeline, individual rendering functions, and known constraints based on initial analysis and discussions. This document corresponds to **Phase 2** of the project.
+This README describes the proposed architecture and logic for automating the creation of PowerPoint presentations from structured, preprocessed survey data. It outlines the data structure, slide generation pipeline, individual slide rendering functions, and known constraints based on initial analysis and discussions. This document corresponds to **Phase 2**, and a good starting point of **Phase 3** of the project.
 
 ---
 
@@ -8,18 +8,18 @@ This README describes the proposed architecture and logic for automating the cre
 
 ### Objective
 
-Instead of coupling data analysis with visual generation, we suggest a **clean separation**: pre-calculate all values that will be displayed in the slides and store them in structured tables.
+Instead of coupling data processing with visual generation, we suggest a **clean separation**: pre-calculate all values that will be displayed in the slides and store them in structured tables.
 
 This brings two major advantages:
 
-* **Editability**: Analysts can modify target values directly before rendering (e.g., overwrite a mean value in Excel).
+* **Editability**: Sari can modify target values directly before rendering (e.g., overwrite a mean value in Excel, instead of changing the raw data _to make the average equal to a specific value_).
 * **Simplicity**: Keeps slide rendering functions free of calculation logic.
 
-### Workflow Steps
+### Overall Workflow Steps
 
-1. Start from raw survey data (CSV/Excel).
+1. Start from raw survey data (CSV/Excel), extracted from the LIFEMATRIX API.
 2. Preprocess into structured outputs ready for visual injection.
-3. Save all outputs to Excel (one sheet per graph type, for instance).
+3. Save all outputs to Excel (one sheet per graph type, for instance, totaling around 6 or 7 sheets).
 4. This preprocessed dataset becomes the input to the R-based slide generator.
 
 Both steps (preprocessing + slide generation) are kept modular in the pipeline.
@@ -36,10 +36,9 @@ Both steps (preprocessing + slide generation) are kept modular in the pipeline.
 
 This structure allows functions to filter and map values clearly.
 
-### ❓ Feasibility Check for Sari
+**❓Feasibility Check for Sari:**
 
-* Can this preprocessing step be formalized and included as part of the pipeline?
-* Would Sari be able to update values in this format if adjustments are needed pre-generation?
+> Can this preprocessing step be formalized and included as part of the pipeline?
 
 ---
 
