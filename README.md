@@ -63,13 +63,13 @@ This structure allows functions to filter and map values clearly.
 # Preprocess data from raw survey
 preprocessed_data <- run_data_preproc(fread("raw_data.csv"))
 
-# Define slide instructions
+# Define slide instructions - Each line is an instruction to generate 1 slide
 instructions <- list(
-  list(fun = "generate_density_slide", variable = "life_satisfaction"),
-  list(fun = "generate_bar_slide", metric = "joy_percent", groups = c("xilio", "hbs"))
+  list(slide = 1, fun = "generate_density_slide", variable = "life_satisfaction"),
+  list(slide = 2, fun = "generate_bar_slide", metric = "joy_percent", groups = c("xilio", "hbs"))
 )
 
-# Run main pipeline
+# Run main pipeline to generate the slide deck
 run_pipeline(data = preprocessed_data, instructions = instructions)
 ```
 
@@ -104,46 +104,85 @@ generate_density_slide(
 #### Core Logic
 
 * Plot a density curve of the variable
-* If `average_compare` is provided, overlay green box(es) with Avg. values
+* If `average_compare` is provided, use green box(es) with Avg. values.
 
-#### Questions for Validation
+_💡 Developer Hint: If dynamically drawing the green box for average values (using {rvg} or similar) proves too complex, consider using pre-designed PowerPoint templates with one, two, or three-line green boxes. These can be stored in the materials folder and selected based on how many comparison values are provided._
 
-1. Is the distribution always shown for the full group?
-2. Should the Y-axis show % instead of decimals?
+#### Questions for Validation with Sari
+
+1. Is the distribution always shown for the full group, and only sub-grouping on the green-box comparison legend?
+2. Since it's always a density, the Y-axis show % instead of decimals? (Suggestion for better readability)
 3. Are density graphs the only slide type with this green box?
-4. Can we reuse any of Sari's plotting code to preserve style consistency?
+4. Do we want to reuse any of Sari's plotting code to preserve style consistency? The code will still be industrialized, but it may be a good starting point for plotting functionS.  
 
 ---
 
 ### B. Bar Graphs
 
-**Used In**: Slides 8–12 and similar
+**Used In**: Slides 8–22 and similar
 
 #### Observations
 
 Bar graphs follow repeatable patterns:
 
 * X-axis: fixed categories like "Joy", "Achievement", etc.
-* Legend: 1 to 3 items (can include empty elements)
+* Legend: 1 to 3 items (can include empty elements via `NA`)
 * Always % values, making labels consistent
 
 #### Inputs
 
 * `data`: Preprocessed data
 * `title`, `xlab`, `ylab`: (optional)
-* `legend_labels`: Character vector (can include `NA`)
-* `values`: Named list of metric values per legend
+* `legend_labels`: Character vector (can include `NA`, for empty elements)
+* `values`: Named list of metric values per category and legend
+* `targets`: Named list of metric targets per category and legend
 
-#### Example Instruction (Slide 10)
+#### Example Instructions
+
+Slide 8 (3 categories, no legend, no targets):
 
 ```r
 list(
   fun = "generate_bar_slide",
-  metric = "jam_scores",
+  legend_labels = NULL,
+  values = list(
+    Joy = 85, # The value being extracted directly from the preprocessed data
+    Achievement = 78,
+    Meaningfulness = 81
+  ),
+  targets = NULL
+)
+```
+
+Slide 9 (3 categories, single legend with an empty slot, no targets):
+
+```r
+list(
+  fun = "generate_bar_slide",
+  legend_labels = c("Xilio", NA),
+  values = list(
+    Joy = c(85, NA), # The value being extracted directly from the preprocessed data
+    Achievement = c(78, NA),
+    Meaningfulness = c(81, NA)
+  ),
+  targets = NULL
+)
+```
+
+Slide 18 (3 categories, 2 non-empty legends, all with targets):
+
+```r
+list(
+  fun = "generate_bar_slide",
   legend_labels = c("Xilio", "HBS"),
   values = list(
-    Joy = c(85, 92),
-    Achievement = c(78, 89),
+    Joy = c(85, 92), # The value being extracted directly from the preprocessed data
+    Achievement = c(78, 89), 
+    Meaningfulness = c(81, 91)
+  ),
+  targets = list(
+    Joy = c(85, 92), 
+    Achievement = c(78, 89), 
     Meaningfulness = c(81, 91)
   )
 )
@@ -151,13 +190,13 @@ list(
 
 #### Core Logic
 
-* Map values to a consistent bar chart format
-* Add optional reference line(s) if needed
+* Plot grouped bar chart by mapping `legend_labels` and `values`
+* Use `NA` to control empty visual slots where needed
 
 #### Open Questions
 
-* Can all bar chart variants be encapsulated in this logic?
-* What about edge-case slides like 56?
+* Can all bar chart variations be captured with this approach?
+* What’s the best way to handle exceptions? Are they different type of graphs? _TBD with Sari_.
 
 ---
 
@@ -184,46 +223,50 @@ How dynamic are these rankings and groups? Are exceptions expected?
 
 ### 1. Template Integration
 
-* All generated slides should embed into an existing PPT template.
-* Input files will include:
-
-  * Master template (title, header, background)
-  * Special layout slides (e.g., intro, explanation, static visuals)
+The pipeline will also use some existing PPT templates. Input files will include:
+  * Master template (title, header, background, surroundings)
+  * Special layout slides (e.g., 1st intro slide, explanation, static visuals)
 
 ### 2. Single-Slide Update Capability
 
-**Use case**: Update one slide (e.g., bar height) shortly before an event.
+**Use case**: Update one slide (e.g., bar height) shortly before an event without altering the other _tweaked_ slides on regeneration.
 
 #### Suggested Approach
 
-* Provide optional targeting via `target_slide_id`
+* Provide optional targeting via `target_slide_id` corresponding to the order in PPT.
 * Regenerate only the matching slide, reinjecting it into the existing `.pptx`
 
 #### Caveats
 
 * Must avoid slide order drift
 * Slide identity must remain stable (e.g., naming convention or metadata tagging)
-
+* The usage should be friendly and intuitive
+* A _back-up_ logic should be implemented to avoid bad surprises
+ 
 ### 3. Visual Safeguards
 
-* Ensure average values (e.g., `Avg. = 7.9`) don’t overlap chart elements
-* Pie charts must remain readable even for small segments
+* Ensure average values (e.g., `Avg. = 7.9`) in the green box don’t overlap chart elements. The print should look nice at all times.
+* Pie charts must remain readable even for small segments - edge cases
+* Other use cases to be discovered during developments
 
 ---
 
 ## 🚧 Next Steps
 
-1. Validate this README structure with the team
-2. Confirm the preprocessing step design with Sari
-3. Implement and test `run_data_preproc()` with mock inputs
-4. Draft and test the following generators:
+Once we agree on everything described above, here’s how we move forward:
+0. Finalize and complete this documentation based on our discussion.
+1. Develop the **data preprocessing pipeline**, defining the `run_data_preproc()` function, starting from the expected pre-calculated structure (resulting in one table per graph type).
+2. Define and test the `instructions` list structure, with real examples for each graph type.
+3. Build the core slide generation pipeline and make sure it's tested and works end-to-end.
+4. Implement the key slide functions:
 
    * `generate_density_slide()`
    * `generate_bar_slide()`
-5. Set up GitHub Issues per function/module
-6. Package the pipelines with robust inputs and template support
-
----
+   * And other types (to be added progressively).
+5. Set up GitHub Issues with clear tasks for each function/component.
+6. Confirm integration with PPT templates (e.g., base slide, green boxes, intro slides).
+7. Implement and test the mechanism to update **a single targeted slide** without regenerating the full deck.
+8. Deliver a first version with fully working examples from the actual presentation.
 
 Let’s finalize this structure before diving into code.
 
