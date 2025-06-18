@@ -2,7 +2,6 @@
 
 This README describes the proposed architecture and logic for automating the creation of PowerPoint presentations from structured, preprocessed survey data. It outlines the data structure, slide generation pipeline, individual slide rendering functions, and known constraints based on initial analysis and discussions. This document corresponds to **Phase 2**, and a good starting point of **Phase 3** of the project.
 
----
 
 ## 📊 Data Preprocessing Strategy
 
@@ -24,199 +23,552 @@ This brings two major advantages:
 
 Both steps (preprocessing + slide generation) are kept modular in the pipeline.
 
-### Example Preprocessed Table (Concept Only)
+This step prepares two clean CSV files, each grouped by **chart type** (`bar_chart_data.csv` and `density_chart_data.csv`).
+Each row includes a group column to distinguish between **different sources** `(e.g., Xilio, HBS, IWF)`, which enables the build of **focal vs. comparison group charts** during slide generation.
 
-| metric             | group      | value |
-| ------------------ | ---------- | ----- |
-| life\_satisfaction | all        | 7.9   |
-| life\_satisfaction | HBS\_men   | 7.8   |
-| life\_satisfaction | HBS\_women | 7.5   |
-| joy\_percent       | xilio      | 85    |
-| joy\_percent       | hbs        | 92    |
+#### 📁 Output Folder Structure
+
+```
+preprocessed_data/
+├── bar_chart_data.csv
+├── density_chart_data.csv
+├── ....
+
+```
+#### Example 1: `density_chart_data.csv` (Continuous Distribution Summary)
+
+| group  | gender | metric             | value | density |
+| ------ | ------ | ------------------ | ----- | ------- |
+| Xilio  | Men    | life_satisfaction | 1     | 0.2     |
+| Xilio  | Men    | life_satisfaction | 2     | 0.15     |
+| ...    | ...    | ...                | ...   | ...     |
+| Xilio  | Men    | life_satisfaction | 10    | 0.05     |
+| Xilio  | Women  | life_satisfaction | 1     | 0.11     |
+| Xilio  | Women    | life_satisfaction | 2     | ...     |
+| ...  | ...    | ... | ...     | ...     |
+| Xilio  | Women    | life_satisfaction | 10     | 0.09     |
+| Xilio  | all  | life_satisfaction | 1     | 0.11     |
+| Xilio  | all    | life_satisfaction | 2     | ...     |
+| ...  | ...    | ... | ...     | ...     |
+| Xilio  | all    | life_satisfaction | 10     | 0.09     |
+
+And so on, for each combination of `group`, `gender` and `metric`. This would allow easily post-calculating the averages as well (within the generative functions).
+
+#### Example 2: `bar_chart_data.csv` (Categorical % Summary with Scores and Targets)
+
+| group | gender | metric         | high_score | high_percent | min_score | min_percent | target_percent | ...  |
+| ----- | ------ | -------------- | ----------- | ------------- | ---------- | ------------ | --------------- |------|
+| IWF   | Men    | joy            | 6.0         | 60.0          | 0.64       | 64.0         | 64.0            | ...  |
+| IWF   | Women  | joy            | 6.0         | 60.0          | 0.64       | 64.0         | 64.0            | ...  |
+| HBS   | Men    | joy            | 5.3         | 53.0          | 0.52       | 52.0         | 52.0            | ...  |
+| HBS   | Women  | joy            | 5.7         | 57.0          | 0.56       | 56.0         | 56.0            | ...  |
+| IWF   | Men    | achievement    | 4.7         | 47.0          | 0.64       | 64.0         | 64.0            | ...  |
+| IWF   | Women  | achievement    | 4.7         | 47.0          | 0.64       | 64.0         | 64.0            | ...  |
+| HBS   | Men    | achievement    | 3.6         | 36.0          | 0.65       | 65.0         | 65.0            | ...  |
+| HBS   | Women  | achievement    | 3.6         | 36.0          | 0.65       | 65.0         | 65.0            | ...  |
+| IWF   | Men    | meaningfulness | 8.4         | 84.0          | 0.66       | 66.0         | 66.0            | ...  |
+| IWF   | Women  | meaningfulness | 8.4         | 84.0          | 0.66       | 66.0         | 66.0            | ...  |
+| HBS   | Men    | meaningfulness | 7.3         | 73.0          | 0.62       | 62.0         | 62.0            | ...  |
+| HBS   | Women  | meaningfulness | 7.3         | 73.0          | 0.68       | 68.0         | 68.0            | ...  |
+
+- `score`: Raw survey score out of 10
+- `percent`: Converted using `percent = score / 10 * 100`
 
 This structure allows functions to filter and map values clearly.
 
-**❓Feasibility Check for Sari:**
-
-> Can this preprocessing step be formalized and included as part of the pipeline?
-
----
+💡 Note:
+The preprocessing script should be developed in a way that anticipates all possible instruction needs, not tailored to one specific slide.
+In other words, **the preprocessing must be built in a way that enables any valid instruction to run successfully.**
 
 ## 🧩 Global Pipeline Structure
 
-### Inputs
+###  Inputs
 
-* Preprocessed data (as structured above)
-* Instruction list (`instructions`) defining the slide layout and content logic
+- **Preprocessed data**  
+  Structured `.csv` or `.xlsx` files grouped by chart type (e.g., `bar_chart_data.csv`, `density_chart_data.csv`).  
+  Each row includes a `group` column (e.g., *Xilio*, *HBS*, *IWF*), which enables construction of **focal vs. comparison group charts**.
 
-### Core
+- **Instruction list (`instructions`)**  
+  A parameterized list defining each slide’s layout, chart type, metric, and optional subgroup slicing (e.g., by gender).
+  Note that only one level of subsetting is supported; nested or multi-level subgroup definitions are not currently allowed.
+  
 
-* Iterate over the `instructions` list and execute the corresponding slide generative functions
+###  Core Logic
 
-### Output
+- Iterate through the `instructions` list and call the appropriate slide generation function.
+- Each instruction corresponds to one slide and can apply subgroup filters as needed.
 
-* A `.pptx` file containing all the slides
 
-### Example Code Usage
+###  Example Code Usage
 
 ```r
-# Preprocess data from raw survey
+# STEP 1: Preprocess the raw survey data
 preprocessed_data <- run_data_preproc(fread("raw_data.csv"))
 
-# Define slide instructions - Each line is an instruction to generate 1 slide
+# STEP 2: Define global groups (used in slides),
+
+focal_group        <- "Xilio"
+comparison_group_1 <- "HBS"
+comparison_group_2 <- "IWF"
+# Up to 4 groups total (including the focal group)
+
+# STEP 3: Define slide instructions (each element = one slide)
 instructions <- list(
-  list(slide = 1, fun = "generate_density_slide", variable = "life_satisfaction"),
-  list(slide = 2, fun = "generate_bar_slide", metric = "joy_percent", groups = c("xilio", "hbs"))
+  # Slide 1: Density chart
+  list(
+    slide_type = "density_chart",
+    metric     = "life_satisfaction",
+    title      = "Life Satisfaction",
+    unit       =  NULL,
+    x_title        = "Life Satisfaction",
+    y_title        = "Density",
+    focal_group = list(name = focal_group, subset = "All"),
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = "All"),
+      list(name = comparison_group_2, subset = "All")
+    )
+  ),
+  # Slide 2: Bar chart
+  list(
+    slide_type = "bar_chart",
+    metric     = "joy_percent",
+    title      = "IMPORTANCE OF JAM",
+    unit       = "%",
+    x_title        = NULL,
+    y_title        = "% High Importance",
+    focal_group = list(
+      name   = focal_group,
+      subset = list(title = "gender", value = "Female")
+    ),
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Female"))
+    ),
+    target = NULL,
+    trend_line = FALSE
+  )
+  # ... More slides here
 )
 
-# Run main pipeline to generate the slide deck
+# STEP 4: Generate the presentation
 run_pipeline(data = preprocessed_data, instructions = instructions)
-```
 
----
+```
+### Example Of The Core Logic
+```r
+run_pipeline <- function(data, instructions) {
+  for (instruction in instructions) {
+    switch(
+      instruction$slide_type,
+      "bar_chart"     = generate_bar_slide(data, instruction),
+      "density_chart" = generate_density_slide(data, instruction),
+       #...
+      stop("Unknown slide type: ", instruction$slide_type)
+    )
+  }
+}
+```
+This structure keeps the logic clean, sca_title le, and easy to extend.
+
+- The pipeline will automatically map the `instructions` parameters (e.g. `slide_type`, `metric`, `focal_group`...) to the appropriate slide generation function (e.g., generate_bar_slide()).
+- While global **`focal_group` and `comparison_group_*` ** values apply by default, any instruction can locally override them to handle exceptions or special cases.
+
 
 ## 🧱 Slide Generative Functions
 
-Each slide is generated by a specific function tailored to its type.
+Each slide in the presentation is generated by a dedicated function tailored to its chart type. For our case study, we can factorize all visualizations into **7 core chart types**, each with its own `generate_*_slide()` function. 
+Below is the list of these chart types, along with the corresponding function name and examples of slide numbers where they are used in the deck:
+
+
+| Slide Type                          | Function Name                        | Example Slides    |
+| ----------------------------------- | ------------------------------------ | ----------------- |
+| Density Chart                       | `generate_density_slide()`           | 3–5, 29–52, 57–58 |
+| Bar Chart                           | `generate_bar_slide()`               | 8–22, 60–65       |
+| Donut Chart                         | `generate_donut_slide()`             | 6–7, 59, 81–83    |
+| Column Chart                        | `generate_column_slide()`            | 53, 54, 69, 70    |
+| Activity Slide (High/Low Value)     | `generate_activity_slide()`          | 23–28             |
+| Multi-Line Comparison Chart         | `generate_line_comparison_slide()`   | 84–87             |
+| Circle Value Summary                | `generate_circle_summary_slide()`    | 75–78             |
+
+---
 
 ### A. Density Graphs with Average
 
-**Used In**: Slides 3–5, 29–52, 57–58
+**Used In**: Slides 3–5, 29–52, 57–58  
+
+**Function**:  
+```r
+generate_density_slide(data, instruction)
+```
+
+#### Description
+
+- Generates a density plot for a given metric (e.g., `life_satisfaction`, `sleep_hours`) for the focal group.  
+- The focal group’s average is marked with a vertical dashed line, while comparison group averages are highlighted in green annotation boxes for clear benchmarking
 
 #### Inputs
 
-* `data`: Preprocessed data
-* `variable`: Target variable (e.g., `life_satisfaction`)
-* `title`: (optional)
-* `xlab`, `ylab`: (optional)
-* `average_compare`: (optional) Named list specifying groups to display average for (max 3)
+- `slide`: Slide number.
+- `slide_type`: `"density_chart"`
+- `metric`: Name of the targeted titleiable to plot.
+- `title`: Chart title.
+- `unit`: Unit (e.g., `NULL`, `"hours"`).
+- `x_title`: X-axis label.
+- `y_title`: Y-axis label.
+- `focal_group`: List with `name` and optional `subset`.
+- `comparison_groups`: List of comparison groups or `NULL`.
 
-#### Example Usage
+#### Example `instructions` for Slide 3: Focal Group without Comparison Groups
 
 ```r
-generate_density_slide(
-  data = preprocessed_data,
-  variable = "life_satisfaction",
-  average_compare = list(group = "HBS", gender = c("Women", "Men"))
+instructions <- list(
+  list(
+    slide             = 3,
+    slide_type        = "density_chart",
+    metric            = "life_satisfaction",
+    title             = "Life Satisfaction",
+    unit              = NULL,
+    x_title           = "Life Satisfaction",
+    y_title           = "Density",
+    focal_group       = list(name = focal_group, subset = "All"),
+    comparison_groups = NULL
+  )
 )
 ```
-
-#### Core Logic
-
-* Plot a density curve of the variable
-* If `average_compare` is provided, use green box(es) with Avg. values.
-
-_💡 Developer Hint: If dynamically drawing the green box for average values (using {rvg} or similar) proves too complex, consider using pre-designed PowerPoint templates with one, two, or three-line green boxes. These can be stored in the materials folder and selected based on how many comparison values are provided._
-
-#### Questions for Validation with Sari
-
-1. Is the distribution always shown for the full group, and only sub-grouping on the green-box comparison legend?
-2. Since it's always a density, the Y-axis show % instead of decimals? (Suggestion for better readability)
-3. Are density graphs the only slide type with this green box?
-4. Do we want to reuse any of Sari's plotting code to preserve style consistency? The code will still be industrialized, but it may be a good starting point for plotting functionS.  
 
 ---
 
 ### B. Bar Graphs
 
-**Used In**: Slides 8–22 and similar
+**Used In**: Slides 8–22 and similar  
 
-#### Observations
+**Function**:  
+```r
+generate_bar_slide(data, instruction)
+```
 
-Bar graphs follow repeatable patterns:
+#### Description
 
-* X-axis: fixed categories like "Joy", "Achievement", etc.
-* Legend: 1 to 3 items (can include empty elements via `NA`)
-* Always % values, making labels consistent
+- Generates a grouped or stacked bar chart based on `metric` values across focal and comparison groups.
+- The second comparison group is set to NA used intentionally as a placeholder to reserve layout space in the chart (Build Scenario).
 
 #### Inputs
 
-* `data`: Preprocessed data
-* `title`, `xlab`, `ylab`: (optional)
-* `legend_labels`: Character vector (can include `NA`, for empty elements)
-* `values`: Named list of metric values per category and legend
-* `targets`: Named list of metric targets per category and legend
+- `slide`: Slide number.
+- `slide_type`: `"bar_chart"`
+- `metric`: A list of titleiables to display.
+- `title`: Chart title.
+- `unit`: Unit (e.g. `"%"`, `"hours"`).
+- `x_title`: X-axis title.
+- `y_title`: Y-axis title.
+- `legend`: Whether to show a legend.
+- `focal_group`: List with `name` and optional `subset`.
+- `comparison_groups`: List of group definitions. Use `name = NA` for placeholders.
+- `target`: Optional reference lines.
+- `trend_line`: Whether to include a trend line.
+- `stacked`: Whether to stack bars instead of grouping.
 
-#### Example Instructions
-
-Slide 8 (3 categories, no legend, no targets):
-
-```r
-list(
-  fun = "generate_bar_slide",
-  legend_labels = NULL,
-  values = list(
-    Joy = 85, # The value being extracted directly from the preprocessed data
-    Achievement = 78,
-    Meaningfulness = 81
-  ),
-  targets = NULL
-)
-```
-
-Slide 9 (3 categories, single legend with an empty slot, no targets):
+#### Example `instructions` of Slide 12 with Focal Group Override and `NA` Comparison Slot
 
 ```r
-list(
-  fun = "generate_bar_slide",
-  legend_labels = c("Xilio", NA),
-  values = list(
-    Joy = c(85, NA), # The value being extracted directly from the preprocessed data
-    Achievement = c(78, NA),
-    Meaningfulness = c(81, NA)
-  ),
-  targets = NULL
-)
-```
-
-Slide 18 (3 categories, 2 non-empty legends, all with targets):
-
-```r
-list(
-  fun = "generate_bar_slide",
-  legend_labels = c("Xilio", "HBS"),
-  values = list(
-    Joy = c(85, 92), # The value being extracted directly from the preprocessed data
-    Achievement = c(78, 89), 
-    Meaningfulness = c(81, 91)
-  ),
-  targets = list(
-    Joy = c(85, 92), 
-    Achievement = c(78, 89), 
-    Meaningfulness = c(81, 91)
+instructions <- list(
+  list(
+    slide       = 12,
+    slide_type  = "bar_chart",
+    metric      = list("joy", "achievement", "meaningfulness"),
+    title       = "IMPORTANCE OF JAM",
+    unit        = "%",
+    x_title     = NULL,
+    y_title     = "% High Importance",
+    legend      = TRUE,
+    focal_group = list(
+      name   = "Pillar",
+      subset = list(title = "category", value = "VC")
+    ),
+    comparison_groups = list(
+      list(name = "comparison_group_1", subset = list(title = "gender", value = "Women")),
+      list(name = NA,   subset = list(title = "category", value = "All"))
+    ),
+    target     = NULL,
+    trend_line = FALSE,
+    stacked    = FALSE
   )
 )
 ```
 
-#### Core Logic
-
-* Plot grouped bar chart by mapping `legend_labels` and `values`
-* Use `NA` to control empty visual slots where needed
-
-#### Open Questions
-
-* Can all bar chart variations be captured with this approach?
-* What’s the best way to handle exceptions? Are they different type of graphs? _TBD with Sari_.
-
 ---
 
-### C. Most Common Activities (High/Low Value)
+### C. Donut Charts
 
-**Used In**: Slides with top activity hours
+**Used In**: Slides 6–7, 59, 81–83  
+
+**Function**:  
+```r
+generate_donut_slide(data, instruction)
+```
+
+#### Description
+
+Generates donut charts that display category proportions per group.
 
 #### Inputs
 
-* Static format? (e.g., always top 5?)
-* Fixed groupings? (e.g., Xilio, HBS, etc.)
+- `slide`: Slide number.
+- `slide_type`: `"donut_chart"`
+- `metric`: The categorical titleiable to display.
+- `title`: Chart title.
+- `unit`: Unit (e.g., `"%"`).
+- `focal_group`: List with `name` and optional `subset`.
+- `comparison_groups`: Optional list of groups to compare.
 
-#### Suggestion
+#### Example `instructions` (Slide 6)
 
-If format is constant, we could use **PPT templates** with pre-positioned text boxes, and only inject values into them.
+```r
+instructions <- list(
+  list(
+    slide             = 6,
+    slide_type        = "donut_chart",
+    metric            = "jam_type",
+    title             = "JAM Type Distribution",
+    unit              = "%",
+    focal_group       = list(name = "IWF", subset = "All"),
+    comparison_groups = NULL
+  )
+)
+```
 
-#### Question
+---
 
-How dynamic are these rankings and groups? Are exceptions expected?
+### D. Most Common Activities (High/Low Value)
 
+**Used In**: Slides 23–28  
+
+**Function**:  
+```r
+generate_activity_slide(data, instruction)
+```
+
+#### Description
+
+- Injects top 5 activity names and hours into a static PowerPoint template layout for each group.
+- The activity names and their corresponding time values are injected directly into labeled placeholders defined in the static slide template.
+- The number and layout of groups displayed depend on the structure of the instruction list (Total groups number and targeted `value_type`).
+
+#### Inputs
+
+- `slide`: Slide number.
+- `slide_type`: `"activity_slide"`
+- `title`: Chart title.
+- `value_type`: `"High"` or `"Low"`, to filter activity value levels.
+- `focal_group`: List with `name` and optional `subset`.
+- `comparison_groups`: Optional list of comparison groups.
+
+#### Example `instructions` (Slide 24)
+
+```r
+instructions <- list(
+  list(
+    slide             = 24,
+    slide_type        = "activity_slide",
+    title             = "Most Common High Value Activities",
+    value_type        = "High",
+    focal_group       = list(name = focal_group, subset = "All"),
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = "All")
+    )
+  )
+)
+```
+
+---
+
+### E. Column Charts
+
+**Used In**: Slides 53, 54, 69, 70 
+
+**Function**:  
+```r
+generate_column_slide(data, instruction)
+```
+
+#### Description
+
+Creates side-by-side vertical columns grouped by time or status, optionally stacked.
+
+#### Inputs
+- `slide`: Slide number.
+- `slide_type`: Slide type identifier.
+- `metric`: titleiable used to determine the column fill.
+- `title`: Title displayed above the chart.
+- `unit`: Unit of measurement.
+- `x_title`, `y_title`: Axis titles.
+- `focal_group`: List with `name` and optional `subset`.
+- `comparison_groups`: Optional list of comparison groups and optional `subset`.
+- `stacked`: Logical (`TRUE` or `FALSE`) indicating whether columns should be stacked.
+- `target`: Optional; target values for reference lines (can be `NULL`).
+- `legend`: Logical; whether to display the legend.
+
+
+
+#### Example `instructions` (Slide 69)
+
+This example illustrates a comparison between subgroups (Men vs. Women) within the same focal group. Both the focal_group and the comparison_groups reference the same group name, but apply different subset filters. 
+This shows the flexibility of the pipeline, which allows intra-group comparisons to be configured through subset logic alone, without requiring distinct group identifiers.
+
+```r
+instructions <- list(
+  list(
+    slide      = 69,
+    slide_type = "column_chart",
+    metric     = "reunion_class",
+    title      = "GENDER AND WORK HOURS (5th - 20th)",
+    unit       = "%",
+    x_title    = NULL,
+    y_title    = "% by Sector",
+    focal_group = list(
+      name   = focal_group,
+      subset = list(
+                list(title = "gender", value = "Men")
+              )
+    ),
+    comparison_groups = list(
+      name   = focal_group,
+      subset = list(
+                list(title = "gender", value = "Women")
+              )
+    )
+    stacked = TRUE,
+    target  = NULL,
+    legend  = TRUE
+  )
+)
+
+```
+#### Example `instructions` (Slide 70)
+
+This example explain the structure of the instructions list to configure a column chart using two levels of subgrouping: gender and parental status (i.e., whether respondents have children).
+
+**Note : Only this type of graph allows two level of sub-grouping.**
+
+```r
+instructions <- list(
+  list(
+    slide      = 69,
+    slide_type = "column_chart",
+    metric     = "reunion_class",
+    title      = "GENDER AND WORK HOURS (5th - 20th)",
+    unit       = "%",
+    x_title    = NULL,
+    y_title    = "% by Sector",
+
+    # Focal group: Men with any parental status
+    focal_group = list(
+      name   = focal_group,
+      subset = list(
+        list(title = "gender", value = "Men"),
+        list(title = "parental_status", value = "All")
+      )
+    ),
+    # Comparison group: Women with any parental status
+    comparison_groups = list(
+      list(
+        name   = focal_group,
+        subset = list(
+          list(title = "gender", value = "Women"),
+          list(title = "parental_status", value = "All")
+        )
+      )
+    ),
+    stacked = TRUE,
+    target  = NULL,
+    legend  = TRUE
+  )
+)
+
+```
+---
+
+### F. Multi-Line Comparison Chart
+
+**Used In**: Slides 84–87  
+
+**Function**:  
+```r
+generate_line_comparison_slide(data, instruction)
+```
+
+#### Description
+
+Draws one or more lines across time, comparing focal and comparison groups.
+
+#### Inputs
+
+- `slide_type`: `"line_comparison_chart"`
+- `slide`: Slide number.
+- `metric`: titleiable to compare.
+- `x_title`: Time or x-axis grouping.
+- `y_title`: titleiable used for the y-axis.
+- `title`: Chart title.
+- `focal_group`: List with `name` and optional `subset`.
+- `comparison_groups`: List of groups to compare.
+
+#### Example `instructions` (Slide 84)
+
+```r
+instructions <- list(
+  list(
+    slide_type        = "line_comparison_chart",
+    slide             = 84,
+    metric            = "life_satisfaction",
+    title             = "Life Satisfaction Over Time",
+    x_title           = "reunion_class",
+    y_title           = "value",
+    focal_group       = list(name = "HBS", subset = "Men"),
+    comparison_groups = list(
+      list(name = "IWF", subset = "Women")
+    )
+  )
+)
+```
+
+---
+
+### G. Circle Value Summary
+
+**Used In**: Slides 75–78  
+**Function**:  
+```r
+generate_circle_summary_slide(data, instruction)
+```
+
+#### Description
+
+Generates circle-shaped summary bubbles displaying numeric values (e.g., average TQI or life satisfaction) for one or more groups.
+
+#### Inputs
+
+- `slide_type`: `"circle_summary_slide"`
+- `slide`: Slide number.
+- `metric`: titleiable to summarize.
+- `title`: Chart title.
+- `unit`: Display unit (e.g., `"score"`, `"hours"`).
+- `focal_group`: Group to display in primary bubble.
+- `comparison_groups`: List of groups to show in smaller bubbles.
+
+#### Example `instructions` (Slide 75)
+
+```r
+instructions <- list(
+  list(
+    slide_type        = "circle_summary_slide",
+    slide             = 76,
+    metric            = "life_satisfaction",
+    title             = "LIFE SATISFACTION",
+    unit              = NULL,
+    focal_group       = list(name = "HBS", subset = "ALUMNI"),
+    comparison_groups = NULL
+  )
+)
+```
 ---
 
 ## 📌 Constraints and Considerations
@@ -248,26 +600,5 @@ The pipeline will also use some existing PPT templates. Input files will include
 * Ensure average values (e.g., `Avg. = 7.9`) in the green box don’t overlap chart elements. The print should look nice at all times.
 * Pie charts must remain readable even for small segments - edge cases
 * Other use cases to be discovered during developments
-
----
-
-## 🚧 Next Steps
-
-Once we agree on everything described above, here’s how we move forward:
-0. Finalize and complete this documentation based on our discussion.
-1. Develop the **data preprocessing pipeline**, defining the `run_data_preproc()` function, starting from the expected pre-calculated structure (resulting in one table per graph type).
-2. Define and test the `instructions` list structure, with real examples for each graph type.
-3. Build the core slide generation pipeline and make sure it's tested and works end-to-end.
-4. Implement the key slide functions:
-
-   * `generate_density_slide()`
-   * `generate_bar_slide()`
-   * And other types (to be added progressively).
-5. Set up GitHub Issues with clear tasks for each function/component.
-6. Confirm integration with PPT templates (e.g., base slide, green boxes, intro slides).
-7. Implement and test the mechanism to update **a single targeted slide** without regenerating the full deck.
-8. Deliver a first version with fully working examples from the actual presentation.
-
-Let’s finalize this structure before diving into code.
 
 ---
