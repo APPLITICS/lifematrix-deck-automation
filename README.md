@@ -54,20 +54,20 @@ preprocessed_data/
 
 And so on, for each combination of `group`, `gender` and `metric`. This would allow easily post-calculating the averages as well (within the generative functions).
 
-#### Example 2: `bar_chart_data.csv` (Categorical % Summary with)
+#### Example 2: `bar_chart_data.csv` (Categorical % Summary)
 
   | group | gender | metric         | high_percent  | min_percent    | ...  |
   | ----- | ------ | -------------- | ------------- | -------------  |------|
-  | IWF   | Men    | joy            | 60.0          |  64.0          | ...  |
-  | IWF   | Women  | joy            | 60.0          |  64.0          | ...  |
+  | IWF   | Men    | joy            | 60.0          |  72.0          | ...  |
+  | IWF   | Women  | joy            | 60.0          |  72.0          | ...  |
   | HBS   | Men    | joy            | 53.0          |  52.0          | ...  |
   | HBS   | Women  | joy            | 57.0          |  56.0          | ...  |
-  | IWF   | Men    | achievement    | 47.0          |  64.0          | ...  |
-  | IWF   | Women  | achievement    | 47.0          |  64.0          | ...  |
+  | IWF   | Men    | achievement    | 47.0          |  62.0          | ...  |
+  | IWF   | Women  | achievement    | 47.0          |  62.0          | ...  |
   | HBS   | Men    | achievement    | 36.0          |  65.0          | ...  |
   | HBS   | Women  | achievement    | 36.0          |  65.0          | ...  |
-  | IWF   | Men    | meaningfulness | 84.0          |  66.0          | ...  |
-  | IWF   | Women  | meaningfulness | 84.0          |  66.0          | ...  |
+  | IWF   | Men    | meaningfulness | 84.0          |  72.0          | ...  |
+  | IWF   | Women  | meaningfulness | 84.0          |  72.0          | ...  |
   | HBS   | Men    | meaningfulness | 73.0          |  62.0          | ...  |
   | HBS   | Women  | meaningfulness | 73.0          |  68.0          | ...  |
 
