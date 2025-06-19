@@ -511,8 +511,19 @@ instructions <- list(
   )
 )
 ```
----
 
+---
+## Relevant Questions:
+
+####  1. On the fly slide generation:
+When generating slides on the fly during a live event, should the pipeline produce a new standalone PowerPoint file, or should it modify an existing pre-generated .pptx?
+For example:
+We already have a `.pptx` with 50 slides comparing Xilio (focal group from the last event) to HBS (comparison group).
+During the live event, the new focal group is XXX, and we want to generate 15 slides comparing XXX vs. HBS, based on on the fly collected data.
+
+Should the pipeline generate a new `.pptx` containing only the 15 slides for new focal group or replace the relevant slides (e.g., density charts) in the existing old focal group `.pptx`, preserving the other original slides?
+
+---
 ## 📌 Constraints and Considerations
 
 ### 1. Template Integration
@@ -545,15 +556,6 @@ The pipeline will also use some existing PPT templates. Input files will include
 * Other use cases to be discovered during developments
 
 ---
-## Relevant Question:
-
-####  On the fly slide generation:
-When generating slides on the fly during a live event, should the pipeline produce a new standalone PowerPoint file, or should it modify an existing pre-generated .pptx?
-For example:
-We already have a `.pptx` with 50 slides comparing Xilio (focal group from the last event) to HBS (comparison group).
-During the live event, the new focal group is XXX, and we want to generate 15 slides comparing XXX vs. HBS, based on on the fly collected data.
-
-Should the pipeline generate a new `.pptx` containing only the 15 slides for new focal group or replace the relevant slides (e.g., density charts) in the existing old focal group `.pptx`, preserving the other original slides?
 
 ## 🚧 Next Steps
 
