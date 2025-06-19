@@ -543,3 +543,25 @@ The pipeline will also use some existing PPT templates. Input files will include
 * Other use cases to be discovered during developments
 
 
+## 🚧 Next Steps
+
+Once we agree on everything described above, here’s how we move forward:
+0. Finalize and complete this documentation based on our discussion.
+1. Define and test the `instructions` list structure, with real examples for each graph type.
+2. Build the core slide generation pipeline and make sure it's tested and works end-to-end.
+3. Implement the key slide functions:
+
+* `generate_density_slide()`          
+* `generate_bar_slide()`              
+* `generate_donut_slide()`            
+* `generate_horizontal_bar_slide()`   
+* `generate_activity_slide()`         
+* `generate_line_comparison_slide()`  
+* `generate_circle_summary_slide()`
+
+4. Set up GitHub Issues with clear tasks for each function/component.
+5. Confirm integration with PPT templates (e.g., base slide, green boxes, intro slides).
+6. Implement and test the mechanism to update **a single targeted slide** without regenerating the full deck.
+7. Deliver a first version with fully working examples from the actual presentation.
+
+Let’s finalize this structure before diving into code.
