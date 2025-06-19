@@ -542,3 +542,8 @@ The pipeline will also use some existing PPT templates. Input files will include
 * Other use cases to be discovered during developments
 
 ---
+
+## ✅ Suggestion :
+
+### 1. density chart
+For density chart types, consider displaying the Y-axis as percentages rather than decimals, this would enhance readability for most users.
