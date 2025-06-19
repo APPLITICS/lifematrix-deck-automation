@@ -54,22 +54,22 @@ preprocessed_data/
 
 And so on, for each combination of `group`, `gender` and `metric`. This would allow easily post-calculating the averages as well (within the generative functions).
 
-#### Example 2: `bar_chart_data.csv` (Categorical % Summary with Scores and Targets)
+#### Example 2: `bar_chart_data.csv` (Categorical % Summary with)
 
-| group | gender | metric         | high_score | high_percent | min_score | min_percent | target_percent | ...  |
-| ----- | ------ | -------------- | ----------- | ------------- | ---------- | ------------ | --------------- |------|
-| IWF   | Men    | joy            | 6.0         | 60.0          | 0.64       | 64.0         | 64.0            | ...  |
-| IWF   | Women  | joy            | 6.0         | 60.0          | 0.64       | 64.0         | 64.0            | ...  |
-| HBS   | Men    | joy            | 5.3         | 53.0          | 0.52       | 52.0         | 52.0            | ...  |
-| HBS   | Women  | joy            | 5.7         | 57.0          | 0.56       | 56.0         | 56.0            | ...  |
-| IWF   | Men    | achievement    | 4.7         | 47.0          | 0.64       | 64.0         | 64.0            | ...  |
-| IWF   | Women  | achievement    | 4.7         | 47.0          | 0.64       | 64.0         | 64.0            | ...  |
-| HBS   | Men    | achievement    | 3.6         | 36.0          | 0.65       | 65.0         | 65.0            | ...  |
-| HBS   | Women  | achievement    | 3.6         | 36.0          | 0.65       | 65.0         | 65.0            | ...  |
-| IWF   | Men    | meaningfulness | 8.4         | 84.0          | 0.66       | 66.0         | 66.0            | ...  |
-| IWF   | Women  | meaningfulness | 8.4         | 84.0          | 0.66       | 66.0         | 66.0            | ...  |
-| HBS   | Men    | meaningfulness | 7.3         | 73.0          | 0.62       | 62.0         | 62.0            | ...  |
-| HBS   | Women  | meaningfulness | 7.3         | 73.0          | 0.68       | 68.0         | 68.0            | ...  |
+  | group | gender | metric         | high_percent  | min_percent    | ...  |
+  | ----- | ------ | -------------- | ------------- | -------------  |------|
+  | IWF   | Men    | joy            | 60.0          |  64.0          | ...  |
+  | IWF   | Women  | joy            | 60.0          |  64.0          | ...  |
+  | HBS   | Men    | joy            | 53.0          |  52.0          | ...  |
+  | HBS   | Women  | joy            | 57.0          |  56.0          | ...  |
+  | IWF   | Men    | achievement    | 47.0          |  64.0          | ...  |
+  | IWF   | Women  | achievement    | 47.0          |  64.0          | ...  |
+  | HBS   | Men    | achievement    | 36.0          |  65.0          | ...  |
+  | HBS   | Women  | achievement    | 36.0          |  65.0          | ...  |
+  | IWF   | Men    | meaningfulness | 84.0          |  66.0          | ...  |
+  | IWF   | Women  | meaningfulness | 84.0          |  66.0          | ...  |
+  | HBS   | Men    | meaningfulness | 73.0          |  62.0          | ...  |
+  | HBS   | Women  | meaningfulness | 73.0          |  68.0          | ...  |
 
 - `score`: Raw survey score out of 10
 - `percent`: Converted using `percent = score / 10 * 100`
