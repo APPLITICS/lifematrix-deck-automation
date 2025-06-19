@@ -515,7 +515,14 @@ instructions <- list(
 ---
 ## Relevant Questions:
 
-####  1. On the fly slide generation:
+####  1. Direct processing of raw data:
+
+How each metric is defined and calculated from the raw data. The goal is to ensure each slide is supplied with precisely the data it needs. Nothing more, nothing less, with all values dynamically calculated as needed.
+For example:  `Life Satisfaction`, is it a direct input value available in the raw data or is it a derived metric, calculated from multiple raw inputs?
+For calculated metric we need to understand exactly how (e.g., formula, logic, aggregation method).
+
+
+####  2. On the fly slide generation:
 When generating slides on the fly during a live event, should the pipeline produce a new standalone PowerPoint file, or should it modify an existing pre-generated .pptx?
 For example:
 We already have a `.pptx` with 50 slides comparing Xilio (focal group from the last event) to HBS (comparison group).
@@ -560,9 +567,10 @@ The pipeline will also use some existing PPT templates. Input files will include
 ## 🚧 Next Steps
 
 Once we agree on everything described above, here’s how we move forward:
+0. Identify how each metric appears in the raw data and understand how it is usd within the graphs.
 1. Define and test the `instructions` list structure, with real examples for each graph type.
 2. Build the core slide generation pipeline and make sure it's tested and works end-to-end.
-3. Implement the key slide functions:
+3. Implement the key slide functions with the right data preparing logic:
 
 * `generate_density_slide()`          
 * `generate_bar_slide()`              
