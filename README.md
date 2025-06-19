@@ -51,7 +51,7 @@ instructions <- list(
   # Slide 2: Bar chart
   list(
     slide_type = "bar_chart",
-    metric     = "joy_percent",
+    metric      = c("joy", "achievement", "meaningfulness"),
     title      = "IMPORTANCE OF JAM",
     unit       = "%",
     x_title        = NULL,
@@ -61,7 +61,9 @@ instructions <- list(
       subset = list(title = "gender", value = "Female")
     ),
     comparison_groups = list(
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Female"))
+      list(
+      name = comparison_group_1,
+      subset = list(title = "gender", value = "Female"))
     ),
     target = NULL,
     trend_line = FALSE
