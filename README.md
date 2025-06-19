@@ -537,13 +537,9 @@ The pipeline will also use some existing PPT templates. Input files will include
  
 ### 3. Visual Safeguards
 
+* For density chart types, consider displaying the Y-axis as percentages rather than decimals, this would enhance readability for most users.
 * Ensure average values (e.g., `Avg. = 7.9`) in the green box don’t overlap chart elements. The print should look nice at all times.
 * Pie charts must remain readable even for small segments - edge cases
 * Other use cases to be discovered during developments
 
----
 
-## ✅ Suggestion :
-
-### 1. density chart
-For density chart types, consider displaying the Y-axis as percentages rather than decimals, this would enhance readability for most users.
