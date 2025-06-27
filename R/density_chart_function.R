@@ -1,9 +1,3 @@
-# ------ LIBRARIES ----------------------------------------------------------
-library(data.table)
-library(dplyr)
-library(ggplot2)
-library(grid)
-
 # ------ MAIN FUNCTION ------------------------------------------------------
 draw_density_chart <- function(
     df,
