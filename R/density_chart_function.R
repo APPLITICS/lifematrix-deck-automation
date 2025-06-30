@@ -1,9 +1,21 @@
-# ------ MAIN FUNCTION ------------------------------------------------------
-draw_density_chart <- function(
-    df,
-    inst
-) {
-  # ------ HELPERS -------------------------------------------------------
+#' Draws a density chart for a focal group and optionally displays comparison averages.
+#'
+#' This function uses kernel density estimation to show the distribution of a 
+#' selected metric for a focal group. It supports:
+#' - Vertical line annotation at the focal group’s average value
+#' - Comparison group average labels displayed in a corner box
+#' - Smart axis step sizing
+#' - Automatic padding and layout configuration
+#' - Filtering and summarizing the input data to focus only on the relevant group/metric
+#'
+#' @param df   Data frame containing the input data.
+#' @param inst List containing the configuration for the plot, including:
+#'   the metric to plot, focal group definition, subset filters, and axis titles.
+
+draw_density_chart <- function(df,inst) {
+  # ------ HELPERS -------------------------------------------------------------
+  
+  #' Determines step size for y-axis breaks based on y max value
   get_y_step <- function(y_max) {
     if (y_max >= 0.8)   return(0.2)
     if (y_max >= 0.2)   return(0.1)
@@ -12,7 +24,7 @@ draw_density_chart <- function(
     if (y_max >= 0.04)  return(0.02)
     return(0.01)
   }
-  
+  #' Determines x-axis step size based on the range of x values
   get_x_step <- function(x_range) {
     if (x_range <= 12) return(1)
     nice_int_steps <- c(10, 5, 2)
@@ -22,8 +34,11 @@ draw_density_chart <- function(
     }
     return(1)
   }
+
+  # ------ COMPARISON LABELS FUNCTION ------------------------------------------
   
-  draw_comparison_label <- function(df, inst) {
+  #' Draws a comparison group label box in top-right with average values
+  draw_comparison_label <- function(df,inst) {
     if (is.null(inst$comparison_groups)) return(NULL)
     
     comp_text <- lapply(inst$comparison_groups, function(cg) {
@@ -38,9 +53,7 @@ draw_density_chart <- function(
         ) %>%
         pull(avg)
       
-      paste0(
-        cg$name, " ", cg$subset$value, " Avg. = ", avg
-      )
+      paste0(cg$name, " ", cg$subset$value, " Avg. = ", avg)
     }) %>%
       unlist() %>%
       paste(collapse = "\n")
@@ -54,10 +67,9 @@ draw_density_chart <- function(
         fontface  = "bold"
       )
     )
-    
+    # Calculate width and height for the rectangle
     width_grob  <- grobWidth(text_grob)  + unit(10, "mm")
     height_grob <- grobHeight(text_grob) + unit(6, "mm")
-    
     rect_grob <- rectGrob(
       x      = unit(1, "npc") - unit(5, "mm"),
       y      = unit(1, "npc") - unit(5, "mm"),
@@ -66,7 +78,7 @@ draw_density_chart <- function(
       just   = c("right", "top"),
       gp     = gpar(fill = "#97e27f", col = NA)
     )
-    
+    # Center the text within the rectangle
     text_grob_centered <- editGrob(
       text_grob,
       x    = unit(1, "npc") - unit(5, "mm") - width_grob / 2,
@@ -77,13 +89,15 @@ draw_density_chart <- function(
     grid.draw(grobTree(rect_grob, text_grob_centered))
   }
   
-  # ------ DATA FILTERING ------------------------------------------------
+  #' ------ DATA FILTERING -----------------------------------------------------
+  
+  # Filter data for focal group
   df_focal <- df %>%
     filter(
       group  == inst$focal_group$name,
       metric == inst$metric
     )
-  
+  # Apply subset filter if provided (e.g., gender = "Men")
   if (!is.null(inst$focal_group$subset)) {
     df_focal <- df_focal %>%
       filter(
@@ -91,14 +105,15 @@ draw_density_chart <- function(
           inst$focal_group$subset$value
       )
   }
-  
+  # Compute focal group average value
   avg_focal <- round(mean(df_focal$value), 1)
   
-  # ------ DENSITY COMPUTATION -------------------------------------------
+  #' ------ DENSITY COMPUTATION ------------------------------------------------
+  # Determine x-range (clipping at 0 if small)
   x_min <- min(df_focal$value)
   x_max <- max(df_focal$value)
   x_min <- if (x_min < 5) 0 else x_min
-  
+  # Estimate density for focal group
   dens <- density(
     df_focal$value,
     adjust = 1.2,
@@ -106,30 +121,35 @@ draw_density_chart <- function(
     to     = x_max,
     n      = 2048
   )
-  
+  # Create data frame for density values
   df_dens <- data.frame(
     x = dens$x,
     y = dens$y
   )
   
-  # ------ AXIS CALCULATIONS --------------------------------------------
+  #' ------ AXIS CALCULATIONS --------------------------------------------------
+  
+  # Y-axis limits and breaks
   y_max_raw <- max(df_dens$y)
   y_step    <- get_y_step(y_max_raw)
   y_max_pad <- ceiling(y_max_raw / y_step) * y_step
   y_lim     <- c(0, y_max_pad)
   
+  # X-axis limits and breaks
   x_range <- x_max - x_min
   x_step  <- get_x_step(x_range)
   x_start <- x_min - (x_min %% x_step)
   x_end   <- ceiling(x_max)
   x_lim   <- c(x_start, x_end)
   
-  # ------ PLOT ---------------------------------------------------------
+  #' ------ PLOT ---------------------------------------------------------------
+  
   p <- ggplot(df_dens, aes(x = x, y = y)) +
     geom_line(
       color = "#8ddef9",
       size  = 1.5
     ) +
+    # Vertical line for focal group average
     geom_segment(
       aes(
         x     = avg_focal,
@@ -141,6 +161,7 @@ draw_density_chart <- function(
       color    = "yellow",
       size     = 1
     ) +
+    # Avg label above dashed line
     annotate(
       "text",
       x        = avg_focal - 0.5,
@@ -168,58 +189,22 @@ draw_density_chart <- function(
       x     = inst$x_title,
       y     = inst$y_title
     ) +
-    theme_minimal(base_size = 14) +
+    global_theme() +
     theme(
-      panel.background   = element_rect(
-        fill   = "#015881",
-        color  = NA
-      ),
-      plot.background    = element_rect(
-        fill   = "#015881",
-        color  = NA
-      ),
-      panel.grid.major.x = element_blank(),
-      panel.grid.minor.x = element_blank(),
-      panel.grid.major.y = element_line(
-        color = "white",
-        size  = 0.1
-      ),
-      panel.grid.minor.y = element_blank(),
-      axis.line.x        = element_line(
-        color = "white",
-        size  = 1.2
-      ),
-      axis.line.y        = element_line(
-        color = "white",
-        size  = 1.2
-      ),
-      axis.text          = element_text(
-        color = "white",
-        size  = 12
-      ),
-      axis.title.x       = element_text(
-        color   = "white",
-        size    = 14,
-        face    = "bold",
-        margin  = margin(t = 15)
-      ),
-      axis.title.y       = element_text(
-        color   = "white",
-        size    = 14,
-        face    = "bold",
-        margin  = margin(r = 15)
-      ),
-      plot.title         = element_text(
+      plot.title      = element_text(
         color = "white",
         face  = "bold",
         size  = 26,
         hjust = 0
       ),
-      plot.margin        = margin(t = 30, r = 20, b = 15, l = 20),
-      legend.position    = "none"
+      plot.margin     = margin(t = 30, r = 20, b = 15, l = 20),
+      legend.position = "none"
     )
   
-  # ------ OUTPUT --------------------------------------------------------
+  #' ------ OUTPUT -------------------------------------------------------------
+  
+  # Render plot
   print(p)
+  # Overlay comparison group average box
   draw_comparison_label(df, inst)
 }
