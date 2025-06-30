@@ -38,7 +38,7 @@ draw_density_chart(data, instruction)
 - Generates a density plot for a given metric (e.g., `life_satisfaction`, `sleep_hours`) for the focal group.  
 - The focal group’s average is marked with a vertical dashed line, while comparison group averages are highlighted in green annotation boxes for clear benchmarking.
 
-#### Characterstics of the `instruction` input
+#### Characteristics of the `instruction` input
 
 - `slide`: Slide number.
 - `slide_type`: `"density_chart"`
@@ -50,7 +50,7 @@ draw_density_chart(data, instruction)
 - `focal_group`: List with `name` and optional `subset` (1 level is allowed) - `NULL` for `subset` if no subsetting.
 - `comparison_groups`: List of comparison groups or `NULL`.
 
-#### Example `instructions` for Slide 3: Focal Group without Comparison Groups
+#### Example `instructions` for Slide 3: Focal group without comparison groups
 
 ```r
 instructions <- list(
@@ -68,12 +68,12 @@ instructions <- list(
 )
 ```
 
-#### Example `instructions` for Slide 5: Focal Group without Comparison Groups
+#### Example `instructions` for Slide 5: Focal group with comparison groups
 
 ```r
 instructions <- list(
   list(
-    slide             = 3,
+    slide             = 5,
     slide_type        = "density_chart",
     metric            = "life_satisfaction",
     title             = "Life Satisfaction",
@@ -101,24 +101,25 @@ draw_bar_chart(data, instruction)
 
 #### Description
 
-- Generates a grouped bar chart based on `metric` values across focal and comparison groups with the possibility of adding an optional dahsed line for the target values.
+- Generates a grouped bar chart based on `metric` values across focal and comparison groups with the possibility of adding an optional dashed line for the target values.
 - Handles both percentage (`unit = "%"`) and numeric score (`unit = "score"`) values and updating bars and y-axis accordingly.
 - The second comparison group is set to `NA` used intentionally as a placeholder to reserve layout space in the chart **(Build Scenario)**.
 - Adds an optional trend line across bar heights to highlight patterns across categories or metrics.
 - Supports single or multiple metrics and custom x-axis categories (e.g., `gender`, `reunion class`).
 
-#### Characterstics of the `instruction` input
+#### Characteristics of the `instruction` input
 
 - `slide`: Slide number.
 - `slide_type`: `"bar_chart"`
 - `metrics`: A vector of metrics to display.
+- `category` : Optional. If provided with a single metric, this field defines the grouping for the x-axis (e.g., "gender" or "reunion_class").
 - `title`: Slide title.
 - `unit`: Unit (e.g. `"%"`, `"score"`).
 - `x_title`: X-axis title.
 - `y_title`: Y-axis title.
 - `legend`: Whether to show a legend.
 - `focal_group`: List with `name` and optional `subset` (1 level is allowed) - `NULL` for `subset` if no subsetting.
-- `comparison_groups`: List of group definitions. Use `name = NA` for placeholders.
+- `comparison_groups`: List of group definitions. Use `name = NA` for placeholders to preserve layout.
 - `current_value`: Bar current value to be displayed.
 - `target`: Bar target value to be displayed with dashed lines.
 - `trend_line`: Whether to include a trend line.
@@ -174,8 +175,14 @@ instructions <- list(
       )
     ),
     current_value      = "metric_value",
-    target            = "munimums_value",
+    target            = "minimums_value",
     trend_line        = NULL
   )
 )
 ```
+
+### More Example Execution
+
+- The `main.R` have more examples to be displayed using the instructions list. It includes calls to `draw_density_chart()` and `draw_bar_chart()` for various slide types and configurations.
+- The `instructions.R` contains a curated list of instruction examples (e.g., focal-only, placeholders, trend lines) mapped to real slides in automation.pptx.
+- These examples provide a quick way to test or preview chart logic.
