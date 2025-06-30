@@ -1,4 +1,4 @@
-group,gender,status,reunion_class,having_children,n_children,children_category,income,metric,metric_value,munimums_value,n
+group,gender,status,reunion_class,having_children,n_children,children_category,income,metric,metric_value,minimums_value,n
 IWF,Women,in a relationship,35th,yes,2,2,Less than 150k,Achievement,10,7.4,1
 IWF,Women,in a relationship,10th,yes,3,3+,Less than 150k,Achievement,6.2,7.2,7
 IWF,Women,in a relationship,20th,no,0,0,More than 1m,Meaningfulness+,2,8.7,7

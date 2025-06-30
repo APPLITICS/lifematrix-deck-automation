@@ -43,7 +43,7 @@ draw_bar_chart <- function(data, instruction) {
       group            = if (!is.null(label)) label else " ",
       category         = categories,
       metric_value     = 0,
-      munimums_value   = 0,
+      minimums_value   = 0,
       stringsAsFactors = FALSE
     )
   }
@@ -138,7 +138,7 @@ draw_bar_chart <- function(data, instruction) {
         group_by(group, category) %>%
         summarise(
           metric_value    = mean(metric_value, na.rm = TRUE),
-          munimums_value  = mean(munimums_value, na.rm = TRUE),
+          minimums_value  = mean(minimums_value, na.rm = TRUE),
           .groups         = "drop"
         )
     } else {

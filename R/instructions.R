@@ -131,7 +131,7 @@ instructions <- list(
       )
     ),
     current_value      = "metric_value",
-    target            = "munimums_value",
+    target            = "minimums_value",
     trend_line        = NULL
   ),
   
