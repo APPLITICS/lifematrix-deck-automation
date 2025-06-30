@@ -1,5 +1,5 @@
 #' Draws a customized bar chart for focal and comparison groups based on provided
-#' instructions.
+#' instructionructions.
 #'
 #' This function supports grouped bar charts using ggplot2, and includes:
 #' - Preparation of summarized input data from raw values (e.g., by group, metric)
@@ -9,11 +9,11 @@
 #' - Optional dashed target lines and trend lines
 #' - Automatic color assignment and label formatting
 #'
-#' @param df   Data frame containing the input data.
-#' @param inst List containing the chart configuration, including:
+#' @param data   Data frame containing the input data.
+#' @param instruction List containing the chart configuration, including:
 #'   metric(s), group definitions, titles, units, and options for target/trend lines.
 
-draw_bar_chart <- function(df, inst) {
+draw_bar_chart <- function(data, instruction) {
   # ------ HELPERS -------------------------------------------------------------
   
   #' Sorts category labels, ensuring "Less" appears first, "More" last, and
@@ -27,16 +27,16 @@ draw_bar_chart <- function(df, inst) {
     v[order(custom_order, na.last = TRUE)]
   }
   #' Generates a dummy null data to simulate placeholders space in the graph
-  df_placeholder <- function(
+  data_placeholder <- function(
     label,
     x_axis_var,
-    inst,
-    df
+    instruction,
+    data
   ) {
     categories <- if (x_axis_var == "metric") {
-      inst$metric
+      instruction$metric
     } else {
-      unique(df[[x_axis_var]])
+      unique(data[[x_axis_var]])
     }
     
     data.frame(
@@ -48,8 +48,8 @@ draw_bar_chart <- function(df, inst) {
     )
   }
   #' Maps consistent fill colors to groups for visual distinction
-  color_map <- function(df_plot) {
-    unique_fill_groups   <- unique(df_plot$fill_group)
+  color_map <- function(data_plot) {
+    unique_fill_groups   <- unique(data_plot$fill_group)
     group_colors_palette <- c("#70e2ff", "#a4d65e", "#2dc595", "#5d8c90")
     
     setNames(
@@ -59,12 +59,12 @@ draw_bar_chart <- function(df, inst) {
   }
   #' Gets bar center x-positions for label/text alignment and target line placement
   get_x_positions <- function(
-    df_plot,
-    inst
+    data_plot,
+    instruction
   ) {
-    tmp <- ggplot(df_plot, aes(
+    tmp <- ggplot(data_plot, aes(
       x     = category,
-      y     = .data[[inst$value_column]],
+      y     = .data[[instruction$current_value]],
       group = group_category_id
     )) +
       geom_col(
@@ -76,19 +76,19 @@ draw_bar_chart <- function(df, inst) {
   }
   #' Determines the y-axis maximum based on data and unit type
   get_y_max <- function(
-    df_plot,
-    inst,
+    data_plot,
+    instruction,
     scale_factor
   ) {
     y_vals <- c(
-      df_plot[[inst$value_column]],
-      if (!is.null(inst$target)) df_plot[[inst$target]] else numeric()
+      data_plot[[instruction$current_value]],
+      if (!is.null(instruction$target)) data_plot[[instruction$target]] else numeric()
     ) * scale_factor
     
     y_max_raw <- max(y_vals, na.rm = TRUE)
     
-    if (inst$unit == "%") {
-      margin <- if (is.null(inst$target)) 0 else 10
+    if (instruction$unit == "%") {
+      margin <- if (is.null(instruction$target)) 0 else 10
       ceiling((y_max_raw + margin) / 10) * 10
     } else {
       ceiling(y_max_raw + 1)
@@ -97,16 +97,16 @@ draw_bar_chart <- function(df, inst) {
   
   # ------ X AXIS VARIABLE SELECTION -------------------------------------------
   #' Dynamically assign the x-axis variable based on input mode
-  x_axis_var <- if (length(inst$metric) == 1 && is.null(inst$category)) {
+  x_axis_var <- if (length(instruction$metric) == 1 && is.null(instruction$category)) {
     "group"
-  } else if (length(inst$metric) == 1) {
-    inst$category
+  } else if (length(instruction$metric) == 1) {
+    instruction$category
   } else {
     "metric"
   }
   
   #' Set scale factor (10 for %, otherwise 1)
-  scale_factor <- if (inst$unit == "%") 10 else 1
+  scale_factor <- if (instruction$unit == "%") 10 else 1
   
   # ------ DATA PREPROCESSING FUNCTION -----------------------------------------
   #' Extracts, filters, and summarizes data for a group
@@ -117,8 +117,8 @@ draw_bar_chart <- function(df, inst) {
   ) {
     place_holder <- is.na(group_name)
     
-    df_sub <- if (!place_holder) {
-      df %>%
+    data_sub <- if (!place_holder) {
+      data %>%
         filter(group == group_name) %>%
         {
           if (!is.null(subset) &&
@@ -129,7 +129,7 @@ draw_bar_chart <- function(df, inst) {
             .
           }
         } %>%
-        filter(metric %in% inst$metric) %>%
+        filter(metric %in% instruction$metric) %>%
         mutate(category = case_when(
           x_axis_var == "metric" ~ metric,
           x_axis_var == "group"  ~ group,
@@ -142,25 +142,25 @@ draw_bar_chart <- function(df, inst) {
           .groups         = "drop"
         )
     } else {
-      df_placeholder(label, x_axis_var, inst, df)
+      data_placeholder(label, x_axis_var, instruction, data)
     }
     
-    if (!is.null(label)) df_sub$group <- label
-    df_sub
+    if (!is.null(label)) data_sub$group <- label
+    data_sub
   }
   
   # ------ FOCAL GROUP ---------------------------------------------------------
   #' Process focal group data
-  df_focal <- preprocess_group(
-    inst$focal_group$name,
-    inst$focal_group$subset,
-    label = inst$focal_group$name
+  data_focal <- preprocess_group(
+    instruction$focal_group$name,
+    instruction$focal_group$subset,
+    label = instruction$focal_group$name
   )
   
   # ------ COMPARISON GROUPS ---------------------------------------------------
   #' Process comparison groups (can include multiple subgroups)
-  if (!is.null(inst$comparison_groups)) {
-    raw_labels <- sapply(inst$comparison_groups, function(cg) {
+  if (!is.null(instruction$comparison_groups)) {
+    raw_labels <- sapply(instruction$comparison_groups, function(cg) {
       if (!is.null(cg$name) && !is.na(cg$name)) {
         if (!is.null(cg$subset)) {
           paste(cg$name, cg$subset$value)
@@ -180,59 +180,59 @@ draw_bar_chart <- function(df, inst) {
       raw_labels
     )
     
-    df_comparisons <- bind_rows(Map(
+    data_comparisons <- bind_rows(Map(
       function(cg, label) {
         preprocess_group(cg$name, cg$subset, label)
       },
-      inst$comparison_groups,
+      instruction$comparison_groups,
       comparison_labels
     ))
   } else {
     comparison_labels <- character(0)
-    df_comparisons    <- NULL
+    data_comparisons    <- NULL
   }
   
   # ------ MERGE & FORMAT DATA -------------------------------------------------
   #' Combine focal and comparison group data
-  df_plot <- bind_rows(df_focal, df_comparisons)
+  data_plot <- bind_rows(data_focal, data_comparisons)
   #' Set group factor levels and x-axis categories
-  group_labels   <- c(inst$focal_group$name, comparison_labels)
-  df_plot$group  <- factor(df_plot$group, levels = group_labels)
+  group_labels   <- c(instruction$focal_group$name, comparison_labels)
+  data_plot$group  <- factor(data_plot$group, levels = group_labels)
   
   if (x_axis_var == "group") {
-    df_plot$category <- factor(df_plot$group, levels = group_labels)
+    data_plot$category <- factor(data_plot$group, levels = group_labels)
   } else {
-    df_plot$category <- factor(
-      df_plot$category,
-      levels = if (!is.null(inst$category_order)) {
-        inst$category_order
+    data_plot$category <- factor(
+      data_plot$category,
+      levels = if (!is.null(instruction$category_order)) {
+        instruction$category_order
       } else if (x_axis_var == "metric") {
-        inst$metric
+        instruction$metric
       } else {
-        sort_category_labels(unique(df_plot$category))
+        sort_category_labels(unique(data_plot$category))
       }
     )
   }
   #' Create ID and fill vars for plotting
-  df_plot$group_category_id <- interaction(
-    df_plot$group,
-    df_plot$category,
+  data_plot$group_category_id <- interaction(
+    data_plot$group,
+    data_plot$category,
     drop = TRUE
   )
   
-  df_plot$fill_group <- gsub(" \\(\\d+\\)$", "", df_plot$group)
+  data_plot$fill_group <- gsub(" \\(\\d+\\)$", "", data_plot$group)
   
   # ------ COLOR AND LEGEND FILTERING ------------------------------------------
-  colors         <- color_map(df_plot)
-  df_plot$x_center <- get_x_positions(df_plot, inst)
-  y_max          <- get_y_max(df_plot, inst, scale_factor)
+  colors         <- color_map(data_plot)
+  data_plot$x_center <- get_x_positions(data_plot, instruction)
+  y_max          <- get_y_max(data_plot, instruction, scale_factor)
   #' Only show non-zero fill groups in legend
-  non_zero_groups <- df_plot %>%
+  non_zero_groups <- data_plot %>%
     filter(metric_value > 0, !is.na(fill_group)) %>%
     distinct(fill_group) %>%
     pull(fill_group)
   #' If placeholder group has value, include it too
-  has_real_comparison <- df_plot %>%
+  has_real_comparison <- data_plot %>%
     filter(fill_group == " ", metric_value > 0) %>%
     nrow() > 0
   
@@ -255,9 +255,9 @@ draw_bar_chart <- function(df, inst) {
   dodge_pos <- position_dodge(width = 0.8)
   bar_width <- 0.5
   
-  p <- ggplot(df_plot, aes(
+  p <- ggplot(data_plot, aes(
     x     = category,
-    y     = .data[[inst$value_column]] * scale_factor,
+    y     = .data[[instruction$current_value]] * scale_factor,
     fill  = fill_group,
     group = group_category_id
   )) +
@@ -265,16 +265,16 @@ draw_bar_chart <- function(df, inst) {
     geom_text(
       aes(
         label = ifelse(
-          is.na(.data[[inst$value_column]]) |
-            .data[[inst$value_column]] == 0,
+          is.na(.data[[instruction$current_value]]) |
+            .data[[instruction$current_value]] == 0,
           "",
-          if (inst$unit == "%") {
-            paste0(round(.data[[inst$value_column]] * 10), "%")
+          if (instruction$unit == "%") {
+            paste0(round(.data[[instruction$current_value]] * 10), "%")
           } else {
-            round(.data[[inst$value_column]], 1)
+            round(.data[[instruction$current_value]], 1)
           }
         ),
-        y = .data[[inst$value_column]] * scale_factor / 2
+        y = .data[[instruction$current_value]] * scale_factor / 2
       ),
       position = dodge_pos,
       color    = "black",
@@ -285,20 +285,20 @@ draw_bar_chart <- function(df, inst) {
   # ------ TARGET LINES --------------------------------------------------------
   
   #' Add dashed yellow target line and value label above bar
-  if (!is.null(inst$target)) {
-    n_bars_per_group <- length(unique(df_plot$category))
+  if (!is.null(instruction$target)) {
+    n_bars_per_group <- length(unique(data_plot$category))
     
-    target_data <- df_plot %>%
-      filter(!is.na(.data[[inst$target]]) & .data[[inst$target]] > 0)
+    target_data <- data_plot %>%
+      filter(!is.na(.data[[instruction$target]]) & .data[[instruction$target]] > 0)
     
     p <- p +
       geom_segment(
         data = target_data,
         aes(
-          x    = x_center - bar_width / (nrow(df_plot) / n_bars_per_group * 2),
-          xend = x_center + bar_width / (nrow(df_plot) / n_bars_per_group * 2),
-          y    = .data[[inst$target]] * scale_factor,
-          yend = .data[[inst$target]] * scale_factor
+          x    = x_center - bar_width / (nrow(data_plot) / n_bars_per_group * 2),
+          xend = x_center + bar_width / (nrow(data_plot) / n_bars_per_group * 2),
+          y    = .data[[instruction$target]] * scale_factor,
+          yend = .data[[instruction$target]] * scale_factor
         ),
         color     = "yellow",
         linetype  = "dashed",
@@ -308,12 +308,12 @@ draw_bar_chart <- function(df, inst) {
         data = target_data,
         aes(
           x     = x_center,
-          y     = .data[[inst$target]] * scale_factor +
-            if (inst$unit == "%") 6 else 0.5,
-          label = if (inst$unit == "%") {
-            paste0(round(.data[[inst$target]] * 10), "%")
+          y     = .data[[instruction$target]] * scale_factor +
+            if (instruction$unit == "%") 6 else 0.5,
+          label = if (instruction$unit == "%") {
+            paste0(round(.data[[instruction$target]] * 10), "%")
           } else {
-            round(.data[[inst$target]], 1)
+            round(.data[[instruction$target]], 1)
           }
         ),
         color    = "yellow",
@@ -325,20 +325,20 @@ draw_bar_chart <- function(df, inst) {
   # ------ TREND LINE ----------------------------------------------------------
   
   #' Adds diagonal trend line between first and last bars (focal group only)
-  if (isTRUE(inst$trend_line)) {
-    df_trend <- df_plot %>%
-      filter(group == inst$focal_group$name) %>%
+  if (isTRUE(instruction$trend_line)) {
+    data_trend <- data_plot %>%
+      filter(group == instruction$focal_group$name) %>%
       arrange(category)
     
-    if (nrow(df_trend) >= 2) {
+    if (nrow(data_trend) >= 2) {
       p <- p +
         geom_segment(
           data = NULL,
           aes(
-            x    = df_trend$x_center[1],
-            y    = df_trend[[inst$value_column]][1] * scale_factor,
-            xend = df_trend$x_center[nrow(df_trend)],
-            yend = df_trend[[inst$value_column]][nrow(df_trend)] * scale_factor
+            x    = data_trend$x_center[1],
+            y    = data_trend[[instruction$current_value]][1] * scale_factor,
+            xend = data_trend$x_center[nrow(data_trend)],
+            yend = data_trend[[instruction$current_value]][nrow(data_trend)] * scale_factor
           ),
           inherit.aes = FALSE,
           color       = "yellow",
@@ -352,8 +352,8 @@ draw_bar_chart <- function(df, inst) {
   p +
     scale_y_continuous(
       limits = c(0, y_max),
-      breaks = if (inst$unit == "%") seq(0, y_max, 20) else waiver(),
-      labels = if (inst$unit == "%") function(x) paste0(x, "%") else waiver(),
+      breaks = if (instruction$unit == "%") seq(0, y_max, 20) else waiver(),
+      labels = if (instruction$unit == "%") function(x) paste0(x, "%") else waiver(),
       expand = c(0, 0)
     ) +
     scale_fill_manual(
@@ -361,8 +361,8 @@ draw_bar_chart <- function(df, inst) {
       breaks = names(colors)
     ) +
     labs(
-      x     = inst$x_title,
-      y     = inst$y_title,
+      x     = instruction$x_title,
+      y     = instruction$y_title,
       title = " ",
       fill  = NULL
     ) +

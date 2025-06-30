@@ -8,11 +8,11 @@
 #' - Automatic padding and layout configuration
 #' - Filtering and summarizing the input data to focus only on the relevant group/metric
 #'
-#' @param df   Data frame containing the input data.
-#' @param inst List containing the configuration for the plot, including:
+#' @param data   Data frame containing the input data.
+#' @param instruction List containing the configuration for the plot, including:
 #'   the metric to plot, focal group definition, subset filters, and axis titles.
 
-draw_density_chart <- function(df,inst) {
+draw_density_chart <- function(data,instruction) {
   # ------ HELPERS -------------------------------------------------------------
   
   #' Determines step size for y-axis breaks based on y max value
@@ -38,14 +38,14 @@ draw_density_chart <- function(df,inst) {
   # ------ COMPARISON LABELS FUNCTION ------------------------------------------
   
   #' Draws a comparison group label box in top-right with average values
-  draw_comparison_label <- function(df,inst) {
-    if (is.null(inst$comparison_groups)) return(NULL)
+  draw_comparison_label <- function(data,instruction) {
+    if (is.null(instruction$comparison_groups)) return(NULL)
     
-    comp_text <- lapply(inst$comparison_groups, function(cg) {
-      avg <- df %>%
+    comp_text <- lapply(instruction$comparison_groups, function(cg) {
+      avg <- data %>%
         filter(
           group == cg$name,
-          metric == inst$metric,
+          metric == instruction$metric,
           !!sym(cg$subset$title) == cg$subset$value
         ) %>%
         summarise(
@@ -92,37 +92,37 @@ draw_density_chart <- function(df,inst) {
   #' ------ DATA FILTERING -----------------------------------------------------
   
   # Filter data for focal group
-  df_focal <- df %>%
+  data_focal <- data %>%
     filter(
-      group  == inst$focal_group$name,
-      metric == inst$metric
+      group  == instruction$focal_group$name,
+      metric == instruction$metric
     )
   # Apply subset filter if provided (e.g., gender = "Men")
-  if (!is.null(inst$focal_group$subset)) {
-    df_focal <- df_focal %>%
+  if (!is.null(instruction$focal_group$subset)) {
+    data_focal <- data_focal %>%
       filter(
-        !!sym(inst$focal_group$subset$title) ==
-          inst$focal_group$subset$value
+        !!sym(instruction$focal_group$subset$title) ==
+          instruction$focal_group$subset$value
       )
   }
   # Compute focal group average value
-  avg_focal <- round(mean(df_focal$value), 1)
+  avg_focal <- round(mean(data_focal$value), 1)
   
   #' ------ DENSITY COMPUTATION ------------------------------------------------
   # Determine x-range (clipping at 0 if small)
-  x_min <- min(df_focal$value)
-  x_max <- max(df_focal$value)
+  x_min <- min(data_focal$value)
+  x_max <- max(data_focal$value)
   x_min <- if (x_min < 5) 0 else x_min
   # Estimate density for focal group
   dens <- density(
-    df_focal$value,
+    data_focal$value,
     adjust = 1.2,
     from   = x_min,
     to     = x_max,
     n      = 2048
   )
   # Create data frame for density values
-  df_dens <- data.frame(
+  data_dens <- data.frame(
     x = dens$x,
     y = dens$y
   )
@@ -130,7 +130,7 @@ draw_density_chart <- function(df,inst) {
   #' ------ AXIS CALCULATIONS --------------------------------------------------
   
   # Y-axis limits and breaks
-  y_max_raw <- max(df_dens$y)
+  y_max_raw <- max(data_dens$y)
   y_step    <- get_y_step(y_max_raw)
   y_max_pad <- ceiling(y_max_raw / y_step) * y_step
   y_lim     <- c(0, y_max_pad)
@@ -144,7 +144,7 @@ draw_density_chart <- function(df,inst) {
   
   #' ------ PLOT ---------------------------------------------------------------
   
-  p <- ggplot(df_dens, aes(x = x, y = y)) +
+  p <- ggplot(data_dens, aes(x = x, y = y)) +
     geom_line(
       color = "#8ddef9",
       size  = 1.5
@@ -186,8 +186,8 @@ draw_density_chart <- function(df,inst) {
     ) +
     labs(
       title = " ",
-      x     = inst$x_title,
-      y     = inst$y_title
+      x     = instruction$x_title,
+      y     = instruction$y_title
     ) +
     global_theme() +
     theme(
@@ -206,5 +206,5 @@ draw_density_chart <- function(df,inst) {
   # Render plot
   print(p)
   # Overlay comparison group average box
-  draw_comparison_label(df, inst)
+  draw_comparison_label(data, instruction)
 }

@@ -55,7 +55,7 @@ instructions <- list(
     title             = "IMPORTANCE OF JAM",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = FALSE
   ),
@@ -78,7 +78,7 @@ instructions <- list(
       ),
       list(name = NA, subset = NULL)
     ),
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = NULL
   ),
@@ -104,7 +104,7 @@ instructions <- list(
         subset = list(title = "gender", value = "Men")
       )
     ),
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = NULL
   ),
@@ -130,7 +130,7 @@ instructions <- list(
         subset = list(title = "gender", value = "Men")
       )
     ),
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = "munimums_value",
     trend_line        = NULL
   ),
@@ -156,7 +156,7 @@ instructions <- list(
         subset = list(title = "gender", value = "Men")
       )
     ),
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = TRUE
   ),
@@ -178,7 +178,7 @@ instructions <- list(
       ),
       list(name = NA, subset = NULL)
     ),
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = TRUE
   ),
@@ -195,7 +195,7 @@ instructions <- list(
     title             = "LIFE SATISFACTION AND INCOME",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = TRUE
   ),
@@ -211,7 +211,7 @@ instructions <- list(
     title             = "Number of Kids",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = TRUE
   ),
@@ -228,7 +228,7 @@ instructions <- list(
     title             = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    value_column      = "metric_value",
+    current_value      = "metric_value",
     target            = NULL,
     trend_line        = NULL
   ),
@@ -244,7 +244,7 @@ instructions <- list(
     title             = " ",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    value_column      = NULL,
+    current_value      = NULL,
     target            = NULL,
     trend_line        = NULL
   )
