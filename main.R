@@ -1,10 +1,27 @@
-# ------ LIBRARIES -------------------------------------------------------------
-library(data.table)
-library(dplyr)
-library(ggplot2)
-library(grid)
+# ------ LIBRARIES ------------------------------------------------------------
 
-# ------ LOAD FUNCTIONS --------------------------------------------------------
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(tidyr)
+library(officer)
+library(rvg)
+library(grid)
+library(gridExtra)
+library(cowplot)
+
+# ------ LOAD DATA ------------------------------------------------------------
+
+pipeline_data <- data.table::fread("simulated_data/simulated_pipeline_input.csv")
+
+# ------ DEFINE GROUPS --------------------------------------------------------
+
+focal_group        <- "Xilio"
+comparison_group_1 <- "HBS"
+comparison_group_2 <- "IWF"
+
+# ------ LOAD FUNCTIONS -------------------------------------------------------
+
 invisible(
   lapply(
     list.files(
@@ -16,78 +33,9 @@ invisible(
   )
 )
 
-# ------ LOAD DATA -------------------------------------------------------------
-df_density <- fread("simulated_data/density_data.csv")
-df_bar     <- fread("simulated_data/bar_data.csv")
+# ------ RUN PIPELINE ---------------------------------------------------------
 
-focal_group        <- "Xilio"
-comparison_group_1 <- "HBS"
-comparison_group_2 <- "IWF"
-
-# ------ GENERATE CHARTS -------------------------------------------------------
-
-## Slide 3: Density chart with gender comparison -------------------------------
-draw_density_chart(
-  data = df_density,
-  instruction = instructions[[1]]
-)
-
-## Slide 5: Density chart with gender comparison -------------------------------
-draw_density_chart(
-  data = df_density,
-  instruction = instructions[[2]]
-)
-
-## Slide 8: Focal group only (no comparison)  ----------------------------------
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[3]]
-)
-
-## Slide 12: One real + one placeholder comparison group (no subset) -----------
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[4]]
-)
-
-## Slide 13: Two real comparison groups with gender subsets (no target line) ---
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[5]]
-)
-
-## Slide 18: Two real comparison groups with gender subsets + target line ------
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[6]]
-)
-
-## Slide 65: Two real comparison groups (same group, different subsets) --------
-draw_bar_chart(
-  data   = df_bar,
-  instruction = instructions[[7]]
-)
-
-## One real + one placeholder comparison group, trend line enabled ------------
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[8]]
-)
-
-## Slide 67: Bar chart by income (focal group only), trend line enabled --------
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[9]]
-)
-
-## Slide 73: Bar chart by number of kids (focal group only),trend line enabled -
-draw_bar_chart(
-  data   = df_bar,
-  instruction = instructions[[10]]
-)
-
-## Slide 74: Bar chart by reunion class (focal group only) ---------------------
-draw_bar_chart(
-  data = df_bar,
-  instruction = instructions[[11]]
+run_pipeline(
+  data         = pipeline_data,
+  instructions = instructions
 )

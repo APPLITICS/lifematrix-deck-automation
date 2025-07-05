@@ -1,251 +1,350 @@
-#' List of structured slide instructions for chart generation.
-#'
-#' Each list element defines the configuration for a slide in the LIFE Matrix deck.
-#' Used by chart generation functions to dynamically control rendering.
+# ------ INSTRUCTIONS ---------------------------------------------------------
 
+#' Slide instructions for automated chart generation
+#'
+#' A structured list where each element defines how a chart should be rendered
+#' in the LIFE Matrix deck—used by functions like `generate_density_slide()`
+#' and `generate_bar_*_slide()`.
+#'
+#' Includes group setup, metric(s), unit, axis labels, and chart type.
+#'
+#' @format A list of slide configs with fields like `slide`, `function_name`,
+#'   `metric`, `unit`, `focal_group`, `comparison_groups`, `category`, `target`, etc.
+#' @export
 instructions <- list(
   
-  # ------ Slide 3: Density with no comparison groups -----------------------
+  # ------ Slide 3: Density without comparisons -------------------------------
   list(
     slide             = 3,
-    slide_type        = "density_chart",
+    function_name     = "generate_density_slide",
     metric            = "life_satisfaction",
-    unit              = NULL,
+    unit              = "score",
     x_title           = "Life Satisfaction",
     y_title           = "Density",
-    focal_group       = list(
-      name   = focal_group,
-      subset = NULL
-    ),
+    title             = "LIFE SATISFACTION",
+    focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL
   ),
   
-  # ------ Slide 5: Density with comparison groups  -------------------------
+  # ------ Slide 4: Density with group comparison --------------------------
   list(
-    slide             = 3,
-    slide_type        = "density_chart",
+    slide             = 4,
+    function_name     = "generate_density_slide",
     metric            = "life_satisfaction",
-    unit              = NULL,
+    unit              = "score",
     x_title           = "Life Satisfaction",
     y_title           = "Density",
-    focal_group       = list(
-      name   = focal_group,
-      subset = NULL
-    ),
+    title             = "LIFE SATISFACTION",
+    focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = list(
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Women")
-      ),
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Men")
-      )
+      list(name = comparison_group_1, subset = NULL)
     )
   ),
-  # ------ Slide 8: Focal only + target ------------------------------------
+  
+  # ------ Slide 5: Density with gender comparisons --------------------------
+  list(
+    slide             = 5,
+    function_name     = "generate_density_slide",
+    metric            = "life_satisfaction",
+    unit              = "score",
+    x_title           = "Life Satisfaction",
+    y_title           = "Density",
+    title             = "LIFE SATISFACTION",
+    focal_group       = list(name = focal_group, subset = NULL),
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    )
+  ),
+  
+  
+  # ------ Slide 8–12: Importance of JAM (bar metric) ------------------------
   list(
     slide             = 8,
-    slide_type        = "bar_chart",
-    metric            = c("Joy", "Achievement", "Meaningfulness"),
-    category          = NULL,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
     title             = "IMPORTANCE OF JAM",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = FALSE
+    bar_value         = "value_high_importance",
+    target            = NULL
   ),
-  
-  # ------ Slide 12: Mix real + placeholder -------------------------------
+  list(
+    slide             = 9,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
+    unit              = "%",
+    x_title           = NULL,
+    y_title           = "% High Importance",
+    title             = "IMPORTANCE OF JAM",
+    focal_group       = list(name = focal_group, subset = NULL),
+    comparison_groups = list(
+      list(name = NA, subset = NULL)
+    ),
+    bar_value         = "value_high_importance",
+    target            = NULL
+  ),
+  list(
+    slide             = 10,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
+    unit              = "%",
+    x_title           = NULL,
+    y_title           = "% High Importance",
+    title             = "IMPORTANCE OF JAM",
+    focal_group       = list(name = focal_group, subset = NULL),
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = list(title = "gender", value = NULL))
+    ),
+    bar_value         = "value_high_importance",
+    target            = NULL
+  ),
+  list(
+    slide             = 11,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
+    unit              = "%",
+    x_title           = NULL,
+    y_title           = "% High Importance",
+    title             = "IMPORTANCE OF JAM",
+    focal_group       = list(name = focal_group, subset = NULL),
+    comparison_groups = list(
+      list(name = NA, subset = NULL),
+      list(name = NA, subset = NULL)
+    ),
+    bar_value         = "value_high_importance",
+    target            = NULL
+  ),
   list(
     slide             = 12,
-    slide_type        = "bar_chart",
-    metric            = c("Joy", "Achievement", "Meaningfulness"),
-    category          = NULL,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
     title             = "IMPORTANCE OF JAM",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = list(
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Women")
-      ),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
       list(name = NA, subset = NULL)
     ),
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = NULL
+    bar_value         = "value_high_importance",
+    target            = NULL
   ),
-  
-  # ------ Slide 13: Two gender comparisons -------------------------------
   list(
     slide             = 13,
-    slide_type        = "bar_chart",
-    metric            = c("Joy", "Achievement", "Meaningfulness"),
-    category          = NULL,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
     title             = "IMPORTANCE OF JAM",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = list(
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Women")
-      ),
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Men")
-      )
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
     ),
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = NULL
+    bar_value         = "value_high_importance",
+    target            = NULL
   ),
-  
-  # ------ Slide 18: With target and real groups --------------------------
   list(
-    slide             = 18,
-    slide_type        = "bar_chart",
-    metric            = c("Joy", "Achievement", "Meaningfulness"),
-    category          = NULL,
+    slide             = 14,
+    function_name     = "generate_bar_metric_slide",
+    metric            = c("joy", "achievement", "meaningfulness"),
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
     title             = "IMPORTANCE OF JAM",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = list(
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Women")
-      ),
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Men")
-      )
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
     ),
-    current_value      = "metric_value",
-    target            = "minimums_value",
-    trend_line        = NULL
-  ),
-  
-  # ------ Slide 65: Meaningfulness+ with trend ---------------------------
-  list(
-    slide             = 65,
-    slide_type        = "bar_chart",
-    metric            = "Joy",
-    category          = NULL,
-    unit              = "%",
-    x_title           = NULL,
-    y_title           = "% Getting Meaningfulness+",
-    title             = "PERCENT GETTING MEANINGFULNESS+ AT WORK",
-    focal_group       = list(name = focal_group, subset = NULL),
-    comparison_groups = list(
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Women")
-      ),
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Men")
-      )
-    ),
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = TRUE
+    bar_value         = "value_high_importance",
+    target            = "value_min"
   ),
 
+  # ------ More density plots --------------------------------------------------
   list(
-    slide             = 65,
-    slide_type        = "bar_chart",
-    metric            = "Joy",
-    category          = NULL,
-    unit              = "%",
-    x_title           = NULL,
-    y_title           = "% Getting Meaningfulness+",
-    title             = "PERCENT GETTING MEANINGFULNESS+ AT WORK",
+    slide             = 4,
+    function_name     = "generate_density_slide",
+    metric            = "reading_hours",
+    unit              = "score",
+    x_title           = "Reading hours",
+    y_title           = "Density",
+    title             = "READING HOURS",
+    focal_group       = list(name = focal_group, subset = NULL),
+    comparison_groups = NULL
+  ),
+  list(
+    slide             = 5,
+    function_name     = "generate_density_slide",
+    metric            = "reading_hours",
+    unit              = "score",
+    x_title           = "Reading hours",
+    y_title           = "Density",
+    title             = "READING HOURS",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = list(
-      list(
-        name   = comparison_group_1,
-        subset = list(title = "gender", value = "Women")
-      ),
-      list(name = NA, subset = NULL)
-    ),
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = TRUE
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    )
   ),
-  
-  # ------ Slide 67: Category comparisons ---------------------------------
   list(
-    slide             = 67,
-    slide_type        = "bar_chart",
-    metric            = "Life satisfaction",
-    category          = "income",
+    slide             = 6,
+    function_name     = "generate_density_slide",
+    metric            = "sleep_hours",
     unit              = "score",
-    x_title           = "Income ($)",
-    y_title           = "Life Satisfaction",
-    title             = "LIFE SATISFACTION AND INCOME",
+    x_title           = "Sleep hours",
+    y_title           = "Density",
+    title             = "SLEEP HOURS",
     focal_group       = list(name = focal_group, subset = NULL),
-    comparison_groups = NULL,
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = TRUE
+    comparison_groups = NULL
   ),
-  
   list(
-    slide             = 67,
-    slide_type        = "bar_chart",
-    metric            = "Life satisfaction",
-    category          = "children_category",
+    slide             = 7,
+    function_name     = "generate_density_slide",
+    metric            = "sleep_hours",
     unit              = "score",
-    x_title           = "Number of Kids",
-    y_title           = "Life Satisfaction",
-    title             = "Number of Kids",
+    x_title           = "Sleep hours",
+    y_title           = "Density",
+    title             = "SLEEP HOURS",
     focal_group       = list(name = focal_group, subset = NULL),
-    comparison_groups = NULL,
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = TRUE
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    )
   ),
-  
-  # ------ Slide 74: Reunion class variations -----------------------------
   list(
-    slide             = 74,
-    slide_type        = "bar_chart",
-    metric            = "Meaningfulness+",
-    category          = "reunion_class",
+    slide             = 7,
+    function_name     = "generate_density_slide",
+    metric            = "exercice_hours",
     unit              = "%",
-    x_title           = "Reunion Class",
-    y_title           = "Percent Meeting Meaningfulness+",
-    title             = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
+    x_title           = "Exercise hours",
+    y_title           = "Density",
+    title             = "EXERCISE HOURS",
     focal_group       = list(name = focal_group, subset = NULL),
-    comparison_groups = NULL,
-    current_value      = "metric_value",
-    target            = NULL,
-    trend_line        = NULL
+    comparison_groups = NULL
   ),
-  
   list(
-    slide             = 74,
-    slide_type        = "bar_chart",
-    metric            = NULL,
-    category          = c("reunion_class", "n_children"),
-    unit              = "score",
-    x_title           = " ",
-    y_title           = " ",
-    title             = " ",
+    slide             = 8,
+    function_name     = "generate_density_slide",
+    metric            = "exercice_hours",
+    unit              = "%",
+    x_title           = "Exercise hours",
+    y_title           = "Density",
+    title             = "EXERCISE HOURS",
     focal_group       = list(name = focal_group, subset = NULL),
-    comparison_groups = NULL,
-    current_value      = NULL,
-    target            = NULL,
-    trend_line        = NULL
-  )
+    comparison_groups = list(
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    )
+  ),
+ 
+ 
+  # ------ Slide 62–65: Example with one bar metric ----------------------------
+ list(
+   slide             = 62,
+   function_name     = "generate_bar_metric_slide",
+   metric            = "meaningfulness",
+   unit              = "%",
+   x_title           = NULL,
+   y_title           = "% Getting Meaningfulness+",
+   title             = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
+   focal_group       = list(name = focal_group, subset = NULL),
+   comparison_groups = NULL,
+   bar_value         = "value_high_importance",
+   target            = NULL
+ ),
+ list(
+   slide             = 8,
+   function_name     = "generate_bar_metric_slide",
+   metric            = "meaningfulness",
+   unit              = "%",
+   x_title           = NULL,
+   y_title           = "% Getting Meaningfulness+",
+   title             = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
+   focal_group       = list(name = focal_group, subset = NULL),
+   comparison_groups = list(
+     list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+     list(name = NA, subset = NULL)
+   ),
+   bar_value         = "value_high_importance",
+   target            = NULL
+ ),
+ list(
+   slide             = 8,
+   function_name     = "generate_bar_metric_slide",
+   metric            = "meaningfulness",
+   unit              = "%",
+   x_title           = NULL,
+   y_title           = "% Getting Meaningfulness+",
+   title             = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
+   focal_group       = list(name = focal_group, subset = NULL),
+   comparison_groups = list(
+     list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+     list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+   ),
+   bar_value         = "value_high_importance",
+   target            = "valu_min"
+ ),
+ 
+  # ------ Slide 67–74: Category charts --------------------------------------
+ list(
+   slide     = 67,
+   function_name = "generate_bar_category_slide",
+   metric    = "life_satisfaction",
+   category  = list(
+     name     = "income",
+     grouping = c(
+       "Less than 150K", "150K – 250K", "250K – 500K", "500K - 1M", "More than 1M"
+     )
+   ),
+   unit        = "measure",
+   title       = "LIFE SATISFACTION BY INCOME",
+   x_title     = "Income ($)",
+   y_title     = "Life Satisfaction",
+   focal_group = list(name = focal_group, subset = NULL),
+   trend_line  = TRUE
+ ),
+ list(
+   slide     = 72,
+   function_name = "generate_bar_category_slide",
+   metric    = "n_children",
+   category  = list(name = "reunion_class", grouping = NULL),
+   unit        = "measure",
+   title       = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
+   x_title     = "Number of Children",
+   y_title     = NULL,
+   focal_group = list(name = focal_group, subset = NULL),
+   trend_line  = FALSE
+ ),
+ list(
+   slide     = 73,
+   function_name = "generate_bar_category_slide",
+   metric    = "life_satisfaction",
+   category  = list(name = "n_children", grouping = c("3+")),
+   unit        = "measure",
+   title       = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
+   x_title     = "Number of Children",
+   y_title     = "Life Satisfaction",
+   focal_group = list(name = focal_group, subset = NULL),
+   trend_line  = TRUE
+ ),
+ list(
+   slide     = 74,
+   function_name = "generate_bar_category_slide",
+   metric    = "meaningfulness__high_importance",
+   category  = list(name = "reunion_class", grouping = NULL),
+   unit        = "%",
+   title       = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
+   x_title     = "Reunion Class",
+   y_title     = "Percent Meeting Meaningfulness+",
+   focal_group = list(name = focal_group, subset = NULL),
+   trend_line  = FALSE
+ )
+ 
 )
