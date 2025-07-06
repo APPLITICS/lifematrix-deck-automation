@@ -7,10 +7,9 @@
 #'
 #' @param data A data frame with numeric values and group labels.
 #' @param instruction A list with chart options (group info, metric, labels, etc.).
-#' @param ppt_doc Optional `officer::read_pptx()` object for export.
+#' @param ppt_doc Optional `read_pptx()` object for export.
 #'
 #' @return Updated pptx object if `ppt_doc` is given; otherwise, `NULL`.
-#' @export
 generate_density_slide <- function(
     data,
     instruction,

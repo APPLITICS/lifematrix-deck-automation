@@ -7,10 +7,9 @@
 #'
 #' @param data A data frame with aggregated values.
 #' @param instruction A list with plot settings (group info, metrics, unit, labels, etc.).
-#' @param ppt_doc Optional `officer::read_pptx()` object for export.
+#' @param ppt_doc Optional `read_pptx()` object for export.
 #'
 #' @return Updated pptx object if `ppt_doc` is given; otherwise, `NULL`.
-#' @export
 generate_bar_metric_slide <- function(
     data,
     instruction,
@@ -26,20 +25,20 @@ generate_bar_metric_slide <- function(
       extract_suffix(instruction$bar_value),
       extract_suffix(instruction$target)
     )))
-    tidyr::expand_grid(
+    expand_grid(
       metric = unique(gsub("__.*$", "", metric_list)),
       suffix = suffixes
     ) %>%
-      dplyr::mutate(
+      mutate(
         value = 0,
         group = ifelse(is.na(group_label), " ", group_label)
       ) %>%
-      tidyr::pivot_wider(
+      pivot_wider(
         names_from   = suffix,
         values_from  = value,
         names_prefix = "value_"
       ) %>%
-      dplyr::relocate(group, metric)
+      relocate(group, metric)
   }
   
   # ------ PREPROCESS GROUP ---------------------------------------------------
@@ -49,13 +48,13 @@ generate_bar_metric_slide <- function(
     subset_input   = NULL,
     display_label  = NULL
   ) {
-    df_sub <- df_input %>% dplyr::filter(group == group_name_input)
+    df_sub <- df_input %>% filter(group == group_name_input)
     
     if (!is.null(subset_input) &&
         !is.null(subset_input$value) &&
         subset_input$title %in% names(df_sub)) {
       df_sub <- df_sub %>%
-        dplyr::filter(.data[[subset_input$title]] == subset_input$value)
+        filter(.data[[subset_input$title]] == subset_input$value)
     }
     
     base_metrics   <- unique(gsub("__.*$", "", instruction$metric))
@@ -68,25 +67,25 @@ generate_bar_metric_slide <- function(
     }
     
     df_agg <- df_sub %>%
-      dplyr::summarise(dplyr::across(all_of(cols_available), ~ mean(.x, na.rm = TRUE)))
+      summarise(across(all_of(cols_available), ~ mean(.x, na.rm = TRUE)))
     
     df_long <- df_agg %>%
-      tidyr::pivot_longer(
+      pivot_longer(
         cols      = everything(),
         names_to  = "full_name",
         values_to = "raw_value"
       ) %>%
-      dplyr::mutate(
+      mutate(
         metric = stringr::str_extract(full_name, paste0("(", paste(base_metrics, collapse = "|"), ")")),
         suffix = stringr::str_replace(full_name, metric, "") %>%
           stringr::str_remove("^__") %>%
-          tidyr::replace_na("real") %>%
-          dplyr::na_if("") %>%
-          tidyr::replace_na("real")
+          replace_na("real") %>%
+          na_if("") %>%
+          replace_na("real")
       ) %>%
-      dplyr::select(metric, suffix, raw_value)
+      select(metric, suffix, raw_value)
     
-    df_long <- tidyr::pivot_wider(
+    df_long <- pivot_wider(
       df_long,
       names_from   = suffix,
       values_from  = raw_value,
@@ -94,9 +93,9 @@ generate_bar_metric_slide <- function(
     )
     
     df_long %>%
-      dplyr::mutate(group = display_label %||% group_name_input) %>%
-      dplyr::relocate(group, metric) %>%
-      dplyr::mutate(dplyr::across(starts_with("value_"), current_unit$scale))
+      mutate(group = display_label %||% group_name_input) %>%
+      relocate(group, metric) %>%
+      mutate(across(starts_with("value_"), current_unit$scale))
   }
   
   # ------ HELPER FUNCTIONS ---------------------------------------------------
@@ -115,14 +114,14 @@ generate_bar_metric_slide <- function(
   }
   
   get_x_centers <- function(df_plot, x_axis_var) {
-    tmp_plot <- ggplot2::ggplot(df_plot, ggplot2::aes_string(
+    tmp_plot <- ggplot(df_plot, aes_string(
       x     = x_axis_var,
       y     = instruction$bar_value,
       fill  = "fill_group",
       group = "interaction(group, metric)"
     )) +
-      ggplot2::geom_col(position = ggplot2::position_dodge(width = 0.8), width = 0.6)
-    ggplot2::ggplot_build(tmp_plot)$data[[1]]$x
+      geom_col(position = position_dodge(width = 0.8), width = 0.6)
+    ggplot_build(tmp_plot)$data[[1]]$x
   }
   
   # ------ PREPROCESS DATA ----------------------------------------------------
@@ -154,7 +153,7 @@ generate_bar_metric_slide <- function(
       raw_labels
     )
     
-    data_comparisons <- dplyr::bind_rows(
+    data_comparisons <- bind_rows(
       Map(function(group_cfg, label_out) {
         label_clean <- ifelse(is.na(label_out), " ", label_out)
         preprocess_group(
@@ -168,7 +167,7 @@ generate_bar_metric_slide <- function(
   }
   
   # ------ FORMAT AND CLEAN ---------------------------------------------------
-  df <- dplyr::bind_rows(data_focal, data_comparisons)
+  df <- bind_rows(data_focal, data_comparisons)
   df$metric <- tools::toTitleCase(gsub("_", " ", df$metric))
   
   if (x_axis_var == "metric") {
@@ -181,14 +180,14 @@ generate_bar_metric_slide <- function(
   df$fill_group <- df$group
   
   non_zero_groups <- df %>%
-    dplyr::filter(.data[[instruction$bar_value]] > 0, !is.na(fill_group)) %>%
-    dplyr::distinct(fill_group) %>%
-    dplyr::pull(fill_group)
+    filter(.data[[instruction$bar_value]] > 0, !is.na(fill_group)) %>%
+    distinct(fill_group) %>%
+    pull(fill_group)
   
   legend_order <- df %>%
-    dplyr::filter(.data[[instruction$bar_value]] > 0, !is.na(fill_group), fill_group != " ") %>%
-    dplyr::distinct(fill_group) %>%
-    dplyr::pull(fill_group)
+    filter(.data[[instruction$bar_value]] > 0, !is.na(fill_group), fill_group != " ") %>%
+    distinct(fill_group) %>%
+    pull(fill_group)
   
   palette_base <- c("#70e2ff", "#97e37e", "#2dc595", "#5d8c90", "#cccccc")
   colors       <- setNames(palette_base[seq_along(legend_order)], legend_order)
@@ -200,44 +199,44 @@ generate_bar_metric_slide <- function(
   y_max       <- get_y_max(df)
   df$x_center <- get_x_centers(df, x_axis_var)
   
-  plot_obj <- ggplot2::ggplot(df, ggplot2::aes_string(
+  plot_obj <- ggplot(df, aes_string(
     x     = x_axis_var,
     y     = instruction$bar_value,
     fill  = "fill_group",
     group = "interaction(group, metric)"
   )) +
-    ggplot2::geom_col(
+    geom_col(
       width    = 0.7,
-      position = ggplot2::position_dodge(width = 0.8)
+      position = position_dodge(width = 0.8)
     ) +
-    ggplot2::geom_text(
-      ggplot2::aes_string(
+    geom_text(
+      aes_string(
         label = current_unit$label(instruction$bar_value),
         y     = paste0(instruction$bar_value, " / 2")
       ),
-      position = ggplot2::position_dodge(width = 0.8),
+      position = position_dodge(width = 0.8),
       color    = "black",
       size     = 6.5,
       fontface = "bold"
     ) +
-    ggplot2::scale_y_continuous(
+    scale_y_continuous(
       limits = c(0, y_max),
       breaks = if (instruction$unit == "%") seq(0, y_max, 20) else waiver(),
       labels = if (instruction$unit == "%") function(x) paste0(x, "%") else waiver(),
       expand = c(0, 0)
     ) +
-    ggplot2::scale_fill_manual(
+    scale_fill_manual(
       values = colors,
       breaks = legend_order
     ) +
-    ggplot2::labs(
+    labs(
       x     = instruction$x_title,
       y     = instruction$y_title,
       title = " ",
       fill  = NULL
     ) +
     global_theme() +
-    ggplot2::theme(
+    theme(
       plot.title      = element_text(color = "white", face = "bold", size = 26, hjust = 0),
       plot.margin     = margin(t = 0, r = 40, b = 0, l = 40),
       legend.position = legend_position,
@@ -261,16 +260,16 @@ generate_bar_metric_slide <- function(
   # ------ TARGET LINES -------------------------------------------------------
   if (!is.null(instruction$target) && instruction$target %in% names(df)) {
     df_target <- df %>%
-      dplyr::filter(!is.na(.data[[instruction$target]]) & .data[[instruction$target]] > 0)
+      filter(!is.na(.data[[instruction$target]]) & .data[[instruction$target]] > 0)
     
     bar_width   <- 0.6
     n_bar_slots <- nrow(df) / length(unique(df[[x_axis_var]]))
     offset      <- bar_width / (n_bar_slots * 2)
     
     plot_obj <- plot_obj +
-      ggplot2::geom_segment(
+      geom_segment(
         data = df_target,
-        ggplot2::aes(
+        aes(
           x    = x_center - offset,
           xend = x_center + offset,
           y    = .data[[instruction$target]],
@@ -280,9 +279,9 @@ generate_bar_metric_slide <- function(
         linetype  = "dashed",
         linewidth = 2
       ) +
-      ggplot2::geom_text(
+      geom_text(
         data = df_target,
-        ggplot2::aes(
+        aes(
           x     = x_center,
           y     = .data[[instruction$target]] + current_unit$offset(),
           label = !!rlang::parse_expr(current_unit$target(instruction$target))
@@ -319,10 +318,9 @@ generate_bar_metric_slide <- function(
 #'
 #' @param data A data frame of preprocessed values.
 #' @param instruction A list of chart options (group info, metric, category, labels, etc.).
-#' @param ppt_doc Optional `officer::read_pptx()` object for exporting the chart.
+#' @param ppt_doc Optional `read_pptx()` object for exporting the chart.
 #'
 #' @return Updated pptx object if `ppt_doc` is provided; otherwise, `NULL`.
-#' @export
 generate_bar_category_slide <- function(
     data,
     instruction,

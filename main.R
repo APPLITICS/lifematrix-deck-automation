@@ -2,7 +2,6 @@
 
 library(ggplot2)
 library(dplyr)
-library(data.table)
 library(tidyr)
 library(officer)
 library(rvg)
@@ -12,15 +11,15 @@ library(cowplot)
 
 # ------ LOAD DATA ------------------------------------------------------------
 
-pipeline_data <- data.table::fread("simulated_data/simulated_pipeline_input.csv")
+pipeline_data <- data.table::fread("data/simulated_pipeline_input.csv")
 
-# ------ DEFINE GROUPS --------------------------------------------------------
+# ------ DEFINE GROUPS ---------------------------------------------------------
 
 focal_group        <- "Xilio"
 comparison_group_1 <- "HBS"
 comparison_group_2 <- "IWF"
 
-# ------ LOAD FUNCTIONS -------------------------------------------------------
+# ------ LOAD FUNCTIONS & INSTRUCTIONS -----------------------------------------
 
 invisible(
   lapply(
@@ -33,9 +32,11 @@ invisible(
   )
 )
 
-# ------ RUN PIPELINE ---------------------------------------------------------
+# ------ RUN PIPELINE ----------------------------------------------------------
 
 run_pipeline(
   data         = pipeline_data,
-  instructions = instructions
+  instructions = instructions,
+  ppt_template_path = "inputs/template.pptx",
+  ppt_output_path   = "outputs/generated_slides.pptx"
 )

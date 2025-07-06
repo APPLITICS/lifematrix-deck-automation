@@ -13,16 +13,16 @@ R/
 ├── run_pipeline.R             # Core function to build all slides
 ├── instructions.R             # Structured list of slide instructions
 
-simulated_data/
+data/
 ├── simulated_pipeline_input.csv  # Preprocessed survey data for pipeline
 
-automation.pptx                # Reference slide deck for validation
+provided_reference_deck.pptx   # Reference slide deck for validation
 main.R                         # Script to load data and run the pipeline
 ```
 ---
 ## Data Format 
 
-The `simulated_pipeline_input.csv` file contains detailled survey data and is the main data source for the slide generation pipeline. Each row represents a single observation or aggregated group, and each column provides a specific metric.
+The `simulated_pipeline_input.csv` file contains detailed survey data and is the main data source for the slide generation pipeline. Each row represents a single user input, and each column provides a specific metric or category.
 
 ### Column Naming Convention
 
@@ -77,7 +77,9 @@ This function automates the creation of PowerPoint slides from preprocessed surv
 ```r
 run_pipeline(
   data         = pipeline_data,
-  instructions = instructions
+  instructions = instructions,
+  ppt_template_path = "inputs/template.pptx",
+  ppt_output_path   = "outputs/generated_slides.pptx"
 )
 ```
 ---
