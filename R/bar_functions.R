@@ -291,9 +291,7 @@ generate_bar_metric_slide <- function(
         fontface = "bold"
       )
   }
-  
-  print(plot_obj)
-  
+
   # ------ EXPORT -------------------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
@@ -403,7 +401,7 @@ generate_bar_category_slide <- function(
       title = " ",
       fill  = NULL
     ) +
-    (if (is.null(instruction$y_title)) theme_minimal_yless() else global_theme()) +
+    global_theme() +
     theme(
       plot.title      = element_text(color = "white", face = "bold", size = 26, hjust = 0),
       plot.margin     = margin(t = 30, r = 40, b = 30, l = 40),
