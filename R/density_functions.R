@@ -141,11 +141,8 @@ generate_density_slide <- function(
     to     = x_max,
     n      = 100
   )
+  data_dens <- data.frame(x = dens$x, y = dens$y * 100)
   
-  data_dens <- data.frame(x = dens$x, y = dens$y)
-  if ((instruction$unit %||% "score") == "%") {
-    data_dens$y <- data_dens$y * 100
-  }
   
   y_max     <- max(data_dens$y)
   y_step    <- get_y_step(y_max)
@@ -158,8 +155,12 @@ generate_density_slide <- function(
   # ------ PLOT ----------------------------------------------------------------
   plot_obj <- ggplot(data_dens, aes(x = x, y = y)) +
     geom_line(color = "#8ddef9", size = 1.5) +
-    geom_segment(
-      aes(x = avg_focal, xend = avg_focal, y = 0, yend = y_max_pad * 1.1),
+    annotate(
+      "segment",
+      x     = avg_focal,
+      xend  = avg_focal,
+      y     = 0,
+      yend  = y_max_pad * 1.1,
       linetype = "dashed",
       color    = "yellow",
       size     = 1
@@ -181,14 +182,14 @@ generate_density_slide <- function(
     ) +
     scale_y_continuous(
       breaks = seq(0, y_max_pad, by = y_step),
-      labels = if ((instruction$unit %||% "score") == "%") function(x) paste0(x, "%") else waiver(),
+      labels = scales::label_percent(scale = 1),
       expand = c(0, 0)
     ) +
     coord_cartesian(ylim = c(0, y_max_pad * 1.1)) +
     labs(
       title = NULL,
       x     = instruction$x_title,
-      y     = instruction$y_title %||% ifelse((instruction$unit %||% "score") == "%", "Percentage", "Density")
+      y     = "Density",
     ) +
     global_theme() +
     theme(
@@ -228,6 +229,5 @@ generate_density_slide <- function(
         location = ph_location(left = 0, top = 1.0, width = dims$width, height = dims$height)
       )
   }
-  
   return(ppt_doc)
 }

@@ -277,9 +277,8 @@ export_plot_to_slide <- function(
 ) {
   if (!is.null(ppt_doc)) {
     if (is.null(is_first) || !is_first) {
-      ppt_doc <- add_slide(ppt_doc)
+      ppt_doc <- add_slide(ppt_doc, layout = "Title and Content")
     }
-    
     dims <- slide_size(ppt_doc)
     
     ppt_doc <- ppt_doc %>%
