@@ -200,7 +200,7 @@ generate_density_slide <- function(
   
   # ------ INSERT SLIDE  -------------------------
   if (is.null(instruction$is_first) || !instruction$is_first) {
-    ppt_doc <- add_slide(ppt_doc)
+    ppt_doc <- add_slide(ppt_doc, layout = "Title and Content")
   }
   
   dims <- slide_size(ppt_doc)

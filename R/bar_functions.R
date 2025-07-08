@@ -315,66 +315,53 @@ generate_bar_category_slide <- function(
     instruction,
     ppt_doc
 ) {
-  # ------ SETUP --------------------------------------------------------------
-  unit_label <- instruction$unit %||% ""
-  bar_width  <- 0.5
   
-  # ------ PREPROCESS ---------------------------------------------------------
-  preprocess_focal_group <- function(df_input, group_info) {
-    df_filtered <- df_input
-    if (!is.null(group_info$name)) {
-      df_filtered <- df_filtered %>% filter(group == group_info$name)
+  # --- Setup -----------------------------------------------------------------
+  unit_label   <- instruction$unit %||% ""
+  category_var <- instruction$category$name
+  order_var    <- instruction$category$order
+  metric_var   <- instruction$metric
+  group_info   <- instruction$focal_group
+  # --- Filter focal group + optional subset ----------------------------------
+  df <- data %>% filter(group == group_info$name)
+  
+  if (!is.null(group_info$subset)) {
+    subset_col <- group_info$subset$title
+    subset_val <- group_info$subset$value
+    if (!is.null(subset_col) && !is.null(subset_val)) {
+      df <- df %>% filter(.data[[subset_col]] == subset_val)
     }
-    if (!is.null(group_info$subset) &&
-        !is.null(group_info$subset$value) &&
-        group_info$subset$title %in% names(df_filtered)) {
-      df_filtered <- df_filtered %>%
-        filter(.data[[group_info$subset$title]] == group_info$subset$value)
-    }
-    df_filtered
   }
   
-  # ------ GROUPING -----------------------------------------------------------
-  metric_var     <- instruction$metric
-  category_input <- instruction$category
-  category_var   <- category_input$name
+  # --- Extract and apply category order -------------------------------------
+  ordered_levels <- df %>%
+    select(category = all_of(category_var), order = all_of(order_var)) %>%
+    distinct() %>%
+    arrange(order) %>%
+    pull(category)
   
-  data_focal <- preprocess_focal_group(data, instruction$focal_group)
-  
-  if (!is.null(category_input$grouping)) {
-    data_focal   <- apply_category_grouping(data_focal, category_var, category_input$grouping)
-    category_var <- "category_grouped"
-  }
-  
-  # ------ AGGREGATE ----------------------------------------------------------
-  df <- data_focal %>%
+  # --- Aggregate and sort ---------------------------------------------------
+  df <- df %>%
     group_by(.data[[category_var]]) %>%
-    summarise(
-      !!metric_var := mean(.data[[metric_var]], na.rm = TRUE),
-      .groups       = "drop"
-    )
+    summarise(value = mean(.data[[metric_var]], na.rm = TRUE), .groups = "drop") %>%
+    filter(!is.na(.data[[category_var]]), is.finite(value)) %>%
+    mutate(
+      !!category_var := factor(.data[[category_var]], levels = ordered_levels, ordered = TRUE)
+    ) %>%
+    arrange(.data[[category_var]]) %>%
+    mutate(x_center = seq_len(n()))
   
-  ordered_levels        <- sort(unique(as.character(df[[category_var]])))
-  df[[category_var]]    <- factor(df[[category_var]], levels = ordered_levels, ordered = TRUE)
-  df                    <- df[order(df[[category_var]]), ]
-  df$x_center           <- seq_along(df[[category_var]])
-  y_max                 <- ceiling(max(df[[metric_var]], na.rm = TRUE))
+  y_max <- ceiling(max(df$value, na.rm = TRUE))
   
-  # ------ PLOT BASE ----------------------------------------------------------
-  plot_obj <- ggplot(df, aes(x = .data[[category_var]], y = .data[[metric_var]])) +
-    geom_col(fill = "#70e2ff", width = bar_width) +
+  # --- Build plot -----------------------------------------------------------
+  plot_obj <- ggplot(df, aes(x = .data[[category_var]], y = value)) +
+    geom_col(fill = "#70e2ff", width = 0.5) +
     geom_text(
       aes(
-        label = if (unit_label == "") {
-          paste0(ifelse(is.na(.data[[metric_var]]) | .data[[metric_var]] == 0, "", round(.data[[metric_var]], 1)))
-        } else {
-          paste0(ifelse(is.na(.data[[metric_var]]) | .data[[metric_var]] == 0, "", round(.data[[metric_var]], 0)), unit_label)
-        },
-        y = .data[[metric_var]] / 2
+        label = if (unit_label == "") round(value, 1) else paste0(round(value, 0), unit_label),
+        y     = value / 2
       ),
-      color    = "black",
-      size     = 6.5,
-      fontface = "bold"
+      color = "black", size = 6.5, fontface = "bold"
     ) +
     scale_y_continuous(
       limits = c(0, y_max),
@@ -382,37 +369,27 @@ generate_bar_category_slide <- function(
       labels = function(x) paste0(x, unit_label),
       expand = c(0, 0)
     ) +
-    scale_x_discrete(labels = sort_category_labels) +
     labs(
       x     = instruction$x_title %||% category_var,
-      y     = if (!is.null(instruction$y_title)) {
-        if (unit_label != "" && !str_detect(instruction$y_title, unit_label)) {
-          paste0(instruction$y_title, " (", unit_label, ")")
-        } else {
-          instruction$y_title
-        }
-      } else {
-        NULL
-      },
-      title = " ",
-      fill  = NULL
+      y     = instruction$y_title %||% metric_var,
+      title = " "
     ) +
     global_theme() +
     theme(
       plot.title      = element_text(color = "white", face = "bold", size = 26, hjust = 0),
-      plot.margin     = margin(t = 30, r = 40, b = 30, l = 40),
+      plot.margin     = margin(30, 40, 30, 40),
       legend.position = "none"
     )
   
-  # ------ TREND LINE ---------------------------------------------------------
+  # --- Trend line if requested ----------------------------------------------
   if (isTRUE(instruction$trend_line) && nrow(df) >= 2) {
     plot_obj <- plot_obj + annotate(
       "segment",
-      x        = df$x_center[1],
-      xend     = df$x_center[nrow(df)],
-      y        = df[[metric_var]][1],
-      yend     = df[[metric_var]][nrow(df)],
-      color    = "#f9f871",
+      x     = df$x_center[1],
+      xend  = df$x_center[nrow(df)],
+      y     = df$value[1],
+      yend  = df$value[nrow(df)],
+      color = "#f9f871",
       linewidth = 2
     )
   }

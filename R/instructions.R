@@ -269,46 +269,53 @@ instructions <- list(
   # ------ Slide 67–74: Category charts --------------------------------------
   list(
     function_name = "generate_bar_category_slide",
-    metric    = "life_satisfaction",
-    category  = list(
-      name     = "income",
-      grouping = c(
-        "Less than 150K", "150K – 250K", "250K – 500K", "500K - 1M", "More than 1M"
-      )
+    metric        = "life_satisfaction",
+    category      = list(
+      name  = "income_range",
+      order = "income_range_levels"
     ),
-    unit        = NULL,
-    title       = "LIFE SATISFACTION BY INCOME",
+    unit          = NULL,
+    title         = "LIFE SATISFACTION BY INCOME",
     x_title     = "Income ($)",
     y_title     = "Life Satisfaction",
-    focal_group = list(name = focal_group, subset = NULL),
-    trend_line  = TRUE
+    focal_group   = list(name = focal_group, subset =NULL),
+    trend_line    = TRUE
   ),
   list(
     function_name = "generate_bar_category_slide",
     metric    = "n_children",
-    category  = list(name = "reunion_class", grouping = NULL),
+    category      = list(
+      name  = "reunion_class",
+      order = "reunion_class_levels"
+    ),
     unit        = NULL,
     title       = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
-    x_title     = "Number of Children",
-    y_title     = NULL,
+    x_title     = "Reunion Class",
+    y_title     = "Number of Children",
     focal_group = list(name = focal_group, subset = NULL),
     trend_line  = FALSE
   ),
   list(
     function_name = "generate_bar_category_slide",
-    metric    = "life_satisfaction",
-    category  = list(name = "n_children", grouping = c("3+")),
-    unit        = NULL,
-    title       = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
-    x_title     = "Number of Children",
-    y_title     = "Life Satisfaction",
-    focal_group = list(name = focal_group, subset = NULL),
-    trend_line  = TRUE
+    metric        = "life_satisfaction",
+    category      = list(
+      name  = "children_range",
+      order = "children_range_levels"
+    ),
+    unit          = NULL,
+    title         = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
+    x_title       = "Number of Children",
+    y_title       = "Life satisfaction",
+    focal_group   = list(name = focal_group, subset =NULL),
+    trend_line    = TRUE
   ),
   list(
     function_name = "generate_bar_category_slide",
     metric    = "meaningfulness",
-    category  = list(name = "reunion_class", grouping = NULL),
+    category      = list(
+      name  = "reunion_class",
+      order = "reunion_class_levels"
+    ),
     unit        = "%",
     title       = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
     x_title     = "Reunion Class",

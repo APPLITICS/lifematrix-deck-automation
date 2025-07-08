@@ -12,6 +12,7 @@
 #' @param grid_color Color for y-axis major grid lines.
 #'
 #' @return A ggplot2 theme object.
+#' @export
 global_theme <- function(
     base_size        = 14,
     background_color = "#005981",
@@ -69,6 +70,7 @@ global_theme <- function(
 #' Useful for minimalist bar plots or metric-only displays.
 #'
 #' @return A ggplot2 theme object.
+#' @export
 theme_minimal_yless <- function() {
   theme_minimal(base_size = 25) +
     theme(
@@ -92,184 +94,44 @@ theme_minimal_yless <- function() {
     )
 }
 
-# ------ UNIT HELPERS ---------------------------------------------------------
-
-#' Return scaling, labeling, and offset functions for a given unit
+#' Generate a color palette for unique groups
 #'
-#' Used to dynamically scale and format numeric values depending on unit type
-#' such as percentage or raw measure.
+#' Assigns predefined colors to each unique group label.
+#' The number of base colors should match or exceed the number of groups.
 #'
-#' @param unit Unit type, one of "%" or "measure".
+#' @param groups A character vector of group names.
 #'
-#' @return A list of scale, label, target, and offset functions.
-
-
-# ------ COLOR PALETTE HELPER -------------------------------------------------
-
+#' @return A named character vector of hex color codes.
+#' @export
 get_color_palette <- function(groups) {
   base_colors    <- c("#70e2ff", "#97e37e", "#2dc595", "#ffc101", "#cccccc")
   unique_groups  <- unique(groups)
   colors         <- setNames(base_colors[seq_along(unique_groups)], unique_groups)
   return(colors)
 }
-# ------ CATEGORIZATION HELPERS -----------------------------------------------
-
-#' Sort category labels in numeric, human-readable order
-#'
-#' Handles labels like "Less than 50K", "More than 1M", "250K–1M", etc.
-#'
-#' @param v Character vector of labels.
-#'
-#' @return Ordered character vector.
-sort_category_labels <- function(v) {
-  extract_custom_order <- function(label) {
-    label <- trimws(label)
-    if (grepl("^Less than\\s*\\d+", label, ignore.case = TRUE)) return(0)
-    if (grepl("^More than\\s*\\d+", label, ignore.case = TRUE)) return(Inf)
-    num <- suppressWarnings(as.numeric(sub("^([0-9]+).*", "\\1", label)))
-    if (is.na(num)) {
-      num <- suppressWarnings(as.numeric(stringr::str_extract(label, "\\d+\\.*\\d*")))
-    }
-    return(num)
-  }
-  order_vec <- sapply(v, extract_custom_order)
-  v[order(order_vec, na.last = TRUE)]
-}
-
-#' Apply grouping labels to a numeric column in a data frame
-#'
-#' Uses human-readable labels like "Less than 50K", "250K–1M", "More than 1M"
-#' to classify continuous variables into categories.
-#'
-#' @param df Data frame with raw numeric values.
-#' @param cat_name Column name in df to group.
-#' @param grouping_vec Character vector of human-readable category rules.
-#'
-#' @return Data frame with added column `category_grouped` as factor.
-apply_category_grouping <- function(
-    df,
-    cat_name,
-    grouping_vec
-) {
-  raw_vals <- df[[cat_name]]
-  if (!is.numeric(raw_vals)) return(df)
-  
-  parse_grouping_rule <- function(label) {
-    label <- trimws(label)
-    parse_numeric_unit <- function(x) {
-      x <- tolower(x)
-      x <- gsub(",", "", x)
-      x <- gsub("k", "e3", x)
-      x <- gsub("m", "e6", x)
-      as.numeric(x)
-    }
-    
-    if (grepl("^Less than\\s+[0-9.,]+[KkMm]?$", label)) {
-      threshold <- parse_numeric_unit(gsub("^Less than\\s+", "", label))
-      return(function(x) ifelse(x < threshold, label, NA))
-    }
-    if (grepl("^More than\\s+[0-9.,]+[KkMm]?$", label)) {
-      threshold <- parse_numeric_unit(gsub("^More than\\s+", "", label))
-      return(function(x) ifelse(x > threshold, label, NA))
-    }
-    if (grepl("^[0-9.,]+[KkMm]?\\s*(–|-)\\s*[0-9.,]+[KkMm]?$", label)) {
-      bounds <- unlist(strsplit(label, "\\s*(–|-)\\s*"))
-      lower  <- parse_numeric_unit(bounds[1])
-      upper  <- parse_numeric_unit(bounds[2])
-      return(function(x) ifelse(x >= lower & x <= upper, label, NA))
-    }
-    if (grepl("^[0-9.,]+[KkMm]?\\+$", label)) {
-      threshold <- parse_numeric_unit(gsub("\\+", "", label))
-      return(function(x) ifelse(x >= threshold, label, NA))
-    }
-    if (grepl("^[0-9.,]+[KkMm]?\\-$", label)) {
-      threshold <- parse_numeric_unit(gsub("\\-", "", label))
-      return(function(x) ifelse(x <= threshold, label, NA))
-    }
-    if (grepl("^[0-9.,]+[KkMm]?$", label)) {
-      target <- parse_numeric_unit(label)
-      return(function(x) ifelse(x == target, label, NA))
-    }
-    
-    stop(paste("Unrecognized grouping label:", label))
-  }
-  
-  group_assignments <- rep(NA_character_, length(raw_vals))
-  for (label in grouping_vec) {
-    rule_fn <- parse_grouping_rule(label)
-    matched <- is.na(group_assignments) & !is.na(raw_vals)
-    group_assignments[matched] <- rule_fn(raw_vals[matched])
-  }
-  
-  group_assignments[is.na(group_assignments) & !is.na(raw_vals)] <-
-    as.character(raw_vals[is.na(group_assignments) & !is.na(raw_vals)])
-  
-  get_custom_order <- function(labels) {
-    get_sort_category <- function(label) {
-      if (grepl("Less|less|-", label)) return("low")
-      if (grepl("More|more|\\+", label)) return("high")
-      return("mid")
-    }
-    extract_number <- function(label) {
-      nums <- as.numeric(unlist(regmatches(label, gregexpr("\\d+\\.*\\d*", label))))
-      if (length(nums) > 0) return(nums[1])
-      return(NA_real_)
-    }
-    df <- data.frame(
-      label    = labels,
-      category = sapply(labels, get_sort_category),
-      number   = sapply(labels, extract_number),
-      stringsAsFactors = FALSE
-    )
-    df$category <- factor(df$category, levels = c("low", "mid", "high"))
-    df_sorted   <- df[order(df$category, df$number), ]
-    return(df_sorted$label)
-  }
-  
-  extra_vals   <- setdiff(as.character(sort(unique(raw_vals))), grouping_vec)
-  raw_levels   <- unique(c(grouping_vec, extra_vals))
-  final_levels <- get_custom_order(raw_levels)
-  
-  df$category_grouped <- factor(group_assignments, levels = final_levels, ordered = TRUE)
-  return(df)
-}
-
-# ------ ORDINAL HELPERS ------------------------------------------------------
-
-#' Format x-axis labels as ordinal numbers
-#'
-#' Converts numeric strings to "1st", "2nd", "3rd", etc. for display.
-#'
-#' @param v A vector of strings or numbers.
-#'
-#' @return Vector with formatted ordinal strings or original values.
-format_x_labels_as_ordinal <- function(v) {
-  v_num <- suppressWarnings(as.numeric(as.character(v)))
-  if (all(!is.na(v_num))) ordinal_label(v_num) else v
-}
-
-# ------ EXPORT TO SLIDE ------------------------------------------------------
-
 #' Export a ggplot2 chart to a PowerPoint slide
 #'
 #' Adds a new slide, inserts the chart as a transparent vector graphic,
 #' and places a formatted title at the top.
 #'
-#' @param ppt_doc An officer pptx object.
-#' @param plot_obj A ggplot2 object.
-#' @param title_text Title for the slide.
-#' @param is_first Logical. If TRUE, modifies the first slide instead of adding new one.
+#' @param ppt_doc A `read_pptx()` object representing the PowerPoint deck.
+#' @param plot_obj A `ggplot2` object representing the chart to export.
+#' @param title_text A string used as the slide title.
+#' @param is_first Logical. If `TRUE`, edits the first slide instead of adding a new one.
+#' @param layout Slide layout name (default: "Title and Content").
 #'
-#' @return Modified ppt_doc object.
+#' @return An updated `officer` PowerPoint object.
+#' @export
 export_plot_to_slide <- function(
     ppt_doc,
     plot_obj,
     title_text = " ",
-    is_first   = FALSE
+    is_first   = FALSE,
+    layout     = "Title and Content"
 ) {
   if (!is.null(ppt_doc)) {
     if (is.null(is_first) || !is_first) {
-      ppt_doc <- add_slide(ppt_doc, layout = "Title and Content")
+      ppt_doc <- add_slide(ppt_doc, layout = layout)
     }
     dims <- slide_size(ppt_doc)
     
