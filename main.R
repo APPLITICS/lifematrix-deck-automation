@@ -8,7 +8,8 @@ library(rvg)
 library(grid)
 library(gridExtra)
 library(cowplot)
-
+library(stringr)
+library(scales)
 # ------ LOAD DATA ------------------------------------------------------------
 
 pipeline_data <- data.table::fread("data/simulated_pipeline_input.csv")

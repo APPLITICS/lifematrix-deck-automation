@@ -315,8 +315,9 @@ generate_bar_category_slide <- function(
     instruction,
     ppt_doc
 ) {
-  # ------ UNIT SETUP ---------------------------------------------------------
-  current_unit <- get_unit_helper(instruction$unit)
+  # ------ SETUP --------------------------------------------------------------
+  unit_label <- instruction$unit %||% ""
+  bar_width  <- 0.5
   
   # ------ PREPROCESS ---------------------------------------------------------
   preprocess_focal_group <- function(df_input, group_info) {
@@ -333,7 +334,7 @@ generate_bar_category_slide <- function(
     df_filtered
   }
   
-  # ------ APPLY GROUPING IF NEEDED ------------------------------------------
+  # ------ GROUPING -----------------------------------------------------------
   metric_var     <- instruction$metric
   category_input <- instruction$category
   category_var   <- category_input$name
@@ -350,30 +351,26 @@ generate_bar_category_slide <- function(
     group_by(.data[[category_var]]) %>%
     summarise(
       !!metric_var := mean(.data[[metric_var]], na.rm = TRUE),
-      .groups      = "drop"
+      .groups       = "drop"
     )
   
-  df[[metric_var]] <- current_unit$scale(df[[metric_var]])
-  
-  ordered_levels        <- sort_category_labels(as.character(df[[category_var]]))
+  ordered_levels        <- sort(unique(as.character(df[[category_var]])))
   df[[category_var]]    <- factor(df[[category_var]], levels = ordered_levels, ordered = TRUE)
   df                    <- df[order(df[[category_var]]), ]
   df$x_center           <- seq_along(df[[category_var]])
-  df$x_position         <- as.numeric(df[[category_var]])
-  bar_width             <- 0.5
-  y_max                 <- max(df[[metric_var]], na.rm = TRUE)
-  y_max                 <- if (instruction$unit == "%") ceiling(y_max / 10) * 10 else ceiling(y_max)
+  y_max                 <- ceiling(max(df[[metric_var]], na.rm = TRUE))
   
-  # ------ PLOT ---------------------------------------------------------------
+  # ------ PLOT BASE ----------------------------------------------------------
   plot_obj <- ggplot(df, aes(x = .data[[category_var]], y = .data[[metric_var]])) +
-    geom_col(
-      fill  = "#70e2ff",
-      width = bar_width
-    ) +
+    geom_col(fill = "#70e2ff", width = bar_width) +
     geom_text(
       aes(
-        label = !!rlang::parse_expr(current_unit$label(metric_var)),
-        y     = .data[[metric_var]] / 2
+        label = if (unit_label == "") {
+          paste0(ifelse(is.na(.data[[metric_var]]) | .data[[metric_var]] == 0, "", round(.data[[metric_var]], 1)))
+        } else {
+          paste0(ifelse(is.na(.data[[metric_var]]) | .data[[metric_var]] == 0, "", round(.data[[metric_var]], 0)), unit_label)
+        },
+        y = .data[[metric_var]] / 2
       ),
       color    = "black",
       size     = 6.5,
@@ -381,14 +378,22 @@ generate_bar_category_slide <- function(
     ) +
     scale_y_continuous(
       limits = c(0, y_max),
-      breaks = if (instruction$unit == "%") seq(0, y_max, 10) else waiver(),
-      labels = if (instruction$unit == "%") function(x) paste0(x, "%") else waiver(),
+      breaks = if (unit_label == "%") seq(0, y_max, 10) else waiver(),
+      labels = function(x) paste0(x, unit_label),
       expand = c(0, 0)
     ) +
-    scale_x_discrete(labels = format_x_labels_as_ordinal) +
+    scale_x_discrete(labels = sort_category_labels) +
     labs(
       x     = instruction$x_title %||% category_var,
-      y     = instruction$y_title %||% NULL,
+      y     = if (!is.null(instruction$y_title)) {
+        if (unit_label != "" && !str_detect(instruction$y_title, unit_label)) {
+          paste0(instruction$y_title, " (", unit_label, ")")
+        } else {
+          instruction$y_title
+        }
+      } else {
+        NULL
+      },
       title = " ",
       fill  = NULL
     ) +
@@ -401,16 +406,14 @@ generate_bar_category_slide <- function(
   
   # ------ TREND LINE ---------------------------------------------------------
   if (isTRUE(instruction$trend_line) && nrow(df) >= 2) {
-    plot_obj <- plot_obj + geom_segment(
-      aes(
-        x    = df$x_center[1],
-        y    = df[[metric_var]][1],
-        xend = df$x_center[nrow(df)],
-        yend = df[[metric_var]][nrow(df)]
-      ),
-      inherit.aes = FALSE,
-      color       = "#f9f871",
-      linewidth   = 2
+    plot_obj <- plot_obj + annotate(
+      "segment",
+      x        = df$x_center[1],
+      xend     = df$x_center[nrow(df)],
+      y        = df[[metric_var]][1],
+      yend     = df[[metric_var]][nrow(df)],
+      color    = "#f9f871",
+      linewidth = 2
     )
   }
   
@@ -424,6 +427,5 @@ generate_bar_category_slide <- function(
     )
     return(ppt_doc)
   }
-  
-  return(invisible(NULL))
 }
+

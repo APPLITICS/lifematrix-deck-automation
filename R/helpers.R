@@ -102,24 +102,16 @@ theme_minimal_yless <- function() {
 #' @param unit Unit type, one of "%" or "measure".
 #'
 #' @return A list of scale, label, target, and offset functions.
-get_unit_helper <- function(unit = "measure") {
-  unit_helpers <- list(
-    "%" = list(
-      scale  = function(x) x * 10,
-      label  = function(x) paste0("ifelse(is.na(", x, ") | ", x, " == 0, '', paste0(round(", x, "), '%'))"),
-      target = function(x) paste0("paste0(round(", x, "), '%')"),
-      offset = function() 6
-    ),
-    "measure" = list(
-      scale  = function(x) x,
-      label  = function(x) paste0("ifelse(is.na(", x, ") | ", x, " == 0, '', round(", x, ", 1))"),
-      target = function(x) paste0("round(", x, ", 1)"),
-      offset = function() 0.4
-    )
-  )
-  return(unit_helpers[[unit %||% "measure"]])
-}
 
+
+# ------ COLOR PALETTE HELPER -------------------------------------------------
+
+get_color_palette <- function(groups) {
+  base_colors    <- c("#70e2ff", "#97e37e", "#2dc595", "#ffc101", "#cccccc")
+  unique_groups  <- unique(groups)
+  colors         <- setNames(base_colors[seq_along(unique_groups)], unique_groups)
+  return(colors)
+}
 # ------ CATEGORIZATION HELPERS -----------------------------------------------
 
 #' Sort category labels in numeric, human-readable order

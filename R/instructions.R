@@ -16,7 +16,6 @@ instructions <- list(
   list(
     function_name     = "generate_density_slide",
     metric            = "life_satisfaction",
-    unit              = "score",
     x_title           = "Life Satisfaction",
     y_title           = "Density",
     title             = "LIFE SATISFACTION",
@@ -28,7 +27,6 @@ instructions <- list(
   list(
     function_name     = "generate_density_slide",
     metric            = "life_satisfaction",
-    unit              = "score",
     x_title           = "Life Satisfaction",
     y_title           = "Density",
     title             = "LIFE SATISFACTION",
@@ -42,7 +40,6 @@ instructions <- list(
   list(
     function_name     = "generate_density_slide",
     metric            = "life_satisfaction",
-    unit              = "score",
     x_title           = "Life Satisfaction",
     y_title           = "Density",
     title             = "LIFE SATISFACTION",
@@ -279,7 +276,7 @@ instructions <- list(
         "Less than 150K", "150K – 250K", "250K – 500K", "500K - 1M", "More than 1M"
       )
     ),
-    unit        = "measure",
+    unit        = NULL,
     title       = "LIFE SATISFACTION BY INCOME",
     x_title     = "Income ($)",
     y_title     = "Life Satisfaction",
@@ -290,7 +287,7 @@ instructions <- list(
     function_name = "generate_bar_category_slide",
     metric    = "n_children",
     category  = list(name = "reunion_class", grouping = NULL),
-    unit        = "measure",
+    unit        = NULL,
     title       = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
     x_title     = "Number of Children",
     y_title     = NULL,
@@ -301,7 +298,7 @@ instructions <- list(
     function_name = "generate_bar_category_slide",
     metric    = "life_satisfaction",
     category  = list(name = "n_children", grouping = c("3+")),
-    unit        = "measure",
+    unit        = NULL,
     title       = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
     x_title     = "Number of Children",
     y_title     = "Life Satisfaction",
