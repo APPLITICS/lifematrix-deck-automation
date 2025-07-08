@@ -154,7 +154,7 @@ generate_density_slide <- function(
   
   # ------ PLOT ----------------------------------------------------------------
   plot_obj <- ggplot(data_dens, aes(x = x, y = y)) +
-    geom_line(color = "#8ddef9", size = 1.5) +
+    geom_line(color = "#8ddef9", linewidth = 1.5) +
     annotate(
       "segment",
       x     = avg_focal,
@@ -163,7 +163,7 @@ generate_density_slide <- function(
       yend  = y_max_pad * 1.1,
       linetype = "dashed",
       color    = "yellow",
-      size     = 1
+      linewidth     = 1
     ) +
     annotate(
       "text",

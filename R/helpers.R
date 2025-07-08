@@ -26,13 +26,13 @@ global_theme <- function(
       plot.background     = element_rect(fill = background_color, color = NA),
       panel.grid.major.x  = element_blank(),
       panel.grid.minor.x  = element_blank(),
-      panel.grid.major.y  = element_line(color = grid_color, size = 0.2),
+      panel.grid.major.y  = element_line(color = grid_color, linewidth  = 0.2),
       panel.grid.minor.y  = element_blank(),
-      axis.line.x         = element_line(color = axis_color, size = 1.2),
-      axis.line.y         = element_line(color = axis_color, size = 1.2),
+      axis.line.x         = element_line(color = axis_color, linewidth  = 1.2),
+      axis.line.y         = element_line(color = axis_color, linewidth  = 1.2),
       axis.text.x         = element_text(
         color  = axis_color,
-        size   = 20,
+        size    = 20,
         face   = "bold",
         margin = margin(t = 10)
       ),

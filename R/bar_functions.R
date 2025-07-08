@@ -19,10 +19,34 @@ generate_bar_metric_slide <- function(
     data,
     instruction,
     ppt_doc
-) {
-  bar_width   <- 0.7
+) {{
+  bar_width <- if (
+    length(instruction$bar_value) == 1 &&
+    (
+      is.null(instruction$comparison_groups) ||
+      all(sapply(instruction$comparison_groups, function(cg) is.null(cg$name) || is.na(cg$name)))
+    )
+  ) {
+    0.4
+  } else {
+    0.7
+  }
+  
   dodge_width <- 0.8
   unit_label  <- if (!is.null(instruction$unit)) instruction$unit else ""
+  
+  # ------ POSITION LOGIC -------------------------------------------------------
+  position_setting <- if (
+    length(instruction$bar_value) == 1 &&
+    (
+      is.null(instruction$comparison_groups) ||
+      all(sapply(instruction$comparison_groups, function(cg) is.null(cg$name) || is.na(cg$name)))
+    )
+  ) {
+    position_identity()
+  } else {
+    position_dodge(width = dodge_width)
+  }
   
   # ------ METRIC CHECK -------------------------------------------------------
   all_metrics <- unique(c(instruction$bar_value, instruction$target %||% character()))
@@ -82,13 +106,15 @@ generate_bar_metric_slide <- function(
   }
   
   get_x_centers <- function(df_plot, x_axis_var) {
-    tmp_plot <- ggplot(df_plot, aes_string(
-      x = x_axis_var, y = "value",
-      fill = "fill_group_show",
-      group = "interaction(group, metric)"
+    tmp_plot <- ggplot(df_plot, aes(
+      x     = .data[[x_axis_var]],
+      y     = .data[["value"]],
+      fill  = .data[["fill_group_show"]],
+      group = interaction(group, metric)
     )) +
-      geom_col(width = bar_width, position = position_dodge(width = dodge_width))
+      geom_col(width = bar_width, position = position_setting)    
     bar_layer <- ggplot_build(tmp_plot)$data[[1]]
+    
     df_plot %>%
       bind_cols(x_center = bar_layer$x) %>%
       select(group, metric, value, fill_group, fill_group_show, x_center)
@@ -158,12 +184,13 @@ generate_bar_metric_slide <- function(
   legend_colors <- get_color_palette(setdiff(group_labels, " "))
   
   y_max <- ceiling((max(df_bars$value, na.rm = TRUE) + 10) / 10) * 10
-  plot_obj <- ggplot(df_bars, aes_string(
-    x = x_axis_var, y = "value",
-    fill = "fill_group_show",
-    group = "interaction(group, metric)"
+  plot_obj <- ggplot(df_bars, aes(
+    x     = .data[[x_axis_var]],
+    y     = .data[["value"]],
+    fill  = .data[["fill_group_show"]],
+    group = interaction(group, metric)
   )) +
-    geom_col(width = bar_width, position = position_dodge(width = dodge_width)) +
+    geom_col(width = bar_width, position = position_setting) +
     scale_y_continuous(
       limits = c(0, y_max),
       expand = c(0, 0),
@@ -282,7 +309,6 @@ generate_bar_metric_slide <- function(
         )
     }
   }
-  
   # ------ EXPORT -------------------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
@@ -294,8 +320,8 @@ generate_bar_metric_slide <- function(
     return(ppt_doc)
   }
   
-  return(invisible(NULL))
-}
+  return(invisible(NULL))  
+}}
 
 # ------ BAR CATEGORY SLIDE ----------------------------------------------------
 
@@ -350,7 +376,6 @@ generate_bar_category_slide <- function(
     ) %>%
     arrange(.data[[category_var]]) %>%
     mutate(x_center = seq_len(n()))
-  
   y_max <- ceiling(max(df$value, na.rm = TRUE))
   
   # --- Build plot -----------------------------------------------------------
