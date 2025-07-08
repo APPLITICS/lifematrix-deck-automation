@@ -50,7 +50,7 @@ generate_bar_metric_slide <- function(
   }
   dodge_width <- 0.8
   unit_label <- if (!is.null(instruction$unit)) instruction$unit else ""
-
+  
   position_setting <- if (
     length(instruction$bar_value) == 1 &&
     (
@@ -105,7 +105,7 @@ generate_bar_metric_slide <- function(
   }
   # Generate a placeholder for missing group-metric combinations
   generate_placeholder <- function(group_label, metric_list) {
-    tibble::tibble(group = group_label, metric = metric_list, value = 0)
+    tibble(group = group_label, metric = metric_list, value = 0)
   }
   # Compute average metric values for a given group and optional subset filter
   preprocess_group <- function(df_input, group_info, metric_list) {
@@ -132,7 +132,7 @@ generate_bar_metric_slide <- function(
       group_label <- paste(group_label, group_info$subset$value)
     }
     
-    tibble::tibble(
+    tibble(
       group = group_label,
       metric = metric_list,
       value = as.numeric(values[1, ])
@@ -164,6 +164,7 @@ generate_bar_metric_slide <- function(
   
   # ------ PREPROCESS BARS -----------------------------------------------------
   # Aggregate values for focal and comparison groups
+  group_labels <- character(0)
   data_bars <- list()
   placeholder_count <- 0
   
@@ -172,7 +173,7 @@ generate_bar_metric_slide <- function(
       !is.null(instruction$focal_group$subset$value)) {
     fg_label <- paste(fg_label, instruction$focal_group$subset$value)
   }
-
+  
   group_labels <- c(group_labels, fg_label)
   data_bars <- c(
     data_bars,
@@ -182,7 +183,7 @@ generate_bar_metric_slide <- function(
       instruction$bar_value
     ))
   )
-
+  
   if (!is.null(instruction$comparison_groups)) {
     for (cg in instruction$comparison_groups) {
       if (is.null(cg$name) || is.na(cg$name)) {
@@ -204,7 +205,7 @@ generate_bar_metric_slide <- function(
             !is.null(cg$subset$value)) {
           cg_label <- paste(cg_label, cg$subset$value)
         }
-
+        
         group_labels <- c(group_labels, cg_label)
         data_bars <- c(
           data_bars,
@@ -213,7 +214,7 @@ generate_bar_metric_slide <- function(
       }
     }
   }
-
+  
   group_labels <- unique(group_labels)
   df_bars <- bind_rows(data_bars)
   if (nrow(df_bars) == 0) return(invisible(NULL))
@@ -230,7 +231,7 @@ generate_bar_metric_slide <- function(
         NA
       )
     )
-
+  
   x_axis_var <- if (length(instruction$bar_value) == 1) "group" else "metric"
   x_axis_levels <- if (x_axis_var == "group") group_labels else metric_labels
   
@@ -243,17 +244,17 @@ generate_bar_metric_slide <- function(
     df_bars$fill_group_show,
     levels = setdiff(group_labels, " ")
   )
-
+  
   non_zero_groups <- df_bars %>%
     filter(group != " ", value > 0) %>%
     pull(fill_group_show) %>%
     unique()
-
+  
   hide_legend_elements <- (length(non_zero_groups) <= 1 ||
                              x_axis_var == "group")
-
+  
   legend_colors <- get_color_palette(setdiff(group_labels, " "))
-
+  
   y_max <- ceiling((max(df_bars$value, na.rm = TRUE) + 10) / 10) * 10
   # ------ BUILD BAR PLOT -------------------------------------------------------
   # Create the base ggplot object with bars
@@ -322,7 +323,7 @@ generate_bar_metric_slide <- function(
         }
       )
     )
-
+  
   # ------ LABELS -------------------------------------------------------------
   # Add text labels inside bars with actual values
   df_labels <- get_x_centers(df_bars, x_axis_var) %>%
@@ -338,7 +339,7 @@ generate_bar_metric_slide <- function(
       size = 6.5,
       fontface = "bold"
     )
-
+  
   # ------ TARGET LINES -------------------------------------------------------
   # Draw horizontal target lines and annotate with value
   if (!is.null(instruction$target)) {
@@ -367,22 +368,22 @@ generate_bar_metric_slide <- function(
         }
       }
     }
-
+    
     df_targets <- bind_rows(data_targets) %>%
       filter(value > 0, !is.na(value)) %>%
       mutate(
         target_label = clean_metric_labels(metric),
         group = factor(group, levels = group_labels)
       )
-
-    bar_target_map <- tibble::tibble(
+    
+    bar_target_map <- tibble(
       bar_label = clean_metric_labels(instruction$bar_value),
       target_label = clean_metric_labels(instruction$target)
     )
-
+    
     df_target <- df_targets %>%
       merge(bar_target_map, by = "target_label")
-
+    
     if (x_axis_var == "group") {
       df_target <- df_targets %>%
         left_join(
@@ -396,15 +397,15 @@ generate_bar_metric_slide <- function(
           by = c("group", "bar_label" = "metric")
         )
     }
-
+    
     n_bar_slots <- df_bars %>%
       group_by(.data[[x_axis_var]]) %>%
       summarise(n = n(), .groups = "drop") %>%
       pull(n) %>%
       max()
-
+    
     offset <- bar_width / (n_bar_slots * 2)
-
+    
     if (nrow(df_target) > 0) {
       plot_obj <- plot_obj +
         geom_segment(
@@ -431,7 +432,7 @@ generate_bar_metric_slide <- function(
         )
     }
   }
-
+  
   # ------ EXPORT -------------------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
@@ -442,7 +443,7 @@ generate_bar_metric_slide <- function(
     )
     return(ppt_doc)
   }
-
+  
   return(invisible(NULL))
 }
 
@@ -472,11 +473,11 @@ generate_bar_category_slide <- function(
   order_var     <- instruction$category$order
   metric_var    <- instruction$metric
   group_info    <- instruction$focal_group
-
+  
   # ------ FILTER GROUP -------------------------------------------------------
   # Keep rows for focal group and apply optional subset filter
   df <- data %>% filter(group == group_info$name)
-
+  
   if (!is.null(group_info$subset)) {
     subset_col <- group_info$subset$title
     subset_val <- group_info$subset$value
@@ -484,7 +485,7 @@ generate_bar_category_slide <- function(
       df <- df %>% filter(.data[[subset_col]] == subset_val)
     }
   }
-
+  
   # ------ ORDER CATEGORIES ---------------------------------------------------
   # Extract and sort category levels based on provided order column
   ordered_levels <- df %>%
@@ -495,7 +496,7 @@ generate_bar_category_slide <- function(
     distinct() %>%
     arrange(order) %>%
     pull(category)
-
+  
   # ------ AGGREGATE METRIC VALUES --------------------------------------------
   # Compute average metric value per category and apply factor levels
   df <- df %>%
@@ -517,11 +518,11 @@ generate_bar_category_slide <- function(
     ) %>%
     arrange(.data[[category_var]]) %>%
     mutate(x_center = seq_len(n()))
-
+  
   # ------ Y AXIS MAX ----------------------------------------------------------
   # Compute y-axis maximum for consistent scale
   y_max <- ceiling(max(df$value, na.rm = TRUE))
-
+  
   # ------ BUILD PLOT ----------------------------------------------------------
   # Construct ggplot2 bar chart with value labels and formatting
   plot_obj <- ggplot(df, aes(x = .data[[category_var]], y = value)) +
@@ -565,7 +566,7 @@ generate_bar_category_slide <- function(
       plot.margin     = margin(30, 40, 30, 40),
       legend.position = "none"
     )
-
+  
   # ------ TREND LINE (OPTIONAL) -----------------------------------------------
   # Add diagonal segment if trend_line flag is TRUE and >=2 points exist
   if (isTRUE(instruction$trend_line) && nrow(df) >= 2) {
@@ -580,7 +581,7 @@ generate_bar_category_slide <- function(
         linewidth = 2
       )
   }
-
+  
   # ------ EXPORT TO SLIDE -----------------------------------------------------
   # Add plot to PowerPoint if ppt_doc is provided
   if (!is.null(ppt_doc)) {
@@ -592,6 +593,6 @@ generate_bar_category_slide <- function(
     )
     return(ppt_doc)
   }
-
+  
   return(invisible(NULL))
 }
