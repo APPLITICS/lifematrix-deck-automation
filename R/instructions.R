@@ -230,7 +230,7 @@ instructions <- list(
     target = NULL
   ),
   list(
-    function_name = "generate_bar_metric_slide",
+    function_name = "generate_bar_metric_slide", 
     unit = "%",
     x_title = NULL,
     y_title = "% Getting Meaningfulness+",
