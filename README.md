@@ -92,7 +92,6 @@ generate_density_slide(data, instruction, ppt_doc)
 list(
   function_name     = "generate_density_slide",
   metric            = "life_satisfaction",
-  unit              = "score",
   x_title           = "Life Satisfaction",
   y_title           = "Density",
   title             = "LIFE SATISFACTION",
@@ -106,7 +105,6 @@ list(
 list(
   function_name     = "generate_density_slide",
   metric            = "life_satisfaction",
-  unit              = "score",
   x_title           = "Life Satisfaction",
   y_title           = "Density",
   title             = "LIFE SATISFACTION",
