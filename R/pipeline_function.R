@@ -17,32 +17,32 @@ run_pipeline <- function(
     ppt_template_path = "inputs/template.pptx",
     ppt_output_path   = "outputs/generated_slides.pptx"
 ) {
-  # ------ HELPERS -----------------------------------------------------------
+  # ------ HELPERS -------------------------------------------------------------
+  # Generate a unique file path by appending _2, _3, etc. if needed
   get_unique_path <- function(path) {
     if (!file.exists(path)) return(path)
-    
-    base <- tools::file_path_sans_ext(path)
-    ext  <- tools::file_ext(path)
+
+    base    <- tools::file_path_sans_ext(path)
+    ext     <- tools::file_ext(path)
     counter <- 2
-    
+
     repeat {
       new_path <- paste0(base, "_", counter, ".", ext)
       if (!file.exists(new_path)) return(new_path)
       counter <- counter + 1
     }
   }
-  
-  # ------ LOAD TEMPLATE -----------------------------------------------------
+  # ------ LOAD TEMPLATE -------------------------------------------------------
+  # Load the PowerPoint template file
   ppt_doc <- officer::read_pptx(ppt_template_path)
-  
-  # ------ GENERATE SLIDES ---------------------------------------------------
+  # ------ GENERATE SLIDES -----------------------------------------------------
+  # Loop over instructions and generate slides using specified chart functions
   for (i in seq_along(instructions)) {
     inst <- instructions[[i]]
-    
     if (!is.null(inst$function_name)) {
       func_name <- inst$function_name
       message(paste0("➡️ Generating slide using ", func_name, "()"))
-      
+
       tryCatch({
         ppt_doc <- do.call(
           what = match.fun(func_name),
@@ -53,16 +53,23 @@ run_pipeline <- function(
           )
         )
       }, error = function(e) {
-        message(paste0("❌ Error in function ", func_name, ": ", e$message))
+        message(paste0(
+          "❌ Error in function ", func_name, ": ", e$message
+        ))
       })
-      
     } else {
-      message(paste0("⚠️ Skipping instruction ", i, ": no function_name provided"))
+      message(paste0(
+        "⚠️ Skipping instruction ", i,
+        ": no function_name provided"
+      ))
     }
   }
-  
-  # ------ SAVE TO UNIQUE FILE -----------------------------------------------
+
+  # ------ SAVE TO UNIQUE FILE -------------------------------------------------
+  # Save the final PowerPoint to a unique output path
   unique_path <- get_unique_path(ppt_output_path)
+
   print(ppt_doc, target = unique_path)
+
   message(paste0("✅ Presentation saved to: ", unique_path))
 }

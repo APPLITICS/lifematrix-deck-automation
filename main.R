@@ -26,7 +26,7 @@ invisible(
   lapply(
     list.files(
       "R",
-      pattern    = "\\.R$",
+      pattern = "\\.R$",
       full.names = TRUE
     ),
     source
@@ -36,7 +36,7 @@ invisible(
 # ------ RUN PIPELINE ----------------------------------------------------------
 
 run_pipeline(
-  data         = pipeline_data,
+  data = pipeline_data,
   instructions = instructions,
   ppt_template_path = "inputs/template.pptx",
   ppt_output_path   = "outputs/generated_slides.pptx"

@@ -1,4 +1,4 @@
-# ------ EXPORT: DENSITY SLIDE ------------------------------------------------
+# ------ EXPORT: DENSITY SLIDE -------------------------------------------------
 
 #' Generate a density plot and export to PowerPoint
 #'
@@ -6,7 +6,7 @@
 #' labels. Adds a vertical line for the average and auto-scales axes.
 #'
 #' @param data A data frame with numeric values and group labels.
-#' @param instruction A list with chart options (group info, metric, labels, etc.).
+#' @param instruction A list with chart options (group info, metric, etc.).
 #' @param ppt_doc Optional `read_pptx()` object for export.
 #'
 #' @return Updated pptx object if `ppt_doc` is given; otherwise, `NULL`.
@@ -16,22 +16,15 @@ generate_density_slide <- function(
     ppt_doc
 ) {
   # ------ HELPERS -------------------------------------------------------------
+  # Define custom axis step functions and comparison label drawer
   get_y_step <- function(y_max) {
-    # Desired number of breaks (including 0 and y_max)
     target_lines <- 5
-    
-    # Rough estimate of raw step
-    raw_step <- y_max / (target_lines - 1)
-    
-    # Define a set of "nice" step values
-    nice_steps <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10, 20, 50, 100)
-    
-    # Find the nearest nice step greater than or equal to raw_step
+    raw_step     <- y_max / (target_lines - 1)
+    nice_steps   <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5,
+                      1, 2, 5, 10, 20, 50, 100)
     step <- nice_steps[which.min(abs(nice_steps - raw_step))]
-    
     return(step)
   }
-  
   
   get_x_step <- function(x_range) {
     if (x_range <= 12) return(1)
@@ -58,20 +51,13 @@ generate_density_slide <- function(
     )
     
     label_text <- paste(labels, collapse = "\n")
-    
     text_grob <- textGrob(
       label = label_text,
       just  = "center",
-      gp    = gpar(
-        col       = "#145c3c",
-        fontsize  = 18,
-        fontface  = "bold"
-      )
+      gp    = gpar(col = "#145c3c", fontsize = 18, fontface = "bold")
     )
-    
-    width_grob  <- grobWidth(text_grob)  + unit(12, "mm")
+    width_grob  <- grobWidth(text_grob) + unit(12, "mm")
     height_grob <- grobHeight(text_grob) + unit(8, "mm")
-    
     rect_grob <- rectGrob(
       x      = unit(1, "npc") - unit(5, "mm"),
       y      = unit(1, "npc") - unit(5, "mm"),
@@ -80,18 +66,17 @@ generate_density_slide <- function(
       just   = c("right", "top"),
       gp     = gpar(fill = "#97e27f", col = NA)
     )
-    
     text_grob_centered <- editGrob(
       text_grob,
-      x    = unit(1, "npc") - unit(5, "mm") - width_grob / 2,
-      y    = unit(1, "npc") - unit(5, "mm") - height_grob / 2,
+      x = unit(1, "npc") - unit(5, "mm") - width_grob / 2,
+      y = unit(1, "npc") - unit(5, "mm") - height_grob / 2,
       just = c("center", "center")
     )
-    
     grid.draw(grobTree(rect_grob, text_grob_centered))
   }
   
   # ------ DATA FILTERING ------------------------------------------------------
+  # Filter data for focal group and validate required columns
   metric_col <- instruction$metric
   if (!(metric_col %in% names(data))) {
     message(paste0("⚠️ Metric '", metric_col, "' not found in the dataset."))
@@ -100,29 +85,34 @@ generate_density_slide <- function(
   
   subset_col <- instruction$focal_group$subset$title %||% NULL
   if (!is.null(subset_col) && !(subset_col %in% names(data))) {
-    message(paste0("⚠️ Subset column '", subset_col, "' not found in the dataset."))
+    message(paste0("⚠️ Subset column '", subset_col, "' not found."))
     return(ppt_doc)
   }
   
   data_focal <- data %>% filter(group == instruction$focal_group$name)
   if (!is.null(subset_col)) {
-    data_focal <- data_focal %>% filter(.data[[subset_col]] == instruction$focal_group$subset$value)
+    data_focal <- data_focal %>%
+      filter(.data[[subset_col]] == instruction$focal_group$subset$value)
   }
   
   values_focal <- data_focal[[metric_col]]
   avg_focal    <- round(mean(values_focal, na.rm = TRUE), 1)
   
   # ------ COMPARISON DATA -----------------------------------------------------
+  # Prepare filtered comparison group data
   comparison_data_list <- NULL
   if (!is.null(instruction$comparison_groups)) {
     comparison_data_list <- lapply(
       instruction$comparison_groups,
       function(cg) {
         subset_col <- cg$subset$title %||% NULL
-        if (!is.null(subset_col) && !(subset_col %in% names(data))) return(NULL)
+        if (!is.null(subset_col) && !(subset_col %in% names(data))) {
+          return(NULL)
+        }
         data_comp <- data %>% filter(group == cg$name)
         if (!is.null(subset_col)) {
-          data_comp <- data_comp %>% filter(.data[[subset_col]] == cg$subset$value)
+          data_comp <- data_comp %>%
+            filter(.data[[subset_col]] == cg$subset$value)
         }
         data_comp
       }
@@ -130,6 +120,7 @@ generate_density_slide <- function(
   }
   
   # ------ DENSITY ESTIMATION --------------------------------------------------
+  # Estimate and normalize density of focal group values
   x_min <- min(values_focal, na.rm = TRUE)
   x_max <- max(values_focal, na.rm = TRUE)
   x_min <- if (x_min < 5) 0 else x_min
@@ -143,7 +134,6 @@ generate_density_slide <- function(
   )
   data_dens <- data.frame(x = dens$x, y = dens$y * 100)
   
-  
   y_max     <- max(data_dens$y)
   y_step    <- get_y_step(y_max)
   y_max_pad <- ceiling(y_max / y_step) * y_step
@@ -153,6 +143,7 @@ generate_density_slide <- function(
   x_lim   <- c(x_min - (x_min %% x_step), ceiling(x_max))
   
   # ------ PLOT ----------------------------------------------------------------
+  # Build ggplot object with density curve and vertical average line
   plot_obj <- ggplot(data_dens, aes(x = x, y = y)) +
     geom_line(color = "#8ddef9", linewidth = 1.5) +
     annotate(
@@ -161,9 +152,9 @@ generate_density_slide <- function(
       xend  = avg_focal,
       y     = 0,
       yend  = y_max_pad * 1.1,
+      color = "yellow",
       linetype = "dashed",
-      color    = "yellow",
-      linewidth     = 1
+      linewidth = 1
     ) +
     annotate(
       "text",
@@ -189,16 +180,19 @@ generate_density_slide <- function(
     labs(
       title = NULL,
       x     = instruction$x_title,
-      y     = "Density",
+      y     = "Density"
     ) +
     global_theme() +
     theme(
-      plot.title      = element_text(color = "white", face = "bold", size = 26, hjust = 0),
+      plot.title      = element_text(
+        color = "white", face = "bold", size = 26, hjust = 0
+      ),
       plot.margin     = margin(t = 30, r = 20, b = 15, l = 20),
       legend.position = "none"
     )
   
-  # ------ INSERT SLIDE  -------------------------
+  # ------ INSERT SLIDE --------------------------------------------------------
+  # Insert plot and optional comparison label into PowerPoint slide
   if (is.null(instruction$is_first) || !instruction$is_first) {
     ppt_doc <- add_slide(ppt_doc, layout = "Title and Content")
   }
@@ -208,26 +202,51 @@ generate_density_slide <- function(
   ppt_doc <- ppt_doc %>%
     ph_with(
       value = block_list(
-        fpar(
-          ftext(
-            instruction$title %||% " ",
-            fp_text(font.size = 28, bold = TRUE, font.family = "Arial", color = "#323233")
+        fpar(ftext(
+          instruction$title %||% " ",
+          fp_text(
+            font.size   = 28,
+            bold        = TRUE,
+            font.family = "Arial",
+            color       = "#323233"
           )
-        )
+        ))
       ),
-      location = ph_location(left = 0.4, top = 0.2, width = dims$width - 1, height = 0.8)
+      location = ph_location(
+        left   = 0.4,
+        top    = 0.2,
+        width  = dims$width - 1,
+        height = 0.8
+      )
     ) %>%
     ph_with(
       value = dml(ggobj = plot_obj, bg = "transparent"),
-      location = ph_location(left = 0, top = 1.0, width = dims$width, height = dims$height - 1.4)
-    ) 
+      location = ph_location(
+        left   = 0,
+        top    = 1.0,
+        width  = dims$width,
+        height = dims$height - 1.4
+      )
+    )
   
   if (!is.null(instruction$comparison_groups)) {
     ppt_doc <- ppt_doc %>%
       ph_with(
-        value = dml(code = draw_comparison_label(comparison_data_list, instruction), bg = "transparent"),
-        location = ph_location(left = 0, top = 1.0, width = dims$width, height = dims$height)
+        value = dml(
+          code = draw_comparison_label(
+            comparison_data_list,
+            instruction
+          ),
+          bg = "transparent"
+        ),
+        location = ph_location(
+          left   = 0,
+          top    = 1.0,
+          width  = dims$width,
+          height = dims$height
+        )
       )
   }
+  
   return(ppt_doc)
 }
