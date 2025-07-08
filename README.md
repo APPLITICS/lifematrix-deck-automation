@@ -183,60 +183,63 @@ generate_bar_category_slide(data, instruction, ppt_doc)
 
 - X-axis = category values (e.g., gender, income, reunion class).
 - One metric split across categories.
-- Supports trend lines and flexible grouping.
+- Supports trend lines.
 
 **Example: Slide 67 with Income Grouping + Trend**
 
 ```r
-list(
-  function_name = "generate_bar_category_slide",
-  metric    = "life_satisfaction",
-  category  = list(
-    name     = "income",
-    grouping = c("Less than 150K", "150K – 250K", "250K – 500K", "500K - 1M", "More than 1M")
-  ),
-  unit        = "measure",
-  title       = "LIFE SATISFACTION BY INCOME",
-  x_title     = "Income ($)",
-  y_title     = "Life Satisfaction",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line  = TRUE
-)
+  list(
+    function_name = "generate_bar_category_slide",
+    metric = "life_satisfaction",
+    category = list(
+      name = "income_range",
+      order = "income_range_levels"
+    ),
+    unit = NULL,
+    title = "LIFE SATISFACTION BY INCOME",
+    x_title = "Income ($)",
+    y_title = "Life Satisfaction",
+    focal_group = list(name = focal_group, subset = NULL),
+    trend_line = TRUE
+  )
 ```
 
 **Example: Slide 72 without Y-Axis**
 
 ```r
-list(
-  function_name = "generate_bar_category_slide",
-  metric    = "n_children",
-  category  = list(name = "reunion_class", grouping = NULL),
-  unit        = "measure",
-  title       = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
-  x_title     = "Number of Children",
-  y_title     = NULL,
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line  = FALSE
-)
+  list(
+    function_name = "generate_bar_category_slide",
+    metric = "n_children",
+    category = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = NULL,
+    title = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
+    x_title = "Reunion Class",
+    y_title = "Number of Children",
+    focal_group = list(name = focal_group, subset = NULL),
+    trend_line = FALSE
+  )
 ```
 
 **Example: Slide 73 with Grouped Numeric Category**
 
 ```r
-list(
-  function_name = "generate_bar_category_slide",
-  metric    = "life_satisfaction",
-  category  = list(
-    name = "n_children",
-    grouping = c("3+")
-  ),
-  unit        = "measure",
-  title       = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
-  x_title     = "Number of Children",
-  y_title     = "Life Satisfaction",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line  = TRUE
-)
+  list(
+    function_name = "generate_bar_category_slide",
+    metric = "life_satisfaction",
+    category = list(
+      name = "children_range",
+      order = "children_range_levels"
+    ),
+    unit = NULL,
+    title = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
+    x_title = "Number of Children",
+    y_title = "Life satisfaction",
+    focal_group = list(name = focal_group, subset = NULL),
+    trend_line = TRUE
+  )
 ```
 ---
 ## More Examples & Testing
@@ -244,4 +247,3 @@ list(
 - Use `main.R` to test the pipeline on `instructions.R`.
 - The `instructions.R` file provides real-case slides for direct mapping to `automation.pptx`.
 - Examples include focal-only, subgroup comparisons, placeholders, trend lines, and targets.
-
