@@ -57,19 +57,19 @@ instructions <- list(
   # ------ Slide 8–12: Importance of JAM (bar metric) ------------------------
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+    
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
     title             = "IMPORTANCE OF JAM",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    bar_value         = "value_high_importance",
+    bar_value         = c("joy", "achievement", "meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
@@ -78,12 +78,12 @@ instructions <- list(
     comparison_groups = list(
       list(name = NA, subset = NULL)
     ),
-    bar_value         = "value_high_importance",
+    bar_value         = c("joy", "achievement", "meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+    
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
@@ -92,12 +92,12 @@ instructions <- list(
     comparison_groups = list(
       list(name = comparison_group_1, subset = list(title = "gender", value = NULL))
     ),
-    bar_value         = "value_high_importance",
+    bar_value         = c("joy", "achievement", "meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+    
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
@@ -107,12 +107,12 @@ instructions <- list(
       list(name = NA, subset = NULL),
       list(name = NA, subset = NULL)
     ),
-    bar_value         = "value_high_importance",
+    bar_value         = c("joy", "achievement", "meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+    
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
@@ -122,12 +122,12 @@ instructions <- list(
       list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
       list(name = NA, subset = NULL)
     ),
-    bar_value         = "value_high_importance",
+    bar_value         = c("joy", "achievement", "meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+    
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
@@ -137,12 +137,12 @@ instructions <- list(
       list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
       list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
     ),
-    bar_value         = "value_high_importance",
+    bar_value         = c("joy", "achievement", "meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = c("joy", "achievement", "meaningfulness"),
+    
     unit              = "%",
     x_title           = NULL,
     y_title           = "% High Importance",
@@ -152,8 +152,8 @@ instructions <- list(
       list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
       list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
     ),
-    bar_value         = "value_high_importance",
-    target            = "value_min"
+    bar_value         = c("joy", "achievement", "meaningfulness"),
+    target            = c("joy_min","achievement_min","meaningfulness_min")
   ),
   
   # ------ More density plots --------------------------------------------------
@@ -231,19 +231,17 @@ instructions <- list(
   # ------ Slide 62–65: Example with one bar metric ----------------------------
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = "meaningfulness",
     unit              = "%",
     x_title           = NULL,
     y_title           = "% Getting Meaningfulness+",
     title             = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
     focal_group       = list(name = focal_group, subset = NULL),
     comparison_groups = NULL,
-    bar_value         = "value_high_importance",
+    bar_value         = c("meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = "meaningfulness",
     unit              = "%",
     x_title           = NULL,
     y_title           = "% Getting Meaningfulness+",
@@ -253,12 +251,11 @@ instructions <- list(
       list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
       list(name = NA, subset = NULL)
     ),
-    bar_value         = "value_high_importance",
+    bar_value         = c("meaningfulness"),
     target            = NULL
   ),
   list(
     function_name     = "generate_bar_metric_slide",
-    metric            = "meaningfulness",
     unit              = "%",
     x_title           = NULL,
     y_title           = "% Getting Meaningfulness+",
@@ -268,8 +265,8 @@ instructions <- list(
       list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
       list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
     ),
-    bar_value         = "value_high_importance",
-    target            = "valu_min"
+    bar_value         = c("meaningfulness"),
+    target            = c("meaningfulness_min")
   ),
   
   # ------ Slide 67–74: Category charts --------------------------------------
@@ -313,7 +310,7 @@ instructions <- list(
   ),
   list(
     function_name = "generate_bar_category_slide",
-    metric    = "meaningfulness__high_importance",
+    metric    = "meaningfulness",
     category  = list(name = "reunion_class", grouping = NULL),
     unit        = "%",
     title       = "PERCENT MEETING MEANINGFULNESS+ AT WORK",

@@ -1,297 +1,288 @@
 # ------ BAR METRIC SLIDE ------------------------------------------------------
-#' Generate grouped bar chart and export to PowerPoint
+#' Generate Grouped Bar Chart and Export to PowerPoint
 #'
-#' Creates a grouped bar chart comparing a focal group and optional comparisons
-#' across one or more metrics. Supports scaling, placeholder logic, targets,
-#' and PowerPoint export via `officer` and `rvg`.
+#' Creates a grouped bar chart comparing a focal group to optional comparison
+#' groups across metrics, with optional target lines and placeholder logic.
+#' Supports unit displaying, custom labels, and slide export via `officer`.
 #'
-#' @param data A data frame with aggregated values.
-#' @param instruction A list with plot settings (group info, metrics, unit, labels, etc.).
-#' @param ppt_doc Optional `read_pptx()` object for export.
+#' @param data A data frame of pre-processed values.
+#' @param instruction A list with plot settings:
+#'   - `bar_value`: Metric(s) for bar heights
+#'   - `target`: (Optional) Metric(s) for target lines
+#'   - `focal_group`, `comparison_groups`: Group definitions
+#'   - `unit`, `title`, `x_title`, `y_title`, `is_first`: Display options
+#' @param ppt_doc Optional `read_pptx()` object to append the slide.
 #'
-#' @return Updated pptx object if `ppt_doc` is given; otherwise, `NULL`.
+#' @return Updated PowerPoint object if `ppt_doc` is provided, otherwise `NULL`.
+
 generate_bar_metric_slide <- function(
     data,
     instruction,
     ppt_doc
 ) {
-  # ------ UNIT SETUP ---------------------------------------------------------
-  current_unit <- get_unit_helper(instruction$unit)
+  bar_width   <- 0.7
+  dodge_width <- 0.8
+  unit_label  <- if (!is.null(instruction$unit)) instruction$unit else ""
   
-  # ------ PLACEHOLDER GENERATOR ----------------------------------------------
-  data_placeholder <- function(group_label, metric_list) {
-    extract_suffix <- function(colname) sub("^value_", "", colname)
-    suffixes <- unique(na.omit(c(
-      extract_suffix(instruction$bar_value),
-      extract_suffix(instruction$target)
-    )))
-    expand_grid(
-      metric = unique(gsub("__.*$", "", metric_list)),
-      suffix = suffixes
-    ) %>%
-      mutate(
-        value = 0,
-        group = ifelse(is.na(group_label), " ", group_label)
-      ) %>%
-      pivot_wider(
-        names_from   = suffix,
-        values_from  = value,
-        names_prefix = "value_"
-      ) %>%
-      relocate(group, metric)
+  # ------ METRIC CHECK -------------------------------------------------------
+  all_metrics <- unique(c(instruction$bar_value, instruction$target %||% character()))
+  missing_metrics <- setdiff(all_metrics, names(data))
+  if (length(missing_metrics) > 0) {
+    message(sprintf("Missing metric(s): %s", paste(missing_metrics, collapse = ", ")))
+    return(invisible(NULL))
   }
   
-  # ------ PREPROCESS GROUP ---------------------------------------------------
-  preprocess_group <- function(
-    df_input,
-    group_name_input,
-    subset_input   = NULL,
-    display_label  = NULL
-  ) {
-    df_sub <- df_input %>% filter(group == group_name_input)
-    
-    if (!is.null(subset_input) &&
-        !is.null(subset_input$value) &&
-        subset_input$title %in% names(df_sub)) {
-      df_sub <- df_sub %>%
-        filter(.data[[subset_input$title]] == subset_input$value)
-    }
-    
-    base_metrics   <- unique(gsub("__.*$", "", instruction$metric))
-    pattern        <- paste(base_metrics, collapse = "|")
-    cols_available <- grep(pattern, names(df_sub), value = TRUE)
-    
-    if (nrow(df_sub) == 0 || length(cols_available) == 0) {
-      label_clean <- display_label %||% group_name_input
-      return(data_placeholder(label_clean, instruction$metric))
-    }
-    
-    df_agg <- df_sub %>%
-      summarise(across(all_of(cols_available), ~ mean(.x, na.rm = TRUE)))
-    
-    df_long <- df_agg %>%
-      pivot_longer(
-        cols      = everything(),
-        names_to  = "full_name",
-        values_to = "raw_value"
-      ) %>%
-      mutate(
-        metric = stringr::str_extract(full_name, paste0("(", paste(base_metrics, collapse = "|"), ")")),
-        suffix = stringr::str_replace(full_name, metric, "") %>%
-          stringr::str_remove("^__") %>%
-          replace_na("real") %>%
-          na_if("") %>%
-          replace_na("real")
-      ) %>%
-      select(metric, suffix, raw_value)
-    
-    df_long <- pivot_wider(
-      df_long,
-      names_from   = suffix,
-      values_from  = raw_value,
-      names_prefix = "value_"
-    )
-    
-    df_long %>%
-      mutate(group = display_label %||% group_name_input) %>%
-      relocate(group, metric) %>%
-      mutate(across(starts_with("value_"), current_unit$scale))
-  }
-  
-  # ------ HELPER FUNCTIONS ---------------------------------------------------
-  get_y_max <- function(df_plot) {
-    y_vals <- df_plot[[instruction$bar_value]]
-    if (!is.null(instruction$target) && instruction$target %in% names(df_plot)) {
-      y_vals <- c(y_vals, df_plot[[instruction$target]])
-    }
-    y_max_raw <- max(y_vals, na.rm = TRUE)
-    if (instruction$unit == "%") {
-      margin <- if (is.null(instruction$target)) 0 else 10
-      return(ceiling((y_max_raw + margin) / 10) * 10)
+  # ------ HELPERS ------------------------------------------------------------
+  clean_metric_labels <- function(labels) {
+    words_list <- strsplit(stringr::str_to_title(gsub("_", " ", labels)), " ")
+    suffixes <- sapply(words_list, function(x) tail(x, 1))
+    suffix_table <- table(suffixes)
+    common_suffix <- names(suffix_table)[which.max(suffix_table)]
+    count_common  <- max(suffix_table)
+    if (count_common >= 2) {
+      cleaned <- mapply(function(words) {
+        if (tail(words, 1) == common_suffix && length(words) > 1) {
+          paste(head(words, -1), collapse = " ")
+        } else {
+          paste(words, collapse = " ")
+        }
+      }, words_list, USE.NAMES = FALSE)
     } else {
-      return(ceiling(y_max_raw + 1))
+      cleaned <- sapply(words_list, paste, collapse = " ")
     }
+    return(cleaned)
+  }
+  
+  generate_placeholder <- function(group_label, metric_list) {
+    tibble::tibble(group = group_label, metric = metric_list, value = 0)
+  }
+  
+  preprocess_group <- function(df_input, group_info, metric_list) {
+    df <- df_input %>% filter(group == group_info$name)
+    
+    if (!is.null(group_info$subset) &&
+        !is.null(group_info$subset$value) &&
+        group_info$subset$title %in% names(df)) {
+      df <- df %>% filter(.data[[group_info$subset$title]] == group_info$subset$value)
+    }
+    
+    if (nrow(df) == 0) return(NULL)
+    
+    values <- df %>% summarise(across(all_of(metric_list), ~ mean(.x, na.rm = TRUE)))
+    group_label <- group_info$name
+    if (!is.null(group_info$subset) && !is.null(group_info$subset$value)) {
+      group_label <- paste(group_label, group_info$subset$value)
+    }
+    
+    tibble::tibble(
+      group  = group_label,
+      metric = metric_list,
+      value  = as.numeric(values[1, ])
+    )
   }
   
   get_x_centers <- function(df_plot, x_axis_var) {
     tmp_plot <- ggplot(df_plot, aes_string(
-      x     = x_axis_var,
-      y     = instruction$bar_value,
-      fill  = "fill_group",
+      x = x_axis_var, y = "value",
+      fill = "fill_group_show",
       group = "interaction(group, metric)"
     )) +
-      geom_col(position = position_dodge(width = 0.8), width = 0.6)
-    ggplot_build(tmp_plot)$data[[1]]$x
+      geom_col(width = bar_width, position = position_dodge(width = dodge_width))
+    bar_layer <- ggplot_build(tmp_plot)$data[[1]]
+    df_plot %>%
+      bind_cols(x_center = bar_layer$x) %>%
+      select(group, metric, value, fill_group, fill_group_show, x_center)
   }
   
-  # ------ PREPROCESS DATA ----------------------------------------------------
-  x_axis_var <- if (length(instruction$metric) == 1) "group" else "metric"
+  generate_placeholder_label <- function(index) {
+    paste(rep(" ", index), collapse = "")
+  }
   
-  data_focal <- preprocess_group(
-    df_input         = data,
-    group_name_input = instruction$focal_group$name,
-    subset_input     = instruction$focal_group$subset,
-    display_label    = instruction$focal_group$name
-  )
+  # ------ PREPROCESS BARS ----------------------------------------------------
+  group_labels <- character(0)
+  data_bars <- list()
+  placeholder_count <- 0
   
-  data_comparisons  <- NULL
-  comparison_labels <- NULL
+  fg_label <- instruction$focal_group$name
+  if (!is.null(instruction$focal_group$subset) && !is.null(instruction$focal_group$subset$value)) {
+    fg_label <- paste(fg_label, instruction$focal_group$subset$value)
+  }
+  
+  group_labels <- c(group_labels, fg_label)
+  data_bars <- c(data_bars, list(preprocess_group(data, instruction$focal_group, instruction$bar_value)))
   
   if (!is.null(instruction$comparison_groups)) {
-    raw_labels <- sapply(instruction$comparison_groups, function(cg) {
-      if (!is.null(cg$name)) {
-        if (!is.null(cg$subset)) paste(cg$name, cg$subset$value) else cg$name
+    for (cg in instruction$comparison_groups) {
+      if (is.null(cg$name) || is.na(cg$name)) {
+        placeholder_count <- placeholder_count + 1
+        placeholder_label <- generate_placeholder_label(placeholder_count)
+        group_labels <- c(group_labels, placeholder_label)
+        data_bars <- c(data_bars, list(generate_placeholder(placeholder_label, instruction$bar_value)))
       } else {
-        " "
+        cg_label <- cg$name
+        if (!is.null(cg$subset) && !is.null(cg$subset$value)) {
+          cg_label <- paste(cg_label, cg$subset$value)
+        }
+        group_labels <- c(group_labels, cg_label)
+        data_bars <- c(data_bars, list(preprocess_group(data, cg, instruction$bar_value)))
       }
-    })
-    
-    label_counts <- ave(seq_along(raw_labels), raw_labels, FUN = seq_along)
-    comparison_labels <- ifelse(
-      table(raw_labels)[raw_labels] > 1,
-      paste0(raw_labels, " (", label_counts, ")"),
-      raw_labels
-    )
-    
-    data_comparisons <- bind_rows(
-      Map(function(group_cfg, label_out) {
-        label_clean <- ifelse(is.na(label_out), " ", label_out)
-        preprocess_group(
-          df_input         = data,
-          group_name_input = group_cfg$name,
-          subset_input     = group_cfg$subset,
-          display_label    = label_clean
-        )
-      }, instruction$comparison_groups, comparison_labels)
-    )
+    }
   }
   
-  # ------ FORMAT AND CLEAN ---------------------------------------------------
-  df <- bind_rows(data_focal, data_comparisons)
-  df$metric <- tools::toTitleCase(gsub("_", " ", df$metric))
+  group_labels <- unique(group_labels)
+  df_bars <- bind_rows(data_bars)
+  if (nrow(df_bars) == 0) return(invisible(NULL))
   
-  if (x_axis_var == "metric") {
-    df$metric <- factor(df$metric, levels = tools::toTitleCase(gsub("_", " ", instruction$metric)))
-  } else {
-    df$group <- factor(df$group, levels = unique(df$group))
-  }
+  metric_labels <- clean_metric_labels(instruction$bar_value)
+  df_bars <- df_bars %>%
+    mutate(
+      metric = clean_metric_labels(metric),
+      fill_group = group,
+      fill_group_show = ifelse(group %in% group_labels & str_trim(group) != "", as.character(group), NA)
+    )
   
-  df$group      <- factor(df$group, levels = unique(df$group))
-  df$fill_group <- df$group
+  x_axis_var <- if (length(instruction$bar_value) == 1) "group" else "metric"
+  x_axis_levels <- if (x_axis_var == "group") group_labels else metric_labels
   
-  non_zero_groups <- df %>%
-    filter(.data[[instruction$bar_value]] > 0, !is.na(fill_group)) %>%
-    distinct(fill_group) %>%
-    pull(fill_group)
+  df_bars[[x_axis_var]] <- factor(df_bars[[x_axis_var]], levels = x_axis_levels)
+  df_bars$group <- factor(df_bars$group, levels = group_labels)
+  df_bars$fill_group <- factor(df_bars$fill_group, levels = group_labels)
+  df_bars$fill_group_show <- factor(df_bars$fill_group_show, levels = setdiff(group_labels, " "))
   
-  legend_order <- df %>%
-    filter(.data[[instruction$bar_value]] > 0, !is.na(fill_group), fill_group != " ") %>%
-    distinct(fill_group) %>%
-    pull(fill_group)
-  
-  palette_base <- c("#70e2ff", "#97e37e", "#2dc595", "#5d8c90", "#cccccc")
-  colors       <- setNames(palette_base[seq_along(legend_order)], legend_order)
+  non_zero_groups <- df_bars %>%
+    filter(group != " ", value > 0) %>%
+    pull(fill_group_show) %>%
+    unique()
   
   hide_legend_elements <- (length(non_zero_groups) <= 1 || x_axis_var == "group")
-  legend_position      <- "bottom"
+  legend_colors <- get_color_palette(setdiff(group_labels, " "))
   
-  # ------ BUILD PLOT ---------------------------------------------------------
-  y_max       <- get_y_max(df)
-  df$x_center <- get_x_centers(df, x_axis_var)
-  
-  plot_obj <- ggplot(df, aes_string(
-    x     = x_axis_var,
-    y     = instruction$bar_value,
-    fill  = "fill_group",
+  y_max <- ceiling((max(df_bars$value, na.rm = TRUE) + 10) / 10) * 10
+  plot_obj <- ggplot(df_bars, aes_string(
+    x = x_axis_var, y = "value",
+    fill = "fill_group_show",
     group = "interaction(group, metric)"
   )) +
-    geom_col(
-      width    = 0.7,
-      position = position_dodge(width = 0.8)
-    ) +
-    geom_text(
-      aes_string(
-        label = current_unit$label(instruction$bar_value),
-        y     = paste0(instruction$bar_value, " / 2")
-      ),
-      position = position_dodge(width = 0.8),
-      color    = "black",
-      size     = 6.5,
-      fontface = "bold"
-    ) +
+    geom_col(width = bar_width, position = position_dodge(width = dodge_width)) +
     scale_y_continuous(
       limits = c(0, y_max),
-      breaks = if (instruction$unit == "%") seq(0, y_max, 20) else waiver(),
-      labels = if (instruction$unit == "%") function(x) paste0(x, "%") else waiver(),
-      expand = c(0, 0)
+      expand = c(0, 0),
+      labels = function(x) paste0(x, unit_label)
     ) +
-    scale_fill_manual(
-      values = colors,
-      breaks = legend_order
-    ) +
+    scale_fill_manual(values = legend_colors, na.translate = FALSE, drop = FALSE) +
     labs(
-      x     = instruction$x_title,
-      y     = instruction$y_title,
+      x = instruction$x_title,
+      y = if (!is.null(instruction$y_title)) {
+        if (unit_label != "" && !str_detect(instruction$y_title, unit_label)) {
+          paste0(instruction$y_title, " (", unit_label, ")")
+        } else {
+          instruction$y_title
+        }
+      } else {
+        NULL
+      },
       title = " ",
-      fill  = NULL
+      fill = NULL
     ) +
     global_theme() +
     theme(
-      plot.title      = element_text(color = "white", face = "bold", size = 26, hjust = 0),
-      plot.margin     = margin(t = 0, r = 40, b = 0, l = 40),
-      legend.position = legend_position,
-      legend.text     = if (hide_legend_elements) element_blank() else element_text(
-        color = "white",
-        size  = 16,
-        face  = "bold"
-      ),
-      legend.title     = element_blank(),
+      plot.title = element_text(color = "white", face = "bold", size = 26, hjust = 0),
+      plot.margin = margin(t = 0, r = 40, b = 0, l = 40),
+      legend.position = "bottom",
+      legend.text = if (hide_legend_elements) element_blank() else element_text(color = "white", size = 16, face = "bold"),
+      legend.title = element_blank(),
       legend.spacing.y = unit(10, "pt")
     ) +
     guides(
       fill = guide_legend(
-        override.aes = if (hide_legend_elements)
-          list(fill = NA, color = NA) else list(),
-        title       = NULL,
+        override.aes = if (hide_legend_elements) list(fill = NA, color = NA) else list(),
+        title = NULL,
         label.theme = if (hide_legend_elements) element_blank() else element_text()
       )
     )
   
+  # ------ LABELS -------------------------------------------------------------
+  df_labels <- get_x_centers(df_bars, x_axis_var) %>%
+    filter(value > 0, group != " ")
+  
+  plot_obj <- plot_obj +
+    geom_text(
+      data = df_labels,
+      aes(x = x_center, y = value / 2, label = paste0(round(value), unit_label)),
+      inherit.aes = FALSE,
+      color = "black",
+      size = 6.5,
+      fontface = "bold"
+    )
+  
   # ------ TARGET LINES -------------------------------------------------------
-  if (!is.null(instruction$target) && instruction$target %in% names(df)) {
-    df_target <- df %>%
-      filter(!is.na(.data[[instruction$target]]) & .data[[instruction$target]] > 0)
+  if (!is.null(instruction$target)) {
+    data_targets <- list(preprocess_group(data, instruction$focal_group, instruction$target))
+    if (!is.null(instruction$comparison_groups)) {
+      for (cg in instruction$comparison_groups) {
+        if (!is.null(cg$name) && !is.na(cg$name)) {
+          data_targets <- c(data_targets, list(preprocess_group(data, cg, instruction$target)))
+        } else {
+          placeholder_count <- placeholder_count + 1
+          placeholder_label <- generate_placeholder_label(placeholder_count)
+          data_targets <- c(data_targets, list(generate_placeholder(placeholder_label, instruction$target)))
+        }
+      }
+    }
     
-    bar_width   <- 0.6
-    n_bar_slots <- nrow(df) / length(unique(df[[x_axis_var]]))
-    offset      <- bar_width / (n_bar_slots * 2)
-    
-    plot_obj <- plot_obj +
-      geom_segment(
-        data = df_target,
-        aes(
-          x    = x_center - offset,
-          xend = x_center + offset,
-          y    = .data[[instruction$target]],
-          yend = .data[[instruction$target]]
-        ),
-        color     = "#f9f871",
-        linetype  = "dashed",
-        linewidth = 2
-      ) +
-      geom_text(
-        data = df_target,
-        aes(
-          x     = x_center,
-          y     = .data[[instruction$target]] + current_unit$offset(),
-          label = !!rlang::parse_expr(current_unit$target(instruction$target))
-        ),
-        color    = "#f9f871",
-        size     = 6.5,
-        fontface = "bold"
+    df_targets <- bind_rows(data_targets) %>%
+      filter(value > 0, !is.na(value)) %>%
+      mutate(
+        target_label = clean_metric_labels(metric),
+        group = factor(group, levels = group_labels)
       )
+    
+    bar_target_map <- tibble::tibble(
+      bar_label    = clean_metric_labels(instruction$bar_value),
+      target_label = clean_metric_labels(instruction$target)
+    )
+    
+    df_target <- df_targets %>%
+      merge(bar_target_map, by = "target_label")
+    
+    if (x_axis_var == "group") {
+      df_target <- df_targets %>%
+        left_join(df_labels %>% select(group, x_center) %>% distinct(), by = "group")
+    } else {
+      df_target <- df_target %>%
+        left_join(df_labels %>% select(group, metric, x_center) %>% distinct(),
+                  by = c("group", "bar_label" = "metric"))
+    }
+    
+    n_bar_slots <- df_bars %>%
+      group_by(.data[[x_axis_var]]) %>%
+      summarise(n = n(), .groups = "drop") %>%
+      pull(n) %>%
+      max()
+    
+    offset <- bar_width / (n_bar_slots * 2)
+    
+    if (nrow(df_target) > 0) {
+      plot_obj <- plot_obj +
+        geom_segment(
+          data = df_target,
+          aes(x = x_center - offset, xend = x_center + offset, y = value, yend = value),
+          color = "#f9f871",
+          linetype = "11",
+          linewidth = 1.5,
+          inherit.aes = FALSE
+        ) +
+        geom_text(
+          data = df_target,
+          aes(x = x_center, y = value + 5, label = paste0(round(value), unit_label)),
+          color = "#f9f871",
+          size = 6.5,
+          fontface = "bold",
+          inherit.aes = FALSE
+        )
+    }
   }
-
+  
   # ------ EXPORT -------------------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
@@ -314,7 +305,7 @@ generate_bar_metric_slide <- function(
 #' Supports category grouping, axis formatting, optional trend lines, and export to
 #' PowerPoint or printing only.
 #'
-#' @param data A data frame of preprocessed values.
+#' @param data A data frame of pre-processed values.
 #' @param instruction A list of chart options (group info, metric, category, labels, etc.).
 #' @param ppt_doc Optional `read_pptx()` object for exporting the chart.
 #'
