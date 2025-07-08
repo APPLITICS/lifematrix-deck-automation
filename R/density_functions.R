@@ -173,7 +173,7 @@ generate_density_slide <- function(
     ) +
     scale_y_continuous(
       breaks = seq(0, y_max_pad, by = y_step),
-      labels = scales::label_percent(scale = 1),
+      labels = label_percent(scale = 1),
       expand = c(0, 0)
     ) +
     coord_cartesian(ylim = c(0, y_max_pad * 1.1)) +

@@ -34,7 +34,7 @@ run_pipeline <- function(
   }
   # ------ LOAD TEMPLATE -------------------------------------------------------
   # Load the PowerPoint template file
-  ppt_doc <- officer::read_pptx(ppt_template_path)
+  ppt_doc <- read_pptx(ppt_template_path)
   # ------ GENERATE SLIDES -----------------------------------------------------
   # Loop over instructions and generate slides using specified chart functions
   for (i in seq_along(instructions)) {

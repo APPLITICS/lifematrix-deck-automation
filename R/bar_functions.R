@@ -82,7 +82,7 @@ generate_bar_metric_slide <- function(
   # Clean metric names by removing common suffixes (e.g. "joy_min" => "Joy")
   clean_metric_labels <- function(labels) {
     words_list <- strsplit(
-      stringr::str_to_title(gsub("_", " ", labels)),
+      str_to_title(gsub("_", " ", labels)),
       " "
     )
     suffixes <- sapply(words_list, function(x) tail(x, 1))
