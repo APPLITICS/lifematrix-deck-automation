@@ -24,25 +24,6 @@ main.R                         # Script to load data and run the pipeline
 
 The `simulated_pipeline_input.csv` file contains detailed survey data and is the main data source for the slide generation pipeline. Each row represents a single user input, and each column provides a specific metric or category.
 
-### Column Naming Convention
-
-Metric columns must follow the format:
-
-```
-<metric_name>__<measurement_type>
-```
-
-Use a double underscore (`__`) to separate the base metric from the measurement. This enables the pipeline to automatically extract and align the correct data for plotting.
-
-### Examples
-
-| Column Name              | Description                              |
-| ------------------------ | ---------------------------------------- |
-| `joy__high_importance`   | % of respondents rating joy as important |
-| `joy__min`               | Minimum target threshold for joy         |
-| `life_satisfaction__min` | Minimum benchmark for satisfaction       |
-
----
 ## Global Pipeline Structure
 
 The slide generation pipeline is driven by a single function:
@@ -109,7 +90,6 @@ generate_density_slide(data, instruction, ppt_doc)
 
 ```r
 list(
-  slide             = 3,
   function_name     = "generate_density_slide",
   metric            = "life_satisfaction",
   unit              = "score",
@@ -124,7 +104,6 @@ list(
 
 ```r
 list(
-  slide             = 5,
   function_name     = "generate_density_slide",
   metric            = "life_satisfaction",
   unit              = "score",
@@ -160,9 +139,9 @@ generate_bar_metric_slide(data, instruction, ppt_doc)
 
 ```r
 list(
-  slide             = 12,
   function_name     = "generate_bar_metric_slide",
-  metric            = c("joy", "achievement", "meaningfulness"),
+  bar_value         = c("joy", "achievement", "meaningfulness"),
+  target            = NULL
   unit              = "%",
   title             = "IMPORTANCE OF JAM",
   y_title           = "% High Importance",
@@ -170,9 +149,7 @@ list(
   comparison_groups = list(
     list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
     list(name = NA, subset = NULL)
-  ),
-  bar_value         = "value_high_importance",
-  target            = NULL
+  )
 )
 ```
 
@@ -180,9 +157,9 @@ list(
 
 ```r
 list(
-  slide             = 14,
   function_name     = "generate_bar_metric_slide",
-  metric            = c("joy", "achievement", "meaningfulness"),
+  bar_value         = c("joy", "achievement", "meaningfulness"),
+  target            = c("joy_min", "achievement_min", "meaningfulness_min"),
   unit              = "%",
   title             = "IMPORTANCE OF JAM",
   y_title           = "% High Importance",
@@ -191,8 +168,6 @@ list(
     list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
     list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
   ),
-  bar_value         = "value_high_importance",
-  target            = "value_min"
 )
 ```
 
@@ -214,7 +189,6 @@ generate_bar_category_slide(data, instruction, ppt_doc)
 
 ```r
 list(
-  slide     = 67,
   function_name = "generate_bar_category_slide",
   metric    = "life_satisfaction",
   category  = list(
@@ -234,7 +208,6 @@ list(
 
 ```r
 list(
-  slide     = 72,
   function_name = "generate_bar_category_slide",
   metric    = "n_children",
   category  = list(name = "reunion_class", grouping = NULL),
@@ -251,7 +224,6 @@ list(
 
 ```r
 list(
-  slide     = 73,
   function_name = "generate_bar_category_slide",
   metric    = "life_satisfaction",
   category  = list(
