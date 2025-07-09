@@ -19,8 +19,8 @@ generate_density_slide <- function(
   # Define custom axis step functions and comparison label drawer
   get_y_step <- function(y_max) {
     target_lines <- 5
-    raw_step     <- y_max / (target_lines - 1)
-    nice_steps   <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5,
+    raw_step <- y_max / (target_lines - 1)
+    nice_steps <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5,
                       1, 2, 5, 10, 20, 50, 100)
     step <- nice_steps[which.min(abs(nice_steps - raw_step))]
     return(step)
@@ -53,18 +53,18 @@ generate_density_slide <- function(
     label_text <- paste(labels, collapse = "\n")
     text_grob <- textGrob(
       label = label_text,
-      just  = "center",
-      gp    = gpar(col = "#145c3c", fontsize = 18, fontface = "bold")
+      just = "center",
+      gp= gpar(col = "#145c3c", fontsize = 18, fontface = "bold")
     )
-    width_grob  <- grobWidth(text_grob) + unit(12, "mm")
+    width_grob <- grobWidth(text_grob) + unit(12, "mm")
     height_grob <- grobHeight(text_grob) + unit(8, "mm")
     rect_grob <- rectGrob(
-      x      = unit(1, "npc") - unit(5, "mm"),
-      y      = unit(1, "npc") - unit(5, "mm"),
-      width  = width_grob,
+      x = unit(1, "npc") - unit(5, "mm"),
+      y = unit(1, "npc") - unit(5, "mm"),
+      width = width_grob,
       height = height_grob,
-      just   = c("right", "top"),
-      gp     = gpar(fill = "#97e27f", col = NA)
+      just = c("right", "top"),
+      gp = gpar(fill = "#97e27f", col = NA)
     )
     text_grob_centered <- editGrob(
       text_grob,
@@ -96,7 +96,7 @@ generate_density_slide <- function(
   }
   
   values_focal <- data_focal[[metric_col]]
-  avg_focal    <- round(mean(values_focal, na.rm = TRUE), 1)
+  avg_focal <- round(mean(values_focal, na.rm = TRUE), 1)
   
   # ------ COMPARISON DATA -----------------------------------------------------
   # Prepare filtered comparison group data
@@ -128,19 +128,19 @@ generate_density_slide <- function(
   dens <- density(
     values_focal,
     adjust = 1.2,
-    from   = x_min,
-    to     = x_max,
-    n      = 100
+    from = x_min,
+    to = x_max,
+    n = 100
   )
   data_dens <- data.frame(x = dens$x, y = dens$y * 100)
   
-  y_max     <- max(data_dens$y)
-  y_step    <- get_y_step(y_max)
+  y_max <- max(data_dens$y)
+  y_step <- get_y_step(y_max)
   y_max_pad <- ceiling(y_max / y_step) * y_step
   
   x_range <- x_max - x_min
-  x_step  <- get_x_step(x_range)
-  x_lim   <- c(x_min - (x_min %% x_step), ceiling(x_max))
+  x_step <- get_x_step(x_range)
+  x_lim <- c(x_min - (x_min %% x_step), ceiling(x_max))
   
   # ------ PLOT ----------------------------------------------------------------
   # Build ggplot object with density curve and vertical average line
@@ -148,23 +148,23 @@ generate_density_slide <- function(
     geom_line(color = "#8ddef9", linewidth = 1.5) +
     annotate(
       "segment",
-      x     = avg_focal,
-      xend  = avg_focal,
-      y     = 0,
-      yend  = y_max_pad * 1.1,
+      x = avg_focal,
+      xend = avg_focal,
+      y = 0,
+      yend = y_max_pad * 1.1,
       color = "yellow",
       linetype = "dashed",
       linewidth = 1
     ) +
     annotate(
       "text",
-      x        = avg_focal - 0.5,
-      y        = y_max_pad * 1.05,
-      label    = paste("Avg. =", avg_focal),
-      color    = "yellow",
-      size     = 7,
+      x = avg_focal - 0.5,
+      y = y_max_pad * 1.05,
+      label = paste("Avg. =", avg_focal),
+      color = "yellow",
+      size = 7,
       fontface = "bold",
-      hjust    = 1
+      hjust = 1
     ) +
     scale_x_continuous(
       limits = x_lim,
@@ -179,15 +179,15 @@ generate_density_slide <- function(
     coord_cartesian(ylim = c(0, y_max_pad * 1.1)) +
     labs(
       title = NULL,
-      x     = instruction$x_title,
-      y     = "Density"
+      x = instruction$x_title,
+      y = "Density"
     ) +
     global_theme() +
     theme(
-      plot.title      = element_text(
+      plot.title = element_text(
         color = "white", face = "bold", size = 26, hjust = 0
       ),
-      plot.margin     = margin(t = 30, r = 20, b = 15, l = 20),
+      plot.margin = margin(t = 30, r = 20, b = 15, l = 20),
       legend.position = "none"
     )
   
@@ -205,26 +205,26 @@ generate_density_slide <- function(
         fpar(ftext(
           instruction$title %||% " ",
           fp_text(
-            font.size   = 28,
-            bold        = TRUE,
+            font.size = 28,
+            bold = TRUE,
             font.family = "Arial",
-            color       = "#323233"
+            color = "#323233"
           )
         ))
       ),
       location = ph_location(
-        left   = 0.4,
-        top    = 0.2,
-        width  = dims$width - 1,
+        left = 0.4,
+        top = 0.2,
+        width = dims$width - 1,
         height = 0.8
       )
     ) %>%
     ph_with(
       value = dml(ggobj = plot_obj, bg = "transparent"),
       location = ph_location(
-        left   = 0,
-        top    = 1.0,
-        width  = dims$width,
+        left = 0,
+        top = 1.0,
+        width = dims$width,
         height = dims$height - 1.4
       )
     )
@@ -240,9 +240,9 @@ generate_density_slide <- function(
           bg = "transparent"
         ),
         location = ph_location(
-          left   = 0,
-          top    = 1.0,
-          width  = dims$width,
+          left = 0,
+          top = 1.0,
+          width = dims$width,
           height = dims$height
         )
       )

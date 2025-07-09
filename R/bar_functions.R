@@ -468,11 +468,11 @@ generate_bar_category_slide <- function(
 ) {
   # ------ SETUP --------------------------------------------------------------
   # Extract key instruction fields and default unit
-  unit_label    <- instruction$unit %||% ""
-  category_var  <- instruction$category$name
-  order_var     <- instruction$category$order
-  metric_var    <- instruction$metric
-  group_info    <- instruction$focal_group
+  unit_label <- instruction$unit %||% ""
+  category_var <- instruction$category$name
+  order_var <- instruction$category$order
+  metric_var <- instruction$metric
+  group_info <- instruction$focal_group
   
   # ------ FILTER GROUP -------------------------------------------------------
   # Keep rows for focal group and apply optional subset filter
@@ -491,7 +491,7 @@ generate_bar_category_slide <- function(
   ordered_levels <- df %>%
     select(
       category = all_of(category_var),
-      order    = all_of(order_var)
+      order = all_of(order_var)
     ) %>%
     distinct() %>%
     arrange(order) %>%
@@ -502,7 +502,7 @@ generate_bar_category_slide <- function(
   df <- df %>%
     group_by(.data[[category_var]]) %>%
     summarise(
-      value   = mean(.data[[metric_var]], na.rm = TRUE),
+      value = mean(.data[[metric_var]], na.rm = TRUE),
       .groups = "drop"
     ) %>%
     filter(
@@ -512,7 +512,7 @@ generate_bar_category_slide <- function(
     mutate(
       !!category_var := factor(
         .data[[category_var]],
-        levels  = ordered_levels,
+        levels = ordered_levels,
         ordered = TRUE
       )
     ) %>%
@@ -527,7 +527,7 @@ generate_bar_category_slide <- function(
   # Construct ggplot2 bar chart with value labels and formatting
   plot_obj <- ggplot(df, aes(x = .data[[category_var]], y = value)) +
     geom_col(
-      fill  = "#70e2ff",
+      fill = "#70e2ff",
       width = 0.5
     ) +
     geom_text(
@@ -539,9 +539,9 @@ generate_bar_category_slide <- function(
         },
         y = value / 2
       ),
-      color     = "black",
-      size      = 6.5,
-      fontface  = "bold"
+      color = "black",
+      size = 6.5,
+      fontface = "bold"
     ) +
     scale_y_continuous(
       limits = c(0, y_max),
@@ -554,16 +554,16 @@ generate_bar_category_slide <- function(
       expand = c(0, 0)
     ) +
     labs(
-      x     = instruction$x_title %||% category_var,
-      y     = instruction$y_title %||% metric_var,
+      x = instruction$x_title %||% category_var,
+      y = instruction$y_title %||% metric_var,
       title = " "
     ) +
     global_theme() +
     theme(
-      plot.title      = element_text(
+      plot.title = element_text(
         color = "white", face = "bold", size = 26, hjust = 0
       ),
-      plot.margin     = margin(30, 40, 30, 40),
+      plot.margin = margin(30, 40, 30, 40),
       legend.position = "none"
     )
   
@@ -573,10 +573,10 @@ generate_bar_category_slide <- function(
     plot_obj <- plot_obj +
       annotate(
         "segment",
-        x     = df$x_center[1],
-        xend  = df$x_center[nrow(df)],
-        y     = df$value[1],
-        yend  = df$value[nrow(df)],
+        x = df$x_center[1],
+        xend = df$x_center[nrow(df)],
+        y = df$value[1],
+        yend = df$value[nrow(df)],
         color = "#f9f871",
         linewidth = 2
       )
@@ -586,10 +586,10 @@ generate_bar_category_slide <- function(
   # Add plot to PowerPoint if ppt_doc is provided
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
-      ppt_doc    = ppt_doc,
-      plot_obj   = plot_obj,
+      ppt_doc = ppt_doc,
+      plot_obj = plot_obj,
       title_text = instruction$title %||% " ",
-      is_first   = instruction$is_first
+      is_first = instruction$is_first
     )
     return(ppt_doc)
   }

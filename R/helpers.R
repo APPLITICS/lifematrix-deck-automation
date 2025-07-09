@@ -13,49 +13,49 @@
 #'
 #' @return A ggplot2 theme object.
 global_theme <- function(
-    base_size        = 14,
+    base_size = 14,
     background_color = "#005981",
-    title_color      = "white",
-    axis_color       = "white",
-    grid_color       = "white"
+    title_color = "white",
+    axis_color = "white",
+    grid_color = "white"
 ) {
   theme_minimal(base_size = base_size) +
     theme(
-      panel.background    = element_rect(
+      panel.background = element_rect(
         fill = background_color, color = NA
       ),
-      plot.background     = element_rect(
+      plot.background = element_rect(
         fill = background_color, color = NA
       ),
-      panel.grid.major.x  = element_blank(),
-      panel.grid.minor.x  = element_blank(),
-      panel.grid.major.y  = element_line(
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_line(
         color = grid_color, linewidth = 0.2
       ),
-      panel.grid.minor.y  = element_blank(),
-      axis.line.x         = element_line(
+      panel.grid.minor.y = element_blank(),
+      axis.line.x = element_line(
         color = axis_color, linewidth = 1.2
       ),
-      axis.line.y         = element_line(
+      axis.line.y = element_line(
         color = axis_color, linewidth = 1.2
       ),
-      axis.text.x         = element_text(
+      axis.text.x = element_text(
         color = axis_color, size = 20, face = "bold",
         margin = margin(t = 10)
       ),
-      axis.text.y         = element_text(
+      axis.text.y = element_text(
         color = axis_color, size = 20, face = "bold",
         margin = margin(r = 10)
       ),
-      axis.title.x        = element_text(
+      axis.title.x = element_text(
         color = axis_color, size = 20, face = "bold",
         margin = margin(t = 25)
       ),
-      axis.title.y        = element_text(
+      axis.title.y = element_text(
         color = axis_color, size = 20, face = "bold",
         margin = margin(r = 25)
       ),
-      plot.title          = element_text(
+      plot.title = element_text(
         color = title_color, size = 25, face = "bold",
         hjust = 0.5, margin = margin(b = 20)
       )
@@ -73,21 +73,21 @@ global_theme <- function(
 theme_minimal_yless <- function() {
   theme_minimal(base_size = 25) +
     theme(
-      axis.title.y     = element_blank(),
-      axis.text.y      = element_blank(),
-      axis.ticks.y     = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      panel.border     = element_blank(),
-      axis.line.x      = element_line(color = "white", linewidth = 0.8),
-      axis.text.x      = element_text(
+      panel.border = element_blank(),
+      axis.line.x = element_line(color = "white", linewidth = 0.8),
+      axis.text.x = element_text(
         face = "bold", size = 14, color = "white",
         margin = margin(t = 10)
       ),
-      axis.title.x     = element_blank(),
-      plot.background  = element_rect(fill = "#005981", color = NA),
+      axis.title.x = element_blank(),
+      plot.background = element_rect(fill = "#005981", color = NA),
       panel.background = element_rect(fill = "#005981", color = NA),
-      plot.margin      = margin(t = 40, r = 40, b = 40, l = 40)
+      plot.margin = margin(t = 40, r = 40, b = 40, l = 40)
     )
 }
 
@@ -101,9 +101,9 @@ theme_minimal_yless <- function() {
 #'
 #' @return A named character vector of hex color codes.
 get_color_palette <- function(groups) {
-  base_colors    <- c("#70e2ff", "#97e37e", "#2dc595", "#ffc101", "#cccccc")
-  unique_groups  <- unique(groups)
-  colors         <- setNames(base_colors[seq_along(unique_groups)],
+  base_colors <- c("#70e2ff", "#97e37e", "#2dc595", "#ffc101", "#cccccc")
+  unique_groups <- unique(groups)
+  colors <- setNames(base_colors[seq_along(unique_groups)],
                              unique_groups)
   return(colors)
 }
@@ -127,8 +127,8 @@ export_plot_to_slide <- function(
     ppt_doc,
     plot_obj,
     title_text = " ",
-    is_first   = FALSE,
-    layout     = "Title and Content"
+    is_first = FALSE,
+    layout = "Title and Content"
 ) {
   if (!is.null(ppt_doc)) {
     if (is.null(is_first) || !is_first) {
@@ -143,26 +143,26 @@ export_plot_to_slide <- function(
           fpar(ftext(
             title_text,
             fp_text(
-              font.size   = 28,
-              bold        = TRUE,
+              font.size = 28,
+              bold = TRUE,
               font.family = "Arial",
-              color       = "#323233"
+              color = "#323233"
             )
           ))
         ),
         location = ph_location(
-          left   = 0.4,
-          top    = 0.2,
-          width  = dims$width - 1,
+          left = 0.4,
+          top = 0.2,
+          width = dims$width - 1,
           height = 0.8
         )
       ) %>%
       ph_with(
         value = dml(ggobj = plot_obj, bg = "transparent"),
         location = ph_location(
-          left   = 0,
-          top    = 1.0,
-          width  = dims$width,
+          left = 0,
+          top = 1.0,
+          width = dims$width,
           height = dims$height - 1.4
         )
       )

@@ -30,10 +30,10 @@ The slide generation pipeline is driven by a single function:
 
 ```r
 run_pipeline(
-  data,
-  instructions,
-  ppt_template_path = "inputs/template.pptx",
-  ppt_output_path   = "outputs/generated_slides.pptx"
+data,
+instructions,
+ppt_template_path = "inputs/template.pptx",
+ppt_output_path = "outputs/generated_slides.pptx"
 )
 ```
 
@@ -53,16 +53,6 @@ This function automates the creation of PowerPoint slides from preprocessed surv
 - Builds a slide with the correct layout and title.
 - Saves the result to `ppt_output_path`.
 
-### Example Usage
-
-```r
-run_pipeline(
-  data         = pipeline_data,
-  instructions = instructions,
-  ppt_template_path = "inputs/template.pptx",
-  ppt_output_path   = "outputs/generated_slides.pptx"
-)
-```
 ---
 ## Slide Generation Overview
 
@@ -90,29 +80,29 @@ generate_density_slide(data, instruction, ppt_doc)
 
 ```r
 list(
-  function_name     = "generate_density_slide",
-  metric            = "life_satisfaction",
-  x_title           = "Life Satisfaction",
-  y_title           = "Density",
-  title             = "LIFE SATISFACTION",
-  focal_group       = list(name = focal_group, subset = NULL),
-  comparison_groups = NULL
+function_name = "generate_density_slide",
+metric = "life_satisfaction",
+x_title = "Life Satisfaction",
+y_title = "Density",
+title = "LIFE SATISFACTION",
+focal_group = list(name = focal_group, subset = NULL),
+comparison_groups = NULL
 )
 ```
 #### Example Instruction: Slide 5 (With Comparisons)
 
 ```r
 list(
-  function_name     = "generate_density_slide",
-  metric            = "life_satisfaction",
-  x_title           = "Life Satisfaction",
-  y_title           = "Density",
-  title             = "LIFE SATISFACTION",
-  focal_group       = list(name = focal_group, subset = NULL),
-  comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
-  )
+function_name = "generate_density_slide",
+metric = "life_satisfaction",
+x_title = "Life Satisfaction",
+y_title = "Density",
+title = "LIFE SATISFACTION",
+focal_group = list(name = focal_group, subset = NULL),
+comparison_groups = list(
+list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+)
 )
 ```
 ### B. Bar Charts
@@ -124,7 +114,11 @@ Bar charts are handled using two functions depending on whether the x-axis repre
 **Function:**
 
 ```r
-generate_bar_metric_slide(data, instruction, ppt_doc)
+generate_bar_metric_slide(
+  data,
+  instruction,
+  ppt_doc
+)
 ```
 
 **Used In:** Slides 8–12, 62–65
@@ -137,17 +131,17 @@ generate_bar_metric_slide(data, instruction, ppt_doc)
 
 ```r
 list(
-  function_name     = "generate_bar_metric_slide",
-  bar_value         = c("joy", "achievement", "meaningfulness"),
-  target            = NULL
-  unit              = "%",
-  title             = "IMPORTANCE OF JAM",
-  y_title           = "% High Importance",
-  focal_group       = list(name = focal_group, subset = NULL),
-  comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = NA, subset = NULL)
-  )
+function_name = "generate_bar_metric_slide",
+bar_value = c("joy", "achievement", "meaningfulness"),
+target = NULL
+unit = "%",
+title = "IMPORTANCE OF JAM",
+y_title = "% High Importance",
+focal_group = list(name = focal_group, subset = NULL),
+comparison_groups = list(
+list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+list(name = NA, subset = NULL)
+)
 )
 ```
 
@@ -155,17 +149,17 @@ list(
 
 ```r
 list(
-  function_name     = "generate_bar_metric_slide",
-  bar_value         = c("joy", "achievement", "meaningfulness"),
-  target            = c("joy_min", "achievement_min", "meaningfulness_min"),
-  unit              = "%",
-  title             = "IMPORTANCE OF JAM",
-  y_title           = "% High Importance",
-  focal_group       = list(name = focal_group, subset = NULL),
-  comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
-  ),
+function_name = "generate_bar_metric_slide",
+bar_value = c("joy", "achievement", "meaningfulness"),
+target = c("joy_min", "achievement_min", "meaningfulness_min"),
+unit = "%",
+title = "IMPORTANCE OF JAM",
+y_title = "% High Importance",
+focal_group = list(name = focal_group, subset = NULL),
+comparison_groups = list(
+list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+),
 )
 ```
 
@@ -186,58 +180,58 @@ generate_bar_category_slide(data, instruction, ppt_doc)
 **Example: Slide 67 with Income Grouping + Trend**
 
 ```r
-  list(
-    function_name = "generate_bar_category_slide",
-    metric = "life_satisfaction",
-    category = list(
-      name = "income_range",
-      order = "income_range_levels"
-    ),
-    unit = NULL,
-    title = "LIFE SATISFACTION BY INCOME",
-    x_title = "Income ($)",
-    y_title = "Life Satisfaction",
-    focal_group = list(name = focal_group, subset = NULL),
-    trend_line = TRUE
-  )
+list(
+function_name = "generate_bar_category_slide",
+metric = "life_satisfaction",
+category = list(
+name = "income_range",
+order = "income_range_levels"
+),
+unit = NULL,
+title = "LIFE SATISFACTION BY INCOME",
+x_title = "Income ($)",
+y_title = "Life Satisfaction",
+focal_group = list(name = focal_group, subset = NULL),
+trend_line = TRUE
+)
 ```
 
 **Example: Slide 72 without Y-Axis**
 
 ```r
-  list(
-    function_name = "generate_bar_category_slide",
-    metric = "n_children",
-    category = list(
-      name = "reunion_class",
-      order = "reunion_class_levels"
-    ),
-    unit = NULL,
-    title = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
-    x_title = "Reunion Class",
-    y_title = "Number of Children",
-    focal_group = list(name = focal_group, subset = NULL),
-    trend_line = FALSE
-  )
+list(
+function_name = "generate_bar_category_slide",
+metric = "n_children",
+category = list(
+name = "reunion_class",
+order = "reunion_class_levels"
+),
+unit = NULL,
+title = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
+x_title = "Reunion Class",
+y_title = "Number of Children",
+focal_group = list(name = focal_group, subset = NULL),
+trend_line = FALSE
+)
 ```
 
 **Example: Slide 73 with Grouped Numeric Category**
 
 ```r
-  list(
-    function_name = "generate_bar_category_slide",
-    metric = "life_satisfaction",
-    category = list(
-      name = "children_range",
-      order = "children_range_levels"
-    ),
-    unit = NULL,
-    title = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
-    x_title = "Number of Children",
-    y_title = "Life satisfaction",
-    focal_group = list(name = focal_group, subset = NULL),
-    trend_line = TRUE
-  )
+list(
+function_name = "generate_bar_category_slide",
+metric = "life_satisfaction",
+category = list(
+name = "children_range",
+order = "children_range_levels"
+),
+unit = NULL,
+title = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
+x_title = "Number of Children",
+y_title = "Life satisfaction",
+focal_group = list(name = focal_group, subset = NULL),
+trend_line = TRUE
+)
 ```
 ---
 ## More Examples & Testing

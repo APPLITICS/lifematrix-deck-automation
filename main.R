@@ -17,7 +17,7 @@ pipeline_data <- data.table::fread("data/simulated_pipeline_input.csv")
 
 # ------ DEFINE GROUPS ---------------------------------------------------------
 
-focal_group        <- "Xilio"
+focal_group <- "Xilio"
 comparison_group_1 <- "HBS"
 comparison_group_2 <- "IWF"
 
@@ -40,5 +40,5 @@ run_pipeline(
   data = pipeline_data,
   instructions = instructions,
   ppt_template_path = "inputs/template.pptx",
-  ppt_output_path   = "outputs/generated_slides.pptx"
+  ppt_output_path = "outputs/generated_slides.pptx"
 )

@@ -15,15 +15,15 @@ run_pipeline <- function(
     data,
     instructions,
     ppt_template_path = "inputs/template.pptx",
-    ppt_output_path   = "outputs/generated_slides.pptx"
+    ppt_output_path = "outputs/generated_slides.pptx"
 ) {
   # ------ HELPERS -------------------------------------------------------------
   # Generate a unique file path by appending _2, _3, etc. if needed
   get_unique_path <- function(path) {
     if (!file.exists(path)) return(path)
 
-    base    <- tools::file_path_sans_ext(path)
-    ext     <- tools::file_ext(path)
+    base <- tools::file_path_sans_ext(path)
+    ext <- tools::file_ext(path)
     counter <- 2
 
     repeat {
@@ -47,9 +47,9 @@ run_pipeline <- function(
         ppt_doc <- do.call(
           what = match.fun(func_name),
           args = list(
-            data        = data,
+            data = data,
             instruction = inst,
-            ppt_doc     = ppt_doc
+            ppt_doc = ppt_doc
           )
         )
       }, error = function(e) {
