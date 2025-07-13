@@ -1,22 +1,43 @@
+# ------ HELPER FUNCTION: WRAP LABEL ------------------------------------------
 
-# ------ HELPER FUNCTIONS -----------------------------------------------------
+#' Wrap Text Label for Plotting
+#'
+#' Splits a character string into multiple lines to improve readability 
+#' in plot annotations. Optionally limits the number of lines.
+#'
+#' @param text A character string to be wrapped.
+#' @param width Maximum number of characters per line (default = 20).
+#' @param max_lines Maximum number of lines to display (default = 2).
+#'
+#' @return A string with newline characters inserted for line breaks.
 
-wrap_label <- function(text, width = 18, max_lines = 2) {
+wrap_label <- function(text, width = 20, max_lines = 2) {
   lines <- strwrap(text, width = width)
   lines <- lines[seq_len(min(length(lines), max_lines))]
   paste(lines, collapse = "\n")
 }
+# ------ CHART FUNCTION: TILE CHART FOCAL ONLY -------------------------------
 
-# ------ TILE CHART: FOCAL ONLY -----------------------------------------------
-
+#' Draw Focal-Only Tile Chart
+#'
+#' Creates a tile-based vertical chart showing the top N activities for a single
+#' focal group. Each activity is displayed with a rounded rectangle, circle marker,
+#' and label pair (activity + duration).
+#'
+#' @param data A data frame with `activity`, `duration`, and `group` columns.
+#' @param n_activities Number of activities to display (default = 5).
+#' @param tile_fill Fill color for the tile background.
+#'
+#' @return A `ggplot` object showing the focal group's top activities.
 draw_tile_chart_focal <- function(
     data,
     n_activities = 5,
-    tile_fill,
-    font_family = "RoundedSans"
+    tile_fill
 ) {
+  # ------ SETTINGS ------------------------------------------------------------
   circle_color <- "#21b2aa"
-  
+  font_family = "RoundedSans"
+  # ------- PREPARE DATA -------------------------------------------------------
   df <- data %>%
     arrange(desc(as.numeric(str_extract(duration, "\\d+")))) %>%
     mutate(
@@ -34,7 +55,7 @@ draw_tile_chart_focal <- function(
     )
   
   max_nchar <- max(nchar(data$activity), na.rm = TRUE)
-  
+  # ------ DYNAMIC CIRCLE SIZE -------------------------------------------------
   circle_size <- {
     n_min <- 2
     n_max <- 10
@@ -46,7 +67,7 @@ draw_tile_chart_focal <- function(
     
     pmax(size_min, pmin(size_max, scaled))
   }
-  
+  # ------ DYNAMIC MARGINS -----------------------------------------------------
   top_bottom_margin <- if (n_activities <= 4) {
     base_margin <- 120
     step_margin <- 20
@@ -62,7 +83,7 @@ draw_tile_chart_focal <- function(
     dynamic_margin <- base_margin + (max_nchar - 10) * scale_factor
     pmax(100, dynamic_margin)
   }
-  
+  # ------ PLOT ----------------------------------------------------------------
   ggplot(df) +
     geom_tile(
       aes(
@@ -132,18 +153,30 @@ draw_tile_chart_focal <- function(
       )
     )
 }
-# ------ TILE CHART: WITH COMPARISON GROUPS -----------------------------------
+# ------ CHART FUNCTION: TILE CHART WITH GROUPS --------------------------------
 
+#' Draw Grouped Tile Chart (Focal + Comparisons)
+#'
+#' Creates a grouped tile chart with one vertical column per group (focal +
+#' comparisons), each showing the top N activities. Labels and duration values are
+#' displayed within rounded tiles, with dynamic spacing and group headers.
+#'
+#' @param data A data frame with `activity`, `duration`, and `group` columns.
+#' @param n_activities Number of activities to display per group (default = 5).
+#' @param tile_fill Fill color for the tile background.
+#'
+#' @return A `ggplot` object showing grouped activity tiles per group.
 draw_tile_chart_groups <- function(
     data,
     n_activities = 5,
-    tile_fill,
-    header_fill = "white",
-    font_family = "RoundedSans"
+    tile_fill
 ) {
+  # ------ SETTINGS ------------------------------------------------------------
+  header_fill = "white"
+  font_family = "RoundedSans"
   group_spacing <- 0.8
   n_groups <- length(unique(data$group))
-  
+  # Determine label width and horizontal margin based on number of groups
   label_width <- case_when(
     n_groups == 2 ~ 25,
     n_groups == 3 ~ 20,
@@ -156,7 +189,7 @@ draw_tile_chart_groups <- function(
     n_groups == 3 ~ 50,
     TRUE ~ 30
   )
-  
+  # ------ PREPARE DATA --------------------------------------------------------
   df <- data %>%
     group_by(group) %>%
     arrange(desc(as.numeric(str_extract(duration, "\\d+")))) %>%
@@ -187,7 +220,7 @@ draw_tile_chart_groups <- function(
     0.35 + (5 - avg_activity) * 0.05,
     "lines"
   )
-  
+ # ------ PLOT -----------------------------------------------------------------
   ggplot() +
     geom_label(
       data = df,
@@ -267,15 +300,31 @@ draw_tile_chart_groups <- function(
       )
     )
 }
-# ------ SLIDE GENERATION -----------------------------------------------------
 
+# ------ CHART FUNCTION: TILE SLIDE -------------------------------------------
+
+#' Generate Tile Chart Slide
+#'
+#' Creates a PowerPoint slide with a tile-based chart showing the top N activities
+#' and their durations for a focal group, with optional comparison groups. 
+#' Tiles are colored based on the preferred value direction (e.g., high = green).
+#'
+#' The chart can be rendered in two modes:
+#' - Focal-only mode: A single vertical column of activity tiles.
+#' - Grouped mode: One column per group (focal + comparisons), each with top activities.
+#'
+#' @param data A data frame containing activity metrics and group identifiers.
+#' @param instruction A list of slide instruction configurations, including:
+#' @param ppt_doc Optional `read_pptx()` object to append the slide to.
+#'
+#' @return Updated `pptx` object if `ppt_doc` is provided, otherwise `NULL`.
 generate_tile_slide <- function(
     data,
     instruction,
     ppt_doc
 ) {
+  # ------ EXTRACT instruction FIELDS ------------------------------------------
   font_family <- "RoundedSans"
-  
   metric_names <- instruction$metric
   common_suffix <- stringr::str_extract(metric_names, "_[^_]+$")
   suffix_to_remove <- if (length(unique(common_suffix)) == 1) {
@@ -288,7 +337,7 @@ generate_tile_slide <- function(
   comp_groups <- instruction$comparison_groups %||% list()
   has_comparisons <- length(comp_groups) > 0
   
-  # ------ FOCAL GROUP FILTERING --------------------------------------------
+  # ------ FOCAL GROUP FILTERING -----------------------------------------------
   data_focal <- data %>% filter(group == focal_name)
   
   fg_subset_col <- instruction$focal_group$subset$title %||% NULL
@@ -305,7 +354,7 @@ generate_tile_slide <- function(
     }
   }
   
-  # ------ COMPARISON GROUPS FILTERING --------------------------------------
+  # ------ COMPARISON GROUPS FILTERING -----------------------------------------
   comparison_data_list <- if (!is.null(comp_groups)) {
     lapply(comp_groups, function(cg) {
       subset_col <- cg$subset$title %||% NULL
@@ -330,7 +379,7 @@ generate_tile_slide <- function(
     list()
   }
   
-  # ------ FINAL SUMMARY ----------------------------------------------------
+  # ------ FINAL SUMMARY -------------------------------------------------------
   combined_data <- bind_rows(data_focal, !!!comparison_data_list)
   
   summary_table <- combined_data %>%
@@ -343,7 +392,7 @@ generate_tile_slide <- function(
     ) %>%
     ungroup()
   
-  # ------ GROUP LEVELS -----------------------------------------------------
+  # ------ GROUP LEVELS --------------------------------------------------------
   group_levels <- if (
     is.null(instruction$focal_group$subset) ||
     length(instruction$focal_group$subset$value) > 1
@@ -370,7 +419,7 @@ generate_tile_slide <- function(
   
   group_levels <- c(group_levels, comp_names)
   
-  # ------ PREPARE DATA FOR PLOT --------------------------------------------
+  # ------ PREPARE DATA FOR PLOT -----------------------------------------------
   tile_data <- summary_table %>%
     pivot_longer(
       cols = all_of(metric_names),
@@ -408,7 +457,7 @@ generate_tile_slide <- function(
     mutate(duration = paste0(round(value, 0), " hrs")) %>%
     select(group, activity, duration)
   
-  # ------ GENERATE PLOT ----------------------------------------------------
+  # ------ GENERATE PLOT -------------------------------------------------------
   plot_obj <- if (!has_comparisons) {
     draw_tile_chart_focal(
       data = tile_data_top,
@@ -423,7 +472,7 @@ generate_tile_slide <- function(
     )
   }
   
-  # ------ EXPORT TO SLIDE --------------------------------------------------
+  # ------ EXPORT TO SLIDE -----------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
       ppt_doc = ppt_doc,
