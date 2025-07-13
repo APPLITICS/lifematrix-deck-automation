@@ -7,21 +7,21 @@
 #' optional units.
 #'
 #' @param data A data frame with numeric values and group labels.
-#' @param instructions List of slide instructions configurations.
+#' @param instruction List of slide instruction configurations.
 #' @param ppt_doc Optional `read_pptx()` object to append the slide to.
 #'
 #' @return Updated pptx object if `ppt_doc` is given; otherwise, `NULL`.
 generate_circle_slide <- function(
     data,
-    instructions,
+    instruction,
     ppt_doc
 ) {
-  # ------ EXTRACT instructions FIELDS -------------------------------------
-  unit_label <- instructions$unit %||% ""
-  category_var <- instructions$category$name
-  order_var <- instructions$category$order
-  metric_var <- instructions$metric %||% NULL
-  group_info <- instructions$focal_group
+  # ------ EXTRACT instruction FIELDS -------------------------------------
+  unit_label <- instruction$unit %||% ""
+  category_var <- instruction$category$name
+  order_var <- instruction$category$order
+  metric_var <- instruction$metric %||% NULL
+  group_info <- instruction$focal_group
   
   # ------ FILTER FOCAL GROUP DATA ----------------------------------------
   df <- data %>%
@@ -129,8 +129,8 @@ generate_circle_slide <- function(
     ppt_doc <- export_plot_to_slide(
       ppt_doc = ppt_doc,
       plot_obj = plot_obj,
-      title_text = instructions$title %||% " ",
-      is_first = instructions$is_first
+      title_text = instruction$title %||% " ",
+      is_first = instruction$is_first
     )
     return(ppt_doc)
   }
