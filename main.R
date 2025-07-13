@@ -1,6 +1,7 @@
 # ------ LIBRARIES ------------------------------------------------------------
 
 library(ggplot2)
+library(ggtext)
 library(dplyr)
 library(tidyr)
 library(officer)

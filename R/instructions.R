@@ -172,7 +172,7 @@ instructions <- list(
   ),
   list(
     function_name = "generate_density_slide",
-    metric = "sleep_hours",
+    metric = "sleeping_hours",
     unit = "score",
     x_title = "Sleep hours",
     y_title = "Density",
@@ -182,7 +182,7 @@ instructions <- list(
   ),
   list(
     function_name = "generate_density_slide",
-    metric = "sleep_hours",
+    metric = "sleeping_hours",
     unit = "score",
     x_title = "Sleep hours",
     y_title = "Density",
@@ -195,7 +195,7 @@ instructions <- list(
   ),
   list(
     function_name = "generate_density_slide",
-    metric = "exercice_hours",
+    metric = "exercising_hours",
     unit = "%",
     x_title = "Exercise hours",
     y_title = "Density",
@@ -205,7 +205,7 @@ instructions <- list(
   ),
   list(
     function_name = "generate_density_slide",
-    metric = "exercice_hours",
+    metric = "exercising_hours",
     unit = "%",
     x_title = "Exercise hours",
     y_title = "Density",
@@ -315,4 +315,72 @@ instructions <- list(
     focal_group = list(name = focal_group, subset = NULL),
     trend_line = FALSE
   )
+  ,
+  # ------ Slide 75–78: Category charts ---------------------------------------
+  list(
+    function_name = "generate_circle_slide",
+    metric = NULL,
+    category = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = NULL,
+    title = "CURRENT SAMPLE",
+    focal_group = list(name = focal_group, subset = NULL)
+  ),
+  list(
+    function_name = "generate_circle_slide",
+    metric = "life_satisfaction",
+    category = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = NULL,
+    title = "LIFE SATISFACTION",
+    focal_group = list(name = focal_group, subset = NULL)
+  ),
+  list(
+    function_name = "generate_circle_slide",
+    metric = "tqi",
+    category = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = NULL,
+    title = "TQI",
+    focal_group = list(name = focal_group, subset = NULL)
+  ),
+  list(
+    function_name = "generate_circle_slide",
+    metric = "meaningfulness_work",
+    category = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = "%",
+    title = "PERCENT MEETING MEANINGFULNESS",
+    focal_group = list(name = focal_group, subset = NULL)
+  ),
+  # ------ Optional slide: displaying just part of reunion class ---------------
+  list(
+    function_name = "generate_circle_slide",
+    metric = "meaningfulness_work",
+    category = list(
+      name  = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = "%",
+    title = "PERCENT MEETING MEANINGFULNESS",
+    focal_group = list(
+      name = focal_group,
+      subset = list(
+        title = "reunion_class",
+        value = c(
+          "1st", "5th", "10th",
+          "15th", "20th", "25th"
+        )
+      )
+    )
+  )
+  
 )

@@ -122,11 +122,14 @@ generate_density_slide(
 ```r
 list(
   function_name = "generate_density_slide",
-  metric = "life_satisfaction",
-  x_title = "Life Satisfaction",
-  y_title = "Density",
-  title = "LIFE SATISFACTION",
-  focal_group = list(name = focal_group, subset = NULL),
+  metric        = "life_satisfaction",
+  x_title       = "Life Satisfaction",
+  y_title       = "Density",
+  title         = "LIFE SATISFACTION",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = NULL
 )
 ```
@@ -135,14 +138,23 @@ list(
 ```r
 list(
   function_name = "generate_density_slide",
-  metric = "life_satisfaction",
-  x_title = "Life Satisfaction",
-  y_title = "Density",
-  title = "LIFE SATISFACTION",
-  focal_group = list(name = focal_group, subset = NULL),
+  metric        = "life_satisfaction",
+  x_title       = "Life Satisfaction",
+  y_title       = "Density",
+  title         = "LIFE SATISFACTION",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Women")
+    ),
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Men")
+    )
   )
 )
 ```
@@ -169,38 +181,56 @@ Based on the provided PowerPoint file, this function includes:
 - X-axis = metric names.
 - Optional: target lines, placeholder groups.
 
-**Example: Slide 12**
+#### Example: Slide 12
 
 ```r
 list(
   function_name = "generate_bar_metric_slide",
-  bar_value = c("joy", "achievement", "meaningfulness"),
-  target = NULL
-  unit = "%",
-  title = "IMPORTANCE OF JAM",
-  y_title = "% High Importance",
-  focal_group = list(name = focal_group, subset = NULL),
+  bar_value     = c("joy", "achievement", "meaningfulness"),
+  target        = NULL,
+  unit          = "%",
+  title         = "IMPORTANCE OF JAM",
+  y_title       = "% High Importance",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = NA, subset = NULL)
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Women")
+    ),
+    list(
+      name   = NA,
+      subset = NULL
+    )
   )
 )
 ```
 
-**Example: Slide 14 with Targets**
+#### Example: Slide 14 with Targets
 
 ```r
 list(
   function_name = "generate_bar_metric_slide",
-  bar_value = c("joy", "achievement", "meaningfulness"),
-  target = c("joy_min", "achievement_min", "meaningfulness_min"),
-  unit = "%",
-  title = "IMPORTANCE OF JAM",
-  y_title = "% High Importance",
-  focal_group = list(name = focal_group, subset = NULL),
+  bar_value     = c("joy", "achievement", "meaningfulness"),
+  target        = c("joy_min", "achievement_min", "meaningfulness_min"),
+  unit          = "%",
+  title         = "IMPORTANCE OF JAM",
+  y_title       = "% High Importance",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Women")
+    ),
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Men")
+    )
   )
 )
 ```
@@ -225,60 +255,151 @@ Based on the provided PowerPoint file, this function includes:
 - Does not support comparison groups
 - Supports trend lines.
 
-**Example: Slide 67 with Income Grouping + Trend**
+#### Example: Slide 67 with Income Grouping + Trend
 
 ```r
 list(
   function_name = "generate_bar_category_slide",
-  metric = "life_satisfaction",
-  category = list(
-    name = "income_range",
+  metric        = "life_satisfaction",
+  category      = list(
+    name  = "income_range",
     order = "income_range_levels"
   ),
-  unit = NULL,
-  title = "LIFE SATISFACTION BY INCOME",
-  x_title = "Income ($)",
-  y_title = "Life Satisfaction",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line = TRUE
+  unit          = NULL,
+  title         = "LIFE SATISFACTION BY INCOME",
+  x_title       = "Income ($)",
+  y_title       = "Life Satisfaction",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
+  trend_line    = TRUE
 )
 ```
 
-**Example: Slide 72 without Y-Axis**
+#### Example: Slide 72 without Y-Axis
 
 ```r
 list(
   function_name = "generate_bar_category_slide",
-  metric = "n_children",
-  category = list(
-    name = "reunion_class",
+  metric        = "n_children",
+  category      = list(
+    name  = "reunion_class",
     order = "reunion_class_levels"
   ),
-  unit = NULL,
-  title = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
-  x_title = "Reunion Class",
-  y_title = "Number of Children",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line = FALSE
+  unit          = NULL,
+  title         = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
+  x_title       = "Reunion Class",
+  y_title       = "Number of Children",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
+  trend_line    = FALSE
 )
 ```
 
-**Example: Slide 73 with Grouped Numeric Category**
+#### Example: Slide 73 with Grouped Numeric Category
 
 ```r
 list(
   function_name = "generate_bar_category_slide",
-  metric = "life_satisfaction",
-  category = list(
-    name = "children_range",
+  metric        = "life_satisfaction",
+  category      = list(
+    name  = "children_range",
     order = "children_range_levels"
   ),
-  unit = NULL,
-  title = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
-  x_title = "Number of Children",
-  y_title = "Life satisfaction",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line = TRUE
+  unit          = NULL,
+  title         = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
+  x_title       = "Number of Children",
+  y_title       = "Life satisfaction",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
+  trend_line    = TRUE
+)
+```
+
+
+### C. Circle Graphs
+
+**Function:**
+
+```r
+generate_circle_slide(
+  data,
+  instructions,
+  ppt_doc
+)
+```
+
+**Used In:** Slides 75–78
+
+#### Key Features
+
+- Displays one value per category for the focal group.
+- If `metric` is provided, shows the summary value (e.g., mean) of that metric per category.
+- If `metric = NULL`, shows the **count of participant** per category for the focal group.
+- Supports subsetting focal group data by category or other variables.
+
+#### Example: Slide 75 (Counts per Category)
+
+```r
+list(
+  function_name = "generate_circle_slide",
+  metric        = NULL,
+  category      = list(
+    name  = "reunion_class",
+    order = "reunion_class_levels"
+  ),
+  unit          = NULL,
+  title         = "CURRENT SAMPLE",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+
+#### Example: Slide 76 (Metric-Based Summary)
+
+```r
+list(
+  function_name = "generate_circle_slide",
+  metric        = "life_satisfaction",
+  category      = list(
+    name  = "reunion_class",
+    order = "reunion_class_levels"
+  ),
+  unit          = NULL,
+  title         = "LIFE SATISFACTION",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+
+#### Example: Slide 78 (Filtered Categories)
+
+```r
+list(
+  function_name = "generate_circle_slide",
+  metric        = "meaningfulness_work",
+  category      = list(
+    name  = "reunion_class",
+    order = "reunion_class_levels"
+  ),
+  unit          = "%",
+  title         = "PERCENT MEETING MEANINGFULNESS",
+  focal_group   = list(
+    name   = focal_group,
+    subset = list(
+      title = "reunion_class",
+      value = c("1st", "5th", "10th", "15th", "20th", "25th")
+    )
+  )
 )
 ```
 ---
