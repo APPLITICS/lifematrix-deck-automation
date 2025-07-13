@@ -402,6 +402,105 @@ list(
   )
 )
 ```
+### C. Tile Charts
+
+**Function:**
+
+```r
+generate_tile_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 24–32
+
+#### Key Features
+
+- **Focal or comparison view**: Show top activities for one group or compare up to 4 groups side by side.
+- **Top activity selection**: Automatically selects and ranks the top `n_activities` based on metric values.
+- **Color by preference**: Changes tile color based on whether higher or lower values are preferred.
+- **Group filtering**: Supports filtering groups by variables like gender or reunion class.
+
+#### Example 1: Focal vs Comparison (High Value Activities)
+
+```r
+list(
+    function_name = "generate_tile_slide",
+    metric        = c(
+        "catching_up_hours", "reading_hours", "care_giving_hours",
+        "exercising_hours", "chores_with_others_hours",
+        "chores_with_family_hours", "watching_TV_with_others_hours",
+        "watching_TV_alone_hours", "eating_with_others_hours"
+    ),
+    title         = "MOST COMMON HIGH VALUE ACTIVITIES",
+    focal_group   = list(
+        name   = focal_group,
+        subset = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name   = comparison_group_1,
+            subset = NULL
+        )
+    ),
+    preferred_value = "high",
+    n_activities    = 5
+)
+```
+#### Example 2: Filtered Comparison by Category
+
+```r
+list(
+    function_name = "generate_tile_slide",
+    metric        = c(
+        "catching_up_hours", "reading_hours", "care_giving_hours",
+        "exercising_hours", "chores_with_others_hours",
+        "chores_with_family_hours", "watching_TV_with_others_hours",
+        "watching_TV_alone_hours", "eating_with_others_hours"
+    ),
+    title         = "MOST COMMON HIGH VALUE ACTIVITIES",
+    focal_group   = list(
+        name   = focal_group,
+        subset = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name   = comparison_group_1,
+            subset = list(
+                title = "reunion_class",
+                value = c("5th", "10th", "15th", "20th", "25th", "30th")
+            )
+        )
+    ),
+    preferred_value = "high",
+    n_activities    = 5
+)
+```
+#### Example 3: Focal + 3 Comparison Groups (Low Value Activities)
+
+```r
+list(
+    function_name = "generate_tile_slide",
+    metric        = c(
+        "social_media_hours", "watching_TV_alone_hours", "eating_alone_hours",
+        "chores_alone_hours", "commuting_alone_hours", "hanging_out_alone_hours"
+    ),
+    title         = "MOST COMMON HIGH VALUE ACTIVITIES",
+    focal_group   = list(
+        name   = focal_group,
+        subset = NULL
+    ),
+    comparison_groups = list(
+        list(name = comparison_group_2, subset = NULL),
+        list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+        list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    ),
+    preferred_value = "low",
+    n_activities    = 5
+)
+```
 ---
 ## More Examples & Testing
 
