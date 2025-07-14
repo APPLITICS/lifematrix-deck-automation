@@ -402,7 +402,7 @@ list(
   )
 )
 ```
-### C. Tile Charts
+### D. Tile Charts
 
 **Function:**
 
@@ -499,6 +499,76 @@ list(
     ),
     preferred_value = "low",
     n_activities    = 5
+)
+```
+### E. Horizontal Bar Charts
+
+**Function:**
+
+```r
+generate_horizontal_bar_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 53–54
+
+#### Key Features
+
+- **Focal group only**: This function displays data for a single group without including any comparisons to others. It is designed for clear and focused group-specific insights.
+- **Supports hours and subjective values**: Set `subjective_value` to `TRUE` to include both average weekly hours and corresponding subjective values on separate x-axes, or `FALSE` to show only the hour values.
+
+#### Example 1: Hours Only (Focal Group)
+
+```r
+list(
+    function_name    = "generate_horizontal_bar_slide",
+    metric           = c(
+        "Volunteering",
+        "Therapy",
+        "Games",
+        "School/learning",
+        "Side Projects",
+        "Job searching",
+        "Napping",
+        "Hobbies"
+    ),
+    subjective_value = FALSE,
+    title            = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title          = c("Avg. Hours Per Week"),
+    y_title          = "Activity",
+    focal_group      = list(
+        name   = focal_group,
+        subset = NULL
+    )
+)
+```
+
+#### Example 2: Hours + Subjective Value (Focal Group)
+
+```r
+list(
+    function_name    = "generate_horizontal_bar_slide",
+    metric           = c(
+        "Volunteering",
+        "Therapy",
+        "Games",
+        "School/learning",
+        "Side Projects",
+        "Job searching",
+        "Napping",
+        "Hobbies"
+    ),
+    subjective_value = TRUE,
+    title            = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title          = c("Avg. Hours Per Week", "Avg. Subjective Value"),
+    y_title          = "Activity",
+    focal_group      = list(
+        name   = focal_group,
+        subset = NULL
+    )
 )
 ```
 ---
