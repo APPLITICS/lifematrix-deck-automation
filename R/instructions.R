@@ -901,8 +901,8 @@ instructions <- list(
   # ------ Slide 33: Activities horizontal bar for focal group ----------------
   
   list(
-    function_name     = "generate_horizontal_bar_slide",
-    metric            = c(
+    function_name = "generate_horizontal_bar_slide",
+    metric = c(
       "Volunteering",
       "Therapy",
       "Games",
@@ -912,16 +912,16 @@ instructions <- list(
       "Napping",
       "Hobbies"
     ),
-    subjective_value  = FALSE,
-    title             = "DISCRETIONARY TIME – ACTIVITIES",
-    x_title           = c("Avg. Hours Per Week"),
-    y_title           = "Activity",
-    focal_group       = list(name = focal_group, subset = NULL)
+    subjective_value = FALSE,
+    title = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title = c("Avg. Hours Per Week"),
+    y_title = "Activity",
+    focal_group = list(name = focal_group, subset = NULL)
   ),
   # ------ Slide 34: Activities hours vs subjective values for focal group -----
   list(
-    function_name     = "generate_horizontal_bar_slide",
-    metric            = c(
+    function_name = "generate_horizontal_bar_slide",
+    metric = c(
       "Volunteering",
       "Therapy",
       "Games",
@@ -931,11 +931,11 @@ instructions <- list(
       "Napping",
       "Hobbies"
     ),
-    subjective_value  = TRUE,
-    title             = "DISCRETIONARY TIME – ACTIVITIES",
-    x_title           = c("Avg. Hours Per Week", "Avg. Subjective Value"),
-    y_title           = "Activity",
-    focal_group       = list(name = focal_group, subset = NULL)
+    subjective_value = TRUE,
+    title = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title = c("Avg. Hours Per Week", "Avg. Subjective Value"),
+    y_title = "Activity",
+    focal_group = list(name = focal_group, subset = NULL)
   )
   
 )
