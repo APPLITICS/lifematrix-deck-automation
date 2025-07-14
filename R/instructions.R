@@ -897,6 +897,46 @@ instructions <- list(
     ),
     preferred_value = "low",
     n_activities = 5
+  ),
+  # ------ Slide 33: Activities horizontal bar for focal group ----------------
+  
+  list(
+    function_name     = "generate_horizontal_bar_slide",
+    metric            = c(
+      "Volunteering",
+      "Therapy",
+      "Games",
+      "School/learning",
+      "Side Projects",
+      "Job searching",
+      "Napping",
+      "Hobbies"
+    ),
+    subjective_value  = FALSE,
+    title             = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title           = c("Avg. Hours Per Week"),
+    y_title           = "Activity",
+    focal_group       = list(name = focal_group, subset = NULL)
+  ),
+  # ------ Slide 34: Activities hours vs subjective values for focal group -----
+  list(
+    function_name     = "generate_horizontal_bar_slide",
+    metric            = c(
+      "Volunteering",
+      "Therapy",
+      "Games",
+      "School/learning",
+      "Side Projects",
+      "Job searching",
+      "Napping",
+      "Hobbies"
+    ),
+    subjective_value  = TRUE,
+    title             = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title           = c("Avg. Hours Per Week", "Avg. Subjective Value"),
+    y_title           = "Activity",
+    focal_group       = list(name = focal_group, subset = NULL)
   )
+  
 )
 
