@@ -597,8 +597,6 @@ generate_bar_category_slide <- function(
   return(invisible(NULL))
 }
 
-
-
 # ------ HORIZONTAL BAR SLIDE -------------------------------------------------
 
 #' Generate Horizontal Bar Chart Slide
