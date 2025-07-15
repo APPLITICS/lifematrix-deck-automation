@@ -1,20 +1,4 @@
 # ------ BAR METRIC SLIDE ------------------------------------------------------
-#' Generate Grouped Bar Chart and Export to PowerPoint
-#'
-#' Creates a grouped bar chart comparing a focal group to optional comparison
-#' groups across metrics, with optional target lines and placeholder logic.
-#' Supports unit displaying, custom labels, and slide export via `officer`.
-#'
-#' @param data A data frame of pre-processed values.
-#' @param instruction A list with plot settings:
-#'   - `bar_value`: Metric(s) for bar heights
-#'   - `target`: (Optional) Metric(s) for target lines
-#'   - `focal_group`, `comparison_groups`: Group definitions
-#'   - `unit`, `title`, `x_title`, `y_title`, `is_first`: Display options
-#' @param ppt_doc Optional `read_pptx()` object to append the slide.
-#'
-#' @return Updated PowerPoint object if `ppt_doc` is provided, otherwise `NULL`.
-# ------ BAR METRIC SLIDE ------------------------------------------------------
 
 #' Generate Grouped Bar Chart and Export to PowerPoint
 #'
@@ -605,119 +589,90 @@ generate_bar_category_slide <- function(
 #' subjective values across multiple activities. Supports exporting the
 #' chart to PowerPoint using a provided `pptx` object.
 #'
-#' @param data A data frame with numeric values for hours and subjective scores.
-#' @param instruction List of slide instruction configurations.
-#' @param ppt_doc Optional PowerPoint object from `read_pptx()`.
+#' @param data Data frame with numeric values for hours and subjective scores.
+#' @param instruction A list with plot settings.
+#' @param ppt_doc Optional PowerPoint object
 #'
-#' @return Updated pptx object if `ppt_doc` is provided; otherwise, `NULL`.
+#' @return Updated pptx object if exporting, otherwise the ggplot object.
 generate_horizontal_bar_slide <- function(
     data,
     instruction,
-    ppt_doc
+    ppt_doc = NULL
 ) {
-
-  
-  # ------ EXTRACT INSTRUCTION SETTINGS ---------------------------------------
-  selected_labels <- instruction$metric
-  subjective <- instruction$subjective_value %||% FALSE
+  # ------ EXTRACT INSTRUCTION SETTINGS -------------------------------------
+  hour_ids <- instruction$metric
+  subj_ids <- instruction$subjective_value
   x_titles <- instruction$x_title
+  y_title <- instruction$y_title
+  focal_group <- instruction$focal_group
+  has_subj <- !is.null(subj_ids)
   
-  # ------ DYNAMIC VARIABLE MAPPING -------------------------------------------
-  label_variable_pairs <- variable_map %>%
-    filter(label %in% selected_labels) %>%
-    group_by(label) %>%
-    summarise(variables = list(variable), .groups = "drop") %>%
-    filter(lengths(variables) == 2) %>%
-    deframe()
+  # ------ FILTER TO FOCAL GROUP IF NEEDED ----------------------------------
+  if (!is.null(focal_group)) {
+    group_filter <- data$group == focal_group$name
+    if (!is.null(focal_group$subset)) {
+      subset_col <- focal_group$subset$title
+      subset_value <- focal_group$subset$value
+      group_filter <- group_filter & data[[subset_col]] == subset_value
+    }
+    data <- data[group_filter, ]
+  }
   
-  explicit_map <- rbindlist(
-    lapply(names(label_variable_pairs), function(lbl) {
-      data.table(
-        label = lbl,
-        variable = label_variable_pairs[[lbl]],
-        type = c("hours", "subjective")
-      )
-    })
-  )
-  
-  selected_map <- explicit_map[label %in% selected_labels]
-  
-  # ------ PREPARE HOURS DATA -------------------------------------------------
-  hours_map <- selected_map[type == "hours"]
-  hours_df <- data %>%
-    select(all_of(hours_map$variable)) %>%
-    summarise(across(everything(), ~ mean(.x, na.rm = TRUE))) %>%
-    pivot_longer(
-      cols = everything(),
-      names_to = "variable",
-      values_to = "value"
-    ) %>%
-    left_join(hours_map, by = "variable") %>%
-    mutate(type = x_titles[[1]]) %>%
-    select(label, value, type)
-  
-  # ------ PREPARE SUBJECTIVE DATA --------------------------------------------
-  if (subjective) {
-    subjective_map <- selected_map[type == "subjective"]
-    subjective_df <- data %>%
-      select(all_of(subjective_map$variable)) %>%
+  # ------ PREPARE DATA FUNCTION --------------------------------------------
+  prep_data <- function(ids, type_label) {
+    data %>%
+      select(all_of(ids)) %>%
       summarise(across(everything(), ~ mean(.x, na.rm = TRUE))) %>%
-      pivot_longer(
-        cols = everything(),
-        names_to = "variable",
-        values_to = "value"
-      ) %>%
-      left_join(subjective_map, by = "variable") %>%
-      mutate(type = x_titles[[2]]) %>%
+      pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+      left_join(variable_map, by = "variable") %>%
+      mutate(type = type_label) %>%
       select(label, value, type)
-    
-    activity_summary <- bind_rows(hours_df, subjective_df) %>%
-      mutate(label = fct_reorder2(label, type, value))
-  } else {
-    activity_summary <- hours_df %>%
-      mutate(label = fct_reorder(label, value))
   }
   
-  # ------ DEFINE CONDITIONAL PLOT STYLE --------------------------------------
-  if (subjective) {
-    plot_margin <- margin(20, 50, 20, 50)
+  # ------ GENERATE DATA ----------------------------------------------------
+  df_hours <- prep_data(hour_ids, x_titles[[1]])
+  df_subj <- if (has_subj) prep_data(subj_ids, x_titles[[2]]) else NULL
+  
+  # ------ COMBINE & ORDER --------------------------------------------------
+  label_levels <- df_hours %>% arrange(value) %>% pull(label)
+  df_combined <- bind_rows(df_hours, df_subj) %>%
+    mutate(
+      label = factor(label, levels = label_levels),
+      type = factor(type, levels = x_titles)
+    )
+  
+  # ------ VISUAL SETTINGS --------------------------------------------------
+  if (has_subj) {
+    facet_layer <- facet_grid(. ~ type, scales = "free_x", switch = "x")
+    plot_margin <- margin(20, 50, 10, 30)
     axis_line_x <- element_blank()
+    x_axis_title <- NULL
+    x_breaks_fun <- function(x) {
+      rng <- range(x, na.rm = TRUE)
+      if (max(rng) <= 3) seq(0, ceiling(rng[2]), 1) else scales::breaks_extended(n = 4)(x)
+    }
+    x_labels_fun <- function(x) {
+      if (max(x, na.rm = TRUE) <= 3) as.character(x) else scales::label_number(accuracy = 1)(x)
+    }
   } else {
-    plot_margin <- margin(20, 80, 20, 30)
+    facet_layer <- NULL
+    plot_margin <- margin(20, 80, 10, 30)
     axis_line_x <- element_line(color = "white", linewidth = 1)
+    x_axis_title <- x_titles[[1]]
+    x_breaks_fun <- function(x) scales::breaks_extended(n = 4)(x)
+    x_labels_fun <- scales::label_number(accuracy = 1)
   }
   
-  # ------ BUILD PLOT ---------------------------------------------------------
-  plot_obj <- ggplot(
-    activity_summary,
-    aes(x = value, y = label)
-  ) +
-    geom_col(fill = "#84d8f6", width = 0.7) +
-    {
-      if (subjective) facet_grid(. ~ type, scales = "free_x", switch = "x")
-    } +
+  # ------ BUILD PLOT -------------------------------------------------------
+  plot_obj <- ggplot(df_combined, aes(x = value, y = label)) +
+    geom_col(fill = "#84d8f6", width = 0.5) +
+    facet_layer +
     scale_x_continuous(
-      breaks = function(x) {
-        rng <- range(x, na.rm = TRUE)
-        if (rng[2] <= 3) {
-          seq(0, ceiling(rng[2] * 2) / 2, by = 0.5)
-        } else {
-          breaks_extended(n = 4)(x)
-        }
-      },
-      labels = function(x) {
-        if (max(x, na.rm = TRUE) <= 3) {
-          label_number(accuracy = 0.5)(x)
-        } else {
-          label_number(accuracy = 1)(x)
-        }
-      },
+      breaks = x_breaks_fun,
+      labels = x_labels_fun,
       expand = c(0, 0)
     ) +
-    labs(
-      x = if (subjective) NULL else x_titles[[1]],
-      y = instruction$y_title
-    ) +
+    labs(x = x_axis_title, y = y_title) +
     theme_minimal(base_size = 16) +
     theme(
       panel.spacing.x = unit(4, "lines"),
@@ -733,27 +688,21 @@ generate_horizontal_bar_slide <- function(
       axis.line.x = axis_line_x,
       axis.text.x = element_text(color = "white", size = 14),
       axis.text.y = element_text(color = "white", face = "bold", size = 16),
-      axis.title.x = element_text(
-        color = "white", face = "bold", size = 16,
-        margin = margin(t = if (subjective) 10 else 40)
-      ),
-      axis.title.y = element_text(
-        color = "white", face = "bold", size = 22,
-        margin = margin(r = 20)
-      ),
+      axis.title.x = element_text(color = "white", face = "bold", size = 20, margin = margin(t = 20)),
+      axis.title.y = element_text(color = "white", face = "bold", size = 22, margin = margin(r = 20)),
       plot.margin = plot_margin
     )
   
-  # ------ OPTIONAL POWERPOINT EXPORT -----------------------------------------
+  # ------ EXPORT OR RETURN -------------------------------------------------
   if (!is.null(ppt_doc)) {
-    ppt_doc <- export_plot_to_slide(
+    return(export_plot_to_slide(
       ppt_doc = ppt_doc,
       plot_obj = plot_obj,
       title_text = instruction$title %||% " ",
       is_first = instruction$is_first
-    )
-    return(ppt_doc)
+    ))
   }
   
-  return(invisible(NULL))
+  return(plot_obj)
 }
+

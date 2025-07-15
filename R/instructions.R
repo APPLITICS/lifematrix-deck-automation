@@ -898,45 +898,53 @@ instructions <- list(
     preferred_value = "low",
     n_activities = 5
   ),
-  # ------ Slide 33: Activities horizontal bar for focal group ----------------
-  
+  # ------ Slide 33: Activities horizontal bar for Xilio women -----------------
   list(
     function_name = "generate_horizontal_bar_slide",
     metric = c(
-      "Volunteering",
-      "Therapy",
-      "Games",
-      "School/learning",
-      "Side Projects",
-      "Job searching",
-      "Napping",
-      "Hobbies"
+      "volunteering_hours",
+      "therapy_hours",
+      "gaming_hours",
+      "school_learning_hours",
+      "side_projects_hours",
+      "job_searching_hours",
+      "napping_hours",
+      "hobbies_hours"
     ),
-    subjective_value = FALSE,
+    subjective_value = NULL,
     title = "DISCRETIONARY TIME – ACTIVITIES",
     x_title = c("Avg. Hours Per Week"),
     y_title = "Activity",
-    focal_group = list(name = focal_group, subset = NULL)
+    focal_group = list(name = focal_group, subset = list(title = "gender", value = "Women"))
   ),
   # ------ Slide 34: Activities hours vs subjective values for focal group -----
   list(
     function_name = "generate_horizontal_bar_slide",
     metric = c(
-      "Volunteering",
-      "Therapy",
-      "Games",
-      "School/learning",
-      "Side Projects",
-      "Job searching",
-      "Napping",
-      "Hobbies"
+      "volunteering_hours",
+      "therapy_hours",
+      "gaming_hours",
+      "school_learning_hours",
+      "side_projects_hours",
+      "job_searching_hours",
+      "napping_hours",
+      "hobbies_hours"
     ),
-    subjective_value = TRUE,
+    subjective_value = 
+      c(
+        "volunteering_subj_value",
+        "therapy_subj_value",
+        "gaming_subj_value",
+        "school_learning_subj_value",
+        "side_projects_subj_value",
+        "job_searching_subj_value",
+        "napping_subj_value",
+        "hobbies_subj_value"
+      ),
     title = "DISCRETIONARY TIME – ACTIVITIES",
     x_title = c("Avg. Hours Per Week", "Avg. Subjective Value"),
     y_title = "Activity",
     focal_group = list(name = focal_group, subset = NULL)
   )
-  
 )
 
