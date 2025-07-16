@@ -31,28 +31,26 @@ wrap_label <- function(text, width = 20, max_lines = 2) {
 #' @return A `ggplot` object showing the focal group's top activities.
 draw_tile_chart_focal <- function(
     data,
-    n_activities = 5,
+    n_activities,
+    unit,
     tile_fill
 ) {
+  
   # ------ SETTINGS ------------------------------------------------------------
   circle_color <- "#21b2aa"
   font_family = "RoundedSans"
   # ------- PREPARE DATA -------------------------------------------------------
   df <- data %>%
-    arrange(desc(as.numeric(str_extract(duration, "\\d+")))) %>%
+    arrange(desc(duration)) %>%
     mutate(
       row = row_number(),
       y = rev(row_number()),
       x = 1,
-      activity_label = sapply(
-        activity,
-        wrap_label,
-        width = 25
-      ),
+      activity_label = activity,
       duration_label = duration,
-      is_multiline = str_detect(activity_label, "\n"),
-      lineheight = ifelse(is_multiline, 1.25, 1.00)
+      lineheight = 1.00
     )
+  
   
   max_nchar <- max(nchar(data$activity), na.rm = TRUE)
   # ------ DYNAMIC CIRCLE SIZE -------------------------------------------------
@@ -133,8 +131,8 @@ draw_tile_chart_focal <- function(
     geom_text(
       aes(
         x = x + 0.14,
-        y = y + 0.05,
-        label = duration_label
+        y = y + 0.1,
+        label = paste0(duration_label, " ", unit)
       ),
       color = "white",
       hjust = 1,
@@ -168,9 +166,11 @@ draw_tile_chart_focal <- function(
 #' @return A `ggplot` object showing grouped activity tiles per group.
 draw_tile_chart_groups <- function(
     data,
-    n_activities = 5,
+    n_activities,
+    unit,
     tile_fill
 ) {
+  
   # ------ SETTINGS ------------------------------------------------------------
   header_fill = "white"
   font_family = "RoundedSans"
@@ -192,7 +192,6 @@ draw_tile_chart_groups <- function(
   # ------ PREPARE DATA --------------------------------------------------------
   df <- data %>%
     group_by(group) %>%
-    arrange(desc(as.numeric(str_extract(duration, "\\d+")))) %>%
     mutate(
       col = cur_group_id() * group_spacing,
       row = row_number(),
@@ -267,7 +266,7 @@ draw_tile_chart_groups <- function(
       aes(
         x = col + 0.3,
         y = y,
-        label = duration_label
+        label = paste0(duration_label, " ", unit)
       ),
       hjust = 1,
       family = font_family,
@@ -323,26 +322,21 @@ generate_tile_slide <- function(
     instruction,
     ppt_doc
 ) {
+  
   # ------ EXTRACT instruction FIELDS ------------------------------------------
   font_family <- "RoundedSans"
   metric_names <- instruction$metric
-  common_suffix <- stringr::str_extract(metric_names, "_[^_]+$")
-  suffix_to_remove <- if (length(unique(common_suffix)) == 1) {
-    unique(common_suffix)
-  } else {
-    ""
-  }
   
   focal_name <- instruction$focal_group$name
   comp_groups <- instruction$comparison_groups %||% list()
   has_comparisons <- length(comp_groups) > 0
+  unit <- instruction$unit
   
   # ------ FOCAL GROUP FILTERING -----------------------------------------------
   data_focal <- data %>% filter(group == focal_name)
-  
+
   fg_subset_col <- instruction$focal_group$subset$title %||% NULL
   fg_subset_val <- instruction$focal_group$subset$value %||% NULL
-  
   if (!is.null(fg_subset_col) && fg_subset_col %in% names(data)) {
     data_focal <- data_focal %>%
       filter(.data[[fg_subset_col]] %in% fg_subset_val)
@@ -419,18 +413,21 @@ generate_tile_slide <- function(
   
   group_levels <- c(group_levels, comp_names)
   
+  # ------ LOAD VARIABLE LABELS ------------------------------------------------
+  activity_map <- variable_map %>%
+    filter(variable %in% metric_names) %>%
+    select(variable, label)
+  
   # ------ PREPARE DATA FOR PLOT -----------------------------------------------
   tile_data <- summary_table %>%
     pivot_longer(
       cols = all_of(metric_names),
-      names_to = "activity",
+      names_to = "activity_id",
       values_to = "value"
     ) %>%
+    left_join(activity_map, by = c("activity_id" = "variable")) %>%
     mutate(
-      activity = activity %>%
-        str_remove(paste0(suffix_to_remove, "$")) %>%
-        str_replace_all("_", " ") %>%
-        str_to_title(),
+      activity = label,
       group = factor(group, levels = group_levels)
     )
   
@@ -454,7 +451,7 @@ generate_tile_slide <- function(
       with_ties = FALSE
     ) %>%
     ungroup() %>%
-    mutate(duration = paste0(round(value, 0), " hrs")) %>%
+    mutate(duration = round(value, 0)) %>%
     select(group, activity, duration)
   
   # ------ GENERATE PLOT -------------------------------------------------------
@@ -462,12 +459,14 @@ generate_tile_slide <- function(
     draw_tile_chart_focal(
       data = tile_data_top,
       n_activities = n_activities,
+      unit = unit,
       tile_fill = tile_fill
     )
   } else {
     draw_tile_chart_groups(
       data = tile_data_top,
       n_activities = n_activities,
+      unit = unit,
       tile_fill = tile_fill
     )
   }
