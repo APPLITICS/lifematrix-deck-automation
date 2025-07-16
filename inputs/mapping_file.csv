@@ -1,4 +1,16 @@
 variable,label
+n_children,Number Of Children
+relationship_status,Status
+reunion_class,Reunion Class
+achievement,Achievement
+achievement_min,Achievement
+joy,Joy
+joy_min,Joy
+meaningfulness,Meaningfulness
+meaningfulness_work,Meaningfulness
+meaningfulness_min,Meaningfulness
+life_satisfaction,Life Satisfaction
+tqi,TQI
 working_hours,Working
 reading_hours,Reading
 catching_up_hours,Catching Up
