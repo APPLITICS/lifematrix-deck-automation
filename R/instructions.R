@@ -630,6 +630,7 @@ instructions <- list(
       "watching_TV_alone_hours",
       "eating_with_others_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -657,6 +658,7 @@ instructions <- list(
       "watching_TV_alone_hours",
       "eating_with_others_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -686,6 +688,7 @@ instructions <- list(
       "watching_TV_alone_hours",
       "eating_with_others_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -721,6 +724,7 @@ instructions <- list(
       "watching_TV_alone_hours",
       "eating_with_others_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = "IWF",
@@ -754,6 +758,7 @@ instructions <- list(
       "watching_TV_alone_hours",
       "eating_with_others_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -779,6 +784,7 @@ instructions <- list(
       "commuting_alone_hours",
       "hanging_out_alone_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -803,6 +809,7 @@ instructions <- list(
       "commuting_alone_hours",
       "hanging_out_alone_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -829,6 +836,7 @@ instructions <- list(
       "commuting_alone_hours",
       "hanging_out_alone_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
@@ -861,6 +869,7 @@ instructions <- list(
       "commuting_alone_hours",
       "hanging_out_alone_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = "IWF",
@@ -885,6 +894,7 @@ instructions <- list(
       "commuting_alone_hours",
       "hanging_out_alone_hours"
     ),
+    unit = "hrs",
     title = "MOST COMMON HIGH VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
