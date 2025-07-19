@@ -1022,47 +1022,134 @@ instructions <- list(
         list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
       )
   ),
- # ----- SLIDE 38: Line chart comparing perceived vs behavioral achievement -----
-    list(
-      function_name="generate_line_slide",
-      metric=c(
-        "achievement_behavioral",
-        "achievement_perceived"
-      ),
-      category=list(
-        name="income_range",
-        order="income_range_levels"
-      ),
-      title="PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
-      y_title="Achievement Rating",
-      focal_group=list(
-        name=focal_group,
-        subset=list(
-          title="gender",
-          value="Women"
-        )
-      )
-    ),
-  
-  # ------ SLIDE 39: JAM gap distribution across income levels ------------------
+  # ----- SLIDE 38: Line chart comparing perceived vs behavioral achievement -----
   list(
     function_name="generate_line_slide",
     metric=c(
-      "joy_gap",
-      "achievement_gap",
-      "meaningfulness_gap"
+      "achievement_behavioral",
+      "achievement_perceived"
     ),
     category=list(
       name="income_range",
       order="income_range_levels"
     ),
-    unit="%",
-    title="JAM DISTRIBUTION",
-    y_title="JAM values",
+    title="PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
+    y_title="Achievement Rating",
     focal_group=list(
       name=focal_group,
-      subset=NULL
+      subset=list(
+        title="gender",
+        value="Women"
+      )
+    )
+  ),
+  
+  # ------ SLIDE 39: JAM gap distribution across income levels ----------------
+  list(
+    function_name = "generate_line_slide",
+    metric = c(
+      "joy_gap",
+      "achievement_gap",
+      "meaningfulness_gap"
+    ),
+    category = list(
+      name = "income_range",
+      order = "income_range_levels"
+    ),
+    unit = "%",
+    title = "JAM DISTRIBUTION",
+    y_title = "JAM values",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
+  ),
+  
+  # ------ SLIDE 40: Share of participants who have children ------------------
+  list(
+    function_name = "generate_bar_stacked_slide",
+    title = "PERCENT WHO HAVE KIDS",
+    metric = NULL,
+    unit = "N°",
+    category_x = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    category_y = list(
+      name = "with_child",
+      order = "with_child_levels",
+      value = "yes"
+    ),
+    focal_group = list(
+      name = "Xilio",
+      subset = NULL
+    )
+  ),
+  
+  # ------ SLIDE 41: Relationship status (partial: in relationship / married) -
+  list(
+    function_name = "generate_bar_stacked_slide",
+    title = "RELATIONSHIP STATUS",
+    metric = NULL,
+    unit = NULL,
+    category_x = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    category_y = list(
+      name = "relationship_status",
+      order = NULL,
+      value = c("In a relationship", "Married")
+    ),
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
+  ),
+  
+  # ------ SLIDE 42: Relationship status (all categories) ---------------------
+  list(
+    function_name = "generate_bar_stacked_slide",
+    title = "RELATIONSHIP STATUS",
+    metric = NULL,
+    unit = NULL,
+    category_x = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    category_y = list(
+      name = "relationship_status",
+      order = NULL,
+      value = NULL
+    ),
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
+  ),
+  
+  # ------ SLIDE 43: Work hours by reunion class (Women only) -----------------
+  list(
+    function_name = "generate_bar_stacked_slide",
+    title = "WORK HOURS",
+    metric = "working_hours",
+    unit = "hrs",
+    category_x = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    category_y = list(
+      name = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    ),
+    focal_group = list(
+      name = comparison_group_1,
+      subset = list(
+        title = "gender",
+        value = "Women"
+      )
     )
   )
+  
 )
-
