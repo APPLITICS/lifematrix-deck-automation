@@ -1021,6 +1021,48 @@ instructions <- list(
         list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
         list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
       )
+  ),
+ # ----- SLIDE 1: Line chart comparing perceived vs behavioral achievement -----
+    list(
+      function_name="generate_line_slide",
+      metric=c(
+        "achievement_behavioral",
+        "achievement_perceived"
+      ),
+      category=list(
+        name="income_range",
+        order="income_range_levels"
+      ),
+      title="PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
+      y_title="Achievement Rating",
+      focal_group=list(
+        name=focal_group,
+        subset=list(
+          title="gender",
+          value="Women"
+        )
+      )
+    ),
+  
+  # ------ SLIDE 2: JAM gap distribution across income levels ------------------
+  list(
+    function_name="generate_line_slide",
+    metric=c(
+      "joy_gap",
+      "achievement_gap",
+      "meaningfulness_gap"
+    ),
+    category=list(
+      name="income_range",
+      order="income_range_levels"
+    ),
+    unit="%",
+    title="JAM DISTRIBUTION",
+    y_title="JAM values",
+    focal_group=list(
+      name=focal_group,
+      subset=NULL
+    )
   )
 )
 
