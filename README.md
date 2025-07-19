@@ -9,12 +9,20 @@ This README documents the Phase 3 slide generation pipeline of the LIFE Matrix D
 R/
 ├── bar_functions.R            # Bar chart slide generation functions
 ├── density_functions.R        # Density chart slide generation functions
+|── ...
 ├── helpers.R                  # Shared utility functions
 ├── run_pipeline.R             # Core function to build all slides
 ├── instructions.R             # Structured list of slide instructions
 
 data/
 ├── simulated_pipeline_input.csv  # Preprocessed survey data for pipeline
+
+inputs/
+├── template.pptx              # PowerPoint template for slide layout
+├── mapping.csv                # Mapping of survey metrics to slide displayed labels
+
+output/
+├── generated_slides.pptx      # Output PowerPoint file with generated slides
 
 provided_reference_deck.pptx   # Reference slide deck for validation
 main.R                         # Script to load data and run the pipeline
@@ -571,6 +579,101 @@ list(
     )
 )
 ```
+### F. Donut Charts
+
+**Function:**
+
+```r
+generate_donut_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 35–38
+
+#### Key Features
+
+- Supports focal and comparison groups to display category distributions across one or multiple segments.
+- Handles empty or undefined comparison groups by inserting placeholders to preserve layout structure.
+- Accepts optional category ordering through the `order` field.
+
+#### Example 1: Focal Group Only
+
+```r
+list(
+    function_name  = "generate_donut_slide",
+    category       = list(
+        name   = "jam_type_distribution",
+        order  = NULL
+    ),
+    title          = "JAM TYPE DISTRIBUTION",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    ),
+    comparison_groups = NULL
+)
+```
+
+#### Example 2: Focal Group + Placeholder
+
+```r
+list(
+    function_name  = "generate_donut_slide",
+    category       = list(
+        name   = "jam_type_distribution",
+        order  = NULL
+    ),
+    title          = "JAM TYPE DISTRIBUTION",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name    = NA,
+            subset  = NULL
+        )
+    )
+)
+```
+
+#### Example 3: Focal Group + Comparison Group with Subsets
+
+```r
+list(
+    function_name  = "generate_donut_slide",
+    category       = list(
+        name   = "jam_type_distribution",
+        order  = NULL
+    ),
+    title          = "JAM TYPE DISTRIBUTION",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name    = comparison_group_1,
+            subset  = list(
+                title  = "gender",
+                value  = "Women"
+            )
+        ),
+        list(
+            name    = comparison_group_1,
+            subset  = list(
+                title  = "gender",
+                value  = "Men"
+            )
+        )
+    )
+)
+```
+
+
 ---
 ## More Examples & Testing
 
