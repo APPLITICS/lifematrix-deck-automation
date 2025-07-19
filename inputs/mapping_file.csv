@@ -2,10 +2,13 @@ variable,label
 n_children,Number Of Children
 relationship_status,Status
 reunion_class,Reunion Class
+achievement_gap,Achievement
 achievement,Achievement
 achievement_min,Achievement
+joy_gap,Joy
 joy,Joy
 joy_min,Joy
+meaningfulness_gap,Meaningfulness
 meaningfulness,Meaningfulness
 meaningfulness_work,Meaningfulness
 meaningfulness_min,Meaningfulness
@@ -49,3 +52,5 @@ side_projects_subj_value,Side Projects
 job_searching_subj_value,Job searching
 napping_subj_value,Napping
 hobbies_subj_value,Hobbies
+achievement_behavioral,Behavioral Achievement
+achievement_perceived,Perceived Achievement
