@@ -955,6 +955,72 @@ instructions <- list(
     x_title = c("Avg. Hours Per Week", "Avg. Subjective Value"),
     y_title = "Activity",
     focal_group = list(name = focal_group, subset = NULL)
+  ),
+  # ------ Slide 35: JAM type distribution Donut chart--------------------------
+  list(
+    function_name = "generate_donut_slide",
+    category = list(
+      name = "jam_type_distribution",
+      order = NULL
+    ),
+    title = "JAM TYPE DISTRIBUTION",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    ),
+    comparison_groups = NULL
+  ),
+  list(
+    function_name = "generate_donut_slide",
+    category = list(
+      name = "jam_type_distribution",
+      order = NULL
+    ),
+    title = "JAM TYPE DISTRIBUTION",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    ),
+    comparison_groups =
+      list(
+        list(
+          name = NA,
+          subset = NULL
+        )
+      )
+  ),
+  list(
+    function_name = "generate_donut_slide",
+    category = list(
+      name = "jam_type_distribution",
+      order = NULL
+    ),
+    title = "JAM TYPE DISTRIBUTION",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    ),
+    comparison_groups =
+      list(
+        list(name = comparison_group_1, subset = NULL)
+      )
+  ),
+  list(
+    function_name = "generate_donut_slide",
+    category = list(
+      name = "jam_type_distribution",
+      order = NULL
+    ),
+    title = "JAM TYPE DISTRIBUTION",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    ),
+    comparison_groups =
+      list(
+        list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+        list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+      )
   )
 )
 

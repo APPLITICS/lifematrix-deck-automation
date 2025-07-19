@@ -1,7 +1,7 @@
 # ------ LIBRARIES ------------------------------------------------------------
-
 library(ggplot2)
 library(ggtext)
+library(patchwork)
 library(dplyr)
 library(tidyr)
 library(officer)
