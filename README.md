@@ -592,7 +592,7 @@ generate_donut_slide(
 )
 ```
 
-**Used In:** Slides 35–38
+**Used In:** Slides 81–83
 
 #### Key Features
 
@@ -673,8 +673,73 @@ list(
     )
 )
 ```
+### F. Line Charts
 
+**Function:**
 
+```r
+generate_line_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 84–87
+
+#### Key Features
+
+- Supports one or multiple **metrics** plotted as separate lines across a categorical x-axis (e.g., income levels).
+- Filters data by **focal group**, with optional **subset filtering** (e.g., Women only).
+- Accepts optional **category ordering** via `instruction$category$order`.
+
+#### Example 1: Perceived vs Behavioral Achievement
+
+```r
+list(
+    function_name  = "generate_line_slide",
+    metric         = c(
+        "achievement_behavioral",
+        "achievement_perceived"
+    ),
+    category       = list(
+        name   = "income_range",
+        order  = "income_range_levels"
+    ),
+    title          = "PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
+    y_title        = "Achievement Rating",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = list(
+            title  = "gender",
+            value  = "Women"
+        )
+    )
+)
+```
+#### Example 2: JAM Gap Distribution Across Income Levels
+
+```r
+list(
+    function_name  = "generate_line_slide",
+    metric         = c(
+        "joy_gap",
+        "achievement_gap",
+        "meaningfulness_gap"
+    ),
+    category       = list(
+        name   = "income_range",
+        order  = "income_range_levels"
+    ),
+    unit           = "%",
+    title          = "GAP IN PERCEIVED VS BEHAVIORAL JAM",
+    y_title        = "Gap",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    )
+)
+```
 ---
 ## More Examples & Testing
 

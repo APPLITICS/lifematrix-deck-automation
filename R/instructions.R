@@ -1022,7 +1022,7 @@ instructions <- list(
         list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
       )
   ),
- # ----- SLIDE 1: Line chart comparing perceived vs behavioral achievement -----
+ # ----- SLIDE 38: Line chart comparing perceived vs behavioral achievement -----
     list(
       function_name="generate_line_slide",
       metric=c(
@@ -1044,7 +1044,7 @@ instructions <- list(
       )
     ),
   
-  # ------ SLIDE 2: JAM gap distribution across income levels ------------------
+  # ------ SLIDE 39: JAM gap distribution across income levels ------------------
   list(
     function_name="generate_line_slide",
     metric=c(
