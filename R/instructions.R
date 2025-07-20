@@ -1072,8 +1072,10 @@ instructions <- list(
     metric = NULL,
     unit = "N°",
     category_x = list(
-      name = "reunion_class",
-      order = "reunion_class_levels"
+      list(
+        name = "reunion_class",
+        order = "reunion_class_levels"
+      )
     ),
     category_y = list(
       list(
@@ -1087,7 +1089,6 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
   #------ SLIDE 41: Relationship status (partial: in relationship / married) ------
   list(
     function_name = "generate_bar_stacked_slide",
