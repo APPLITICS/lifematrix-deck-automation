@@ -104,8 +104,6 @@ This function automates the creation of PowerPoint slides from preprocessed surv
 
 Slides are generated using dedicated functions specified in the `function_name` field of each instruction. The pipeline dynamically dispatches these functions to build complete slides.
 
----
-
 ### A. Density Graphs
 
 **Function:**
@@ -738,6 +736,226 @@ list(
         name    = focal_group,
         subset  = NULL
     )
+)
+```
+### G. Vertical Stacked Bar Charts
+
+**Function:**
+
+```r
+generate_stacked_vertical_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 66, 68, 71, 80
+
+#### Key Features
+
+- Supports **one or multiple x-axis categories** (e.g., gender, with/without kids) and **one or multiple y-axis categories** (e.g., work level, partner status).
+- Automatically generates **stacked bars**, optionally grouped side-by-side when multiple `category_x` or `category_y` are provided.
+- Accepts **subset filtering** to split bars by values (e.g., "Kids" vs "No Kids") and aligns them under common x-axis groupings.
+- Dynamically calculates and annotates **percentage labels**, **top-level subset labels**, and **average metric values** above each bar.
+- Handles **ordering of categories** via the `order` field to control bar and segment arrangement.
+
+#### Example 1: Percent Who Have Kids
+
+```r
+list(
+    function_name  = "generate_stacked_vertical_slide",
+    title          = "PERCENT WHO HAVE KIDS",
+    metric         = NULL,
+    unit           = "N°",
+    category_x     = list(
+        list(
+            name   = "reunion_class",
+            order  = "reunion_class_levels"
+        )
+    ),
+    category_y     = list(
+        list(
+            name   = "with_child",
+            order  = "with_child_levels",
+            value  = "Kids"
+        )
+    ),
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    )
+)
+```
+##### Example Highlights:
+
+- Shows the **proportion of participants with children** across `reunion_class`.
+- `category_y` is filtered to only `"Kids"` to emphasize this specific outcome.
+- Bars are simple stacked bars (no subgroups), with percentage labels on each segment.
+- 
+#### Example 2: Industry Distribution by Gender and Parental Status
+
+```r
+list(
+    function_name  = "generate_stacked_vertical_slide",
+    title          = "INDUSTRY",
+    metric         = "working_hours",
+    unit           = "hrs",
+    category_x     = list(
+        list(
+            name   = "gender",
+            order  = NULL,
+            subset = list(
+                title = "with_child",
+                value = "Kids"
+            )
+        ),
+        list(
+            name   = "gender",
+            order  = NULL,
+            subset = list(
+                title = "with_child",
+                value = "No Kids"
+            )
+        )
+    ),
+    category_y     = list(
+        list(
+            name   = "working_range",
+            order  = "working_range_levels",
+            value  = NULL
+        )
+    ),
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    )
+)
+```
+##### Example Highlights:
+
+- Compares **working hour distribution** across gender and child status.
+- Generates **grouped stacked bars**: one for each `gender` × `with_child` subgroup.
+- Y-axis segments show working hour brackets, stacked with percentages.
+- Annotates average working hours at the top of each bar using `metric = "working_hours"`.
+- Ideal for visualizing how work engagement varies across family structure and gender.
+
+
+### H. Horizontal Stacked Bar Charts
+
+**Function:**
+
+```r
+generate_stacked_horizontal_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+**Used In:** Slides 69, 87
+
+#### Key Features
+
+- Creates **horizontal stacked bar charts**, grouped by one or more y-axis categories (e.g., gender, relationship status).
+- Stacks are defined by x-axis categories (e.g., working range), with **optional ordering and filtering**.
+- Supports **subset filtering** (e.g., show "Kids" and "No Kids" under each gender).
+- Can optionally display **average values** (e.g., average working hours) to the right of each bar.
+
+
+#### Example 1: Industry by Gender and Child Status
+
+```r
+list(
+  function_name = "generate_stacked_horizontal_slide",
+  title         = "INDUSTRY (Horizontal)",
+  metric        = NULL,
+  unit          = NULL,
+  category_y    = list(
+    list(
+      name   = "gender",
+      order  = NULL,
+      subset = list(
+        title = "with_child",
+        value = "Kids"
+      )
+    ),
+    list(
+      name   = "gender",
+      order  = NULL,
+      subset = list(
+        title = "with_child",
+        value = "No Kids"
+      )
+    )
+  ),
+  category_x = list(
+    list(
+      name  = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    )
+  ),
+  focal_group = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+
+#### Example 2: Work Hours by Gender (5th & 20th Reunion Classes)
+```r
+list(
+  function_name = "generate_stacked_horizontal_slide",
+  title         = "GENDER AND WORK HOURS (5th - 20th)",
+  metric        = NULL,
+  unit          = NULL,
+  category_y    = list(
+    list(
+      name   = "gender",
+      subset = NULL
+    )
+  ),
+  category_x = list(
+    list(
+      name  = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    )
+  ),
+  focal_group = list(
+    name   = focal_group,
+    subset = list(
+      title = "reunion_class",
+      value = c("5th", "20th")
+    )
+  )
+)
+```
+#### Example 3: Work Hours and Averages (All Focal Group)
+
+```r
+list(
+  function_name = "generate_stacked_horizontal_slide",
+  title         = "GENDER AND WORK HOURS FOR ALL FOCAL GROUP",
+  metric        = "working_hours",
+  unit          = "hrs",
+  category_y    = list(
+    list(
+      name   = "gender",
+      subset = NULL
+    )
+  ),
+  category_x = list(
+    list(
+      name  = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    )
+  ),
+  focal_group = list(
+    name   = focal_group,
+    subset = NULL
+  )
 )
 ```
 ---
