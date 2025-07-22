@@ -958,6 +958,64 @@ list(
   )
 )
 ```
+### I. Scatter Plot
+
+**Function:**
+
+```r
+generate_scatter_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slide 55
+
+
+#### Key Features
+
+- Creates a **scatter plot** where each dot represents one activity.
+- The **x-axis** shows average **hours per week** spent on that activity.
+- The **y-axis** shows the **subjective value**.
+- The chart focuses on a **single focal group** (e.g. "Xilio"), which can be filtered further using one category like similar. **It does not support comparison groups**.
+- Uses `variable_map` to convert variable names into readable labels.
+
+
+#### Example: Women from focal group — Time vs Subjective Value
+
+```r
+list(
+  function_name    = "generate_activity_scatter_slide",
+  title            = "TIME VS VALUE FROM DISCRETIONARY ACTIVITIES",
+  metric           = c(
+    "volunteering_hours",
+    "therapy_hours",
+    "gaming_hours",
+    "school_learning_hours",
+    "side_projects_hours",
+    "job_searching_hours",
+    "napping_hours",
+    "hobbies_hours"
+  ),
+  subjective_value = c(
+    "volunteering_subj_value",
+    "therapy_subj_value",
+    "gaming_subj_value",
+    "school_learning_subj_value",
+    "side_projects_subj_value",
+    "job_searching_subj_value",
+    "napping_subj_value",
+    "hobbies_subj_value"
+  ),
+  x_title          = "Hours/Week",
+  y_title          = "Subjective Value",
+  focal_group      = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
 ---
 ## More Examples & Testing
 

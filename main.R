@@ -1,6 +1,7 @@
 # ------ LIBRARIES ------------------------------------------------------------
 library(ggplot2)
 library(ggtext)
+library(ggrepel)
 library(patchwork)
 library(dplyr)
 library(tidyr)
@@ -14,6 +15,7 @@ library(scales)
 library(tibble)
 library(forcats)
 library(data.table)
+
 
 # ------ LOAD DATA ------------------------------------------------------------
 pipeline_data <- fread("data/simulated_pipeline_input.csv")

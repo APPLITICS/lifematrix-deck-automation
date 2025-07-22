@@ -1525,5 +1525,37 @@ instructions <- list(
       name=focal_group,
       subset=NULL
     )
+  ),
+  
+  # ------ SLIDE 55: Time vs Subjective Value Scatter Plot -------
+  list(
+    function_name = "generate_scatter_slide",
+    metric = c(
+      "volunteering_hours",
+      "therapy_hours",
+      "gaming_hours",
+      "school_learning_hours",
+      "side_projects_hours",
+      "job_searching_hours", 
+      "napping_hours",
+      "hobbies_hours"
+    ),
+    subjective_value = c(
+      "volunteering_subj_value", 
+      "therapy_subj_value",
+      "gaming_subj_value",
+      "school_learning_subj_value",
+      "side_projects_subj_value",
+      "job_searching_subj_value",
+      "napping_subj_value",
+      "hobbies_subj_value"
+    ),
+    title = "TIME VS VALUE FROM DISCRETIONARY ACTIVITIES",
+    x_title = "Hours/Week",
+    y_title = "Subjective Value",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
   )
 )
