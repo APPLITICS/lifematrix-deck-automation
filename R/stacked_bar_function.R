@@ -49,10 +49,16 @@ generate_stacked_vertical_slide <- function(
       df <- df %>% filter(.data[[subset_col]] %in% subset_val)
     }
   }
-  
   # ------ EXTRACT BASE X VARIABLE ------------------------------------------
   base_x_name <- category_x[[1]]$name
   base_x_order <- category_x[[1]]$order
+  
+  # ------ DETERMINE X LEVELS ------------------------------------------------
+  base_x_value <- category_x[[1]]$value %||% NULL
+  
+  if (!is.null(base_x_value)) {
+  df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
+}
   
   lvl_x <- if (!is.null(base_x_order) && all(c(base_x_name, base_x_order) %in% names(data))) {
     df %>%
@@ -65,16 +71,17 @@ generate_stacked_vertical_slide <- function(
     unique(df[[base_x_name]])
   }
   
-  df <- df %>%
-    rename(x = all_of(base_x_name)) %>%
-    filter(x %in% lvl_x) %>%
-    mutate(x = factor(x, levels = lvl_x))
+  # ------ FILTER X LEVELS BASED ON VALUE (if defined) -----------------------
+  if (!is.null(base_x_value)) {
+    lvl_x <- lvl_x[lvl_x %in% base_x_value]
+  }
   
   # ------ MULTIPLE SUBSET BARS PER X ---------------------------------------
+  df <- df %>% rename(x = all_of(base_x_name))
   subset_tabs <- list()
   label_df <- NULL
-  
   if (multi_x) {
+    
     for (i in seq_along(category_x)) {
       cx <- category_x[[i]]
       subset_df <- df
@@ -137,7 +144,6 @@ generate_stacked_vertical_slide <- function(
         label_df <- bind_rows(label_df, subset_avg)
       }
     }
-    
     combined_data <- bind_rows(subset_tabs) %>%
       mutate(x = factor(x, levels = lvl_x))
     
@@ -169,7 +175,7 @@ generate_stacked_vertical_slide <- function(
     
   } else {
     all_y_names <- purrr::map_chr(category_y, "name")
-    lvl_y_global <- df %>%
+        lvl_y_global <- df %>%
       select(any_of(all_y_names)) %>%
       pivot_longer(cols = everything(), values_to = "val", names_to = NULL) %>%
       filter(!is.na(val)) %>%
@@ -217,10 +223,8 @@ generate_stacked_vertical_slide <- function(
       
       all_tabs[[i]] <- tab
     }
-    
     combined_data <- bind_rows(all_tabs) %>%
       mutate(x = factor(x, levels = lvl_x))
-    
     x_map <- tibble(x = factor(lvl_x, levels = lvl_x), x_num = seq_along(lvl_x))
     n_pos <- length(unique(combined_data$bar_position))
     offsets <- seq(-0.22, 0.22, length.out = n_pos)
@@ -304,7 +308,7 @@ generate_stacked_vertical_slide <- function(
           ),
           annotate(
             "text",
-            x = 0.55,
+            x = 0.5,
             y = label_df$y_pos[1],
             label = paste0("Avg ", unit_label, ":"),
             hjust = 1,
