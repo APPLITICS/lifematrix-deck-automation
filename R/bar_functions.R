@@ -176,6 +176,8 @@ generate_bar_metric_slide <- function(
   df_bars$fill_group <- factor(df_bars$fill_group, levels = group_labels)
   df_bars$fill_group_show <- factor(df_bars$fill_group_show, levels = setdiff(group_labels, " "))
   
+  df_bars <- df_bars %>%
+    mutate(value = as.integer(round(value)))
   # Determine whether to show legend
   non_zero_groups <- df_bars %>%
     filter(group != " ", value > 0) %>%
@@ -248,7 +250,7 @@ generate_bar_metric_slide <- function(
   plot_obj <- plot_obj +
     geom_text(
       data = df_labels,
-      aes(x = x_center, y = value / 2, label = paste0(round(value), unit_label)),
+      aes(x = x_center, y = value / 2, label = paste0(value, unit_label)),
       inherit.aes = FALSE,
       color = "black",
       size = 6.5,
@@ -279,11 +281,11 @@ generate_bar_metric_slide <- function(
       target = instruction$target,
       metric = instruction$bar_value
     )
-    
     df_targets <- df_targets %>%
       left_join(target_map, by = "target") %>%
-      left_join(df_labels %>% select(group, metric, x_center), by = c("group", "metric"))
-    
+      left_join(df_labels %>% select(group, metric, x_center), by = c("group", "metric")) %>% 
+      mutate(value = as.integer(round(value)))
+
     n_bar_slots <- df_bars %>%
       group_by(.data[[x_axis_var]]) %>%
       summarise(n = n(), .groups = "drop") %>%
@@ -304,7 +306,7 @@ generate_bar_metric_slide <- function(
         ) +
         geom_text(
           data = df_targets,
-          aes(x = x_center, y = value + 5, label = paste0(round(value), unit_label)),
+          aes(x = x_center, y = value + 5, label = paste0(value, unit_label)),
           color = "#f9f871",
           size = 6.5,
           fontface = "bold",
