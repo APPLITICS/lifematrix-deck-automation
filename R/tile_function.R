@@ -38,7 +38,6 @@ draw_tile_chart_focal <- function(
   
   # ------ SETTINGS ------------------------------------------------------------
   circle_color <- "#21b2aa"
-  font_family = "RoundedSans"
   # ------- PREPARE DATA -------------------------------------------------------
   df <- data %>%
     arrange(desc(duration)) %>%
@@ -113,7 +112,6 @@ draw_tile_chart_focal <- function(
       color = "black",
       fontface = "bold",
       size = 10,
-      family = font_family
     ) +
     geom_text(
       aes(
@@ -126,7 +124,6 @@ draw_tile_chart_focal <- function(
       hjust = 0,
       size = 9,
       fontface = "bold",
-      family = font_family
     ) +
     geom_text(
       aes(
@@ -138,7 +135,6 @@ draw_tile_chart_focal <- function(
       hjust = 1,
       size = 9,
       fontface = "bold",
-      family = font_family
     ) +
     coord_cartesian(clip = "off") +
     theme_void() +
@@ -173,7 +169,6 @@ draw_tile_chart_groups <- function(
   
   # ------ SETTINGS ------------------------------------------------------------
   header_fill = "white"
-  font_family = "RoundedSans"
   group_spacing <- 0.8
   n_groups <- length(unique(data$group))
   # Determine label width and horizontal margin based on number of groups
@@ -256,7 +251,6 @@ draw_tile_chart_groups <- function(
         lineheight = lineheight
       ),
       hjust = 0,
-      family = font_family,
       fontface = "bold",
       color = "white",
       size = 6.5
@@ -269,7 +263,6 @@ draw_tile_chart_groups <- function(
         label = paste0(duration_label, " ", unit)
       ),
       hjust = 1,
-      family = font_family,
       fontface = "bold",
       color = "white",
       size = 6.5
@@ -281,7 +274,6 @@ draw_tile_chart_groups <- function(
         y = y,
         label = group
       ),
-      family = font_family,
       fontface = "bold",
       color = "black",
       size = 8
@@ -324,7 +316,6 @@ generate_tile_slide <- function(
 ) {
   
   # ------ EXTRACT instruction FIELDS ------------------------------------------
-  font_family <- "RoundedSans"
   metric_names <- instruction$metric
   
   focal_name <- instruction$focal_group$name
