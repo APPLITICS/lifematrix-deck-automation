@@ -15,13 +15,14 @@ generate_density_slide <- function(
     instruction,
     ppt_doc
 ) {
+  unit <- instruction$unit
   # ------ HELPERS -------------------------------------------------------------
   # Define custom axis step functions and comparison label drawer
   get_y_step <- function(y_max) {
     target_lines <- 5
     raw_step <- y_max / (target_lines - 1)
     nice_steps <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5,
-                      1, 2, 5, 10, 20, 50, 100)
+                    1, 2, 5, 10, 20, 50, 100)
     step <- nice_steps[which.min(abs(nice_steps - raw_step))]
     return(step)
   }
@@ -78,16 +79,7 @@ generate_density_slide <- function(
   # ------ DATA FILTERING ------------------------------------------------------
   # Filter data for focal group and validate required columns
   metric_col <- instruction$metric
-  if (!(metric_col %in% names(data))) {
-    message(paste0("⚠️ Metric '", metric_col, "' not found in the dataset."))
-    return(ppt_doc)
-  }
-  
   subset_col <- instruction$focal_group$subset$title %||% NULL
-  if (!is.null(subset_col) && !(subset_col %in% names(data))) {
-    message(paste0("⚠️ Subset column '", subset_col, "' not found."))
-    return(ppt_doc)
-  }
   
   data_focal <- data %>% filter(group == instruction$focal_group$name)
   if (!is.null(subset_col)) {
@@ -124,7 +116,6 @@ generate_density_slide <- function(
   x_min <- min(values_focal, na.rm = TRUE)
   x_max <- max(values_focal, na.rm = TRUE)
   x_min <- if (x_min < 5) 0 else x_min
-  
   dens <- density(
     values_focal,
     adjust = 1.2,
@@ -132,7 +123,11 @@ generate_density_slide <- function(
     to = x_max,
     n = 100
   )
-  data_dens <- data.frame(x = dens$x, y = dens$y * 100)
+  
+  data_dens <- data.frame(
+    x = dens$x,
+    y = if (!is.null(unit) && unit == "%") dens$y * 100 else dens$y
+  )
   
   y_max <- max(data_dens$y)
   y_step <- get_y_step(y_max)
@@ -172,10 +167,14 @@ generate_density_slide <- function(
       expand = c(0, 1)
     ) +
     scale_y_continuous(
-      breaks = seq(0, y_max_pad, by = y_step),
-      labels = label_percent(scale = 1),
-      expand = c(0, 0)
-    ) +
+      limits = c(0, NA),  # force the bottom to be 0
+      expand = c(0, 0),
+      labels = if (!is.null(unit) && unit == "%") {
+        label_percent(scale = 1)
+      } else {
+        label_number(accuracy = 0.01)
+      }
+    ) + 
     coord_cartesian(ylim = c(0, y_max_pad * 1.1)) +
     labs(
       title = NULL,

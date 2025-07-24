@@ -121,15 +121,17 @@ generate_density_slide(
 #### Key Features
 
 - Plots a density chart for a given metric.
+- Supports dynamic y-axis formatting based on the `unit` parameter: percentages with `unit = "%"`, or fractions when `unit = NULL`.
 - Shows focal group average (dashed line).
 - Adds comparison group averages as annotated green boxes.
 
-#### Example Instruction: Slide 3
+#### Example Instruction: Slide 3 (Focal Only – Y-axis as Fractions)
 
 ```r
 list(
   function_name = "generate_density_slide",
   metric        = "life_satisfaction",
+  unit          =  NULL,
   x_title       = "Life Satisfaction",
   y_title       = "Density",
   title         = "LIFE SATISFACTION",
@@ -140,12 +142,13 @@ list(
   comparison_groups = NULL
 )
 ```
-#### Example Instruction: Slide 5 (With Comparisons)
+#### Example Instruction: Slide 5 (With Comparisons – Y-axis as Percent)
 
 ```r
 list(
   function_name = "generate_density_slide",
   metric        = "life_satisfaction",
+  unit          = "%",
   x_title       = "Life Satisfaction",
   y_title       = "Density",
   title         = "LIFE SATISFACTION",

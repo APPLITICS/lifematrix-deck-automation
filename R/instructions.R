@@ -16,6 +16,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
+    unit = NULL,
     x_title = "Life Satisfaction",
     y_title = "Density",
     title = "LIFE SATISFACTION",
@@ -30,6 +31,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
+    unit = "%",
     x_title = "Life Satisfaction",
     y_title = "Density",
     title = "LIFE SATISFACTION",
@@ -49,6 +51,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
+    unit = "%",
     x_title = "Life Satisfaction",
     y_title = "Density",
     title = "LIFE SATISFACTION",
@@ -250,7 +253,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "reading_hours",
-    unit = "score",
+    unit = "%",
     x_title = "Reading hours",
     y_title = "Density",
     title = "READING HOURS",
@@ -265,7 +268,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "reading_hours",
-    unit = "score",
+    unit = "%",
     x_title = "Reading hours",
     y_title = "Density",
     title = "READING HOURS",
@@ -295,7 +298,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "sleeping_hours",
-    unit = "score",
+    unit = "%",
     x_title = "Sleep hours",
     y_title = "Density",
     title = "SLEEP HOURS",
@@ -310,7 +313,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "sleeping_hours",
-    unit = "score",
+    unit = "%",
     x_title = "Sleep hours",
     y_title = "Density",
     title = "SLEEP HOURS",
@@ -1203,7 +1206,8 @@ instructions <- list(
         value = "Women"
       )
     )
-  ),
+  )
+  ,
   
   # ------ SLIDE 45: Industry (All sectors, ordered fill) --------------------------
   list(
