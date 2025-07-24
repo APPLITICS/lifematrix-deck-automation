@@ -505,6 +505,7 @@ generate_horizontal_bar_slide <- function(
   subj_ids <- instruction$subjective_value
   x_titles <- instruction$x_title
   y_title <- instruction$y_title
+  chart_title <- instruction$title %||% ""
   focal_group <- instruction$focal_group
   has_subj <- !is.null(subj_ids)
   
@@ -544,10 +545,15 @@ generate_horizontal_bar_slide <- function(
   
   # ------ VISUAL SETTINGS --------------------------------------------------
   if (has_subj) {
-    facet_layer <- facet_grid(. ~ type, scales = "free_x", switch = "x")
+    facet_layer <- facet_grid(
+      . ~ type,
+      scales = "free_x",
+      space = "fixed",
+      switch = "x"
+    )
     plot_margin <- margin(20, 50, 10, 30)
-    axis_line_x <- element_blank()
     x_axis_title <- NULL
+    axis_line_x_bottom <- element_line(color = "white", linewidth = 1)
     x_breaks_fun <- function(x) {
       rng <- range(x, na.rm = TRUE)
       if (max(rng) <= 3) seq(0, ceiling(rng[2]), 1) else breaks_extended(n = 4)(x)
@@ -558,8 +564,8 @@ generate_horizontal_bar_slide <- function(
   } else {
     facet_layer <- NULL
     plot_margin <- margin(20, 80, 10, 30)
-    axis_line_x <- element_line(color = "white", linewidth = 1)
     x_axis_title <- x_titles[[1]]
+    axis_line_x_bottom <- element_line(color = "white", linewidth = 1)
     x_breaks_fun <- function(x) breaks_extended(n = 4)(x)
     x_labels_fun <- label_number(accuracy = 1)
   }
@@ -586,7 +592,7 @@ generate_horizontal_bar_slide <- function(
       panel.grid.minor.y = element_blank(),
       panel.grid.major.x = element_line(color = "white"),
       panel.grid.minor.x = element_blank(),
-      axis.line.x = axis_line_x,
+      axis.line.x.bottom = axis_line_x_bottom,
       axis.text.x = element_text(color = "white", size = 14),
       axis.text.y = element_text(color = "white", face = "bold", size = 16),
       axis.title.x = element_text(color = "white", face = "bold", size = 20, margin = margin(t = 20)),
@@ -599,11 +605,10 @@ generate_horizontal_bar_slide <- function(
     return(export_plot_to_slide(
       ppt_doc = ppt_doc,
       plot_obj = plot_obj,
-      title_text = instruction$title %||% " ",
+      title_text = chart_title,
       is_first = instruction$is_first
     ))
   }
   
   return(plot_obj)
 }
-
