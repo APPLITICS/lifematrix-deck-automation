@@ -15,6 +15,10 @@ generate_stacked_vertical_slide <- function(
     instruction,
     ppt_doc = NULL
 ) {
+  # ------ SPACING PARAMETERS -----------------------------------------------
+  intra_group_offset <- 0.2
+  inter_group_expand <- 0.35
+  
   # ------ EXTRACT SETTINGS -------------------------------------------------
   category_x <- instruction$category_x
   category_y <- instruction$category_y
@@ -35,7 +39,7 @@ generate_stacked_vertical_slide <- function(
   
   # ------ ADJUST VISUAL PARAMETERS -----------------------------------------
   bar_width <- if (multi_y || multi_x) 0.35 else 0.55
-  x_expand <- if (multi_y || multi_x) c(0.3, 0.3) else c(0.1, 0.1)
+  x_expand <- if (multi_y || multi_x) rep(inter_group_expand, 2) else c(0.1, 0.1)
   plot_margin <- if (multi_y || multi_x) margin(0, 20, 0, 20) else margin(0, 100, 0, 100)
   
   # ------ FILTER TO FOCAL GROUP --------------------------------------------
@@ -149,7 +153,7 @@ generate_stacked_vertical_slide <- function(
     
     x_map <- tibble(x = factor(lvl_x, levels = lvl_x), x_num = seq_along(lvl_x))
     n_pos <- length(unique(combined_data$bar_position))
-    offsets <- seq(-0.22, 0.22, length.out = n_pos)
+    offsets <- seq(-intra_group_offset, intra_group_offset, length.out = n_pos)
     offset_map <- tibble(
       bar_position = unique(combined_data$bar_position),
       offset = offsets
@@ -394,6 +398,10 @@ generate_stacked_horizontal_slide <- function(
     instruction,
     ppt_doc = NULL
 ) {
+  # ------ SPACING PARAMETERS -----------------------------------------------
+  inter_group_spacing <- 2
+  intra_group_spacing <- 0.7
+  
   # ------ EXTRACT SETTINGS -------------------------------------------------
   # Read and standardize chart configuration from instruction list.
   category_x <- instruction$category_x[[1]]
@@ -526,8 +534,8 @@ generate_stacked_horizontal_slide <- function(
     mutate(subset_index = row_number()) %>%
     ungroup() %>%
     mutate(
-      base_y = (as.numeric(factor(y_group)) - 1) * 1.8,
-      y_pos = base_y + (subset_index - 1) * 0.8
+      base_y = (as.numeric(factor(y_group)) - 1) * inter_group_spacing,
+      y_pos = base_y + (subset_index - 1) * intra_group_spacing
     )
   
   combined_data <- combined_data %>%
@@ -655,7 +663,7 @@ generate_stacked_horizontal_slide <- function(
       axis.line.x = element_blank(),
       axis.text.y = element_text(
         color = "white", size = 16, face = "bold",
-        angle = -90, vjust = 0.5, hjust = 0.5
+        angle = +90, vjust = 0.5, hjust = 0.5
       ),
       axis.ticks.y = element_blank(),
       axis.line.y = element_blank(),
