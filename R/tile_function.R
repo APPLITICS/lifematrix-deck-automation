@@ -50,6 +50,13 @@ draw_tile_chart_focal <- function(
       lineheight = 1.00
     )
   
+  # Format duration label with optional unit and singular "hr" handling.
+  df$label_text <- if (is.null(unit)) {
+    as.character(df$duration_label)
+  } else {
+    suffix <- ifelse(df$duration == 1 & unit == "hrs", "hr", unit)
+    paste0(df$duration_label, " ", suffix)
+  }
   
   max_nchar <- max(nchar(data$activity), na.rm = TRUE)
   # ------ DYNAMIC CIRCLE SIZE -------------------------------------------------
@@ -80,6 +87,7 @@ draw_tile_chart_focal <- function(
     dynamic_margin <- base_margin + (max_nchar - 10) * scale_factor
     pmax(100, dynamic_margin)
   }
+  
   # ------ PLOT ----------------------------------------------------------------
   ggplot(df) +
     geom_tile(
@@ -129,7 +137,7 @@ draw_tile_chart_focal <- function(
       aes(
         x = x + 0.14,
         y = y + 0.1,
-        label = paste0(duration_label, " ", unit)
+        label = label_text
       ),
       color = "white",
       hjust = 1,
@@ -202,6 +210,13 @@ draw_tile_chart_groups <- function(
       lineheight = ifelse(is_multiline, 1.25, 1.00)
     ) %>%
     ungroup()
+  # Format duration label with optional unit and singular "hr" handling.
+  df$label_text <- if (is.null(unit)) {
+    as.character(df$duration_label)
+  } else {
+    suffix <- ifelse(df$duration == 1 & unit == "hrs", "hr", unit)
+    paste0(df$duration_label, " ", suffix)
+  }
   
   headers <- df %>%
     distinct(group, col) %>%
@@ -214,7 +229,8 @@ draw_tile_chart_groups <- function(
     0.35 + (5 - avg_activity) * 0.05,
     "lines"
   )
- # ------ PLOT -----------------------------------------------------------------
+  
+  # ------ PLOT -----------------------------------------------------------------
   ggplot() +
     geom_label(
       data = df,
@@ -260,7 +276,7 @@ draw_tile_chart_groups <- function(
       aes(
         x = col + 0.3,
         y = y,
-        label = paste0(duration_label, " ", unit)
+        label = label_text
       ),
       hjust = 1,
       fontface = "bold",
@@ -325,7 +341,7 @@ generate_tile_slide <- function(
   
   # ------ FOCAL GROUP FILTERING -----------------------------------------------
   data_focal <- data %>% filter(group == focal_name)
-
+  
   fg_subset_col <- instruction$focal_group$subset$title %||% NULL
   fg_subset_val <- instruction$focal_group$subset$value %||% NULL
   if (!is.null(fg_subset_col) && fg_subset_col %in% names(data)) {
