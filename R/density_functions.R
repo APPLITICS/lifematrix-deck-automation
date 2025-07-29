@@ -167,10 +167,10 @@ generate_density_slide <- function(
       expand = c(0, 1)
     ) +
     scale_y_continuous(
-      limits = c(0, NA),  # force the bottom to be 0
+      limits = c(0, NA),
       expand = c(0, 0),
       labels = if (!is.null(unit) && unit == "%") {
-        label_percent(scale = 1)
+        label_percent(scale = 1, accuracy = 1)
       } else {
         label_number(accuracy = 0.01)
       }
