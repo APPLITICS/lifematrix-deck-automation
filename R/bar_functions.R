@@ -177,7 +177,7 @@ generate_bar_metric_slide <- function(
   df_bars$fill_group_show <- factor(df_bars$fill_group_show, levels = setdiff(group_labels, " "))
   
   df_bars <- df_bars %>%
-    mutate(value = as.integer(round(value)))
+    mutate(value = as.integer(sprintf("%.0f", value)))
   # Determine whether to show legend
   non_zero_groups <- df_bars %>%
     filter(group != " ", value > 0) %>%
@@ -284,7 +284,7 @@ generate_bar_metric_slide <- function(
     df_targets <- df_targets %>%
       left_join(target_map, by = "target") %>%
       left_join(df_labels %>% select(group, metric, x_center), by = c("group", "metric")) %>% 
-      mutate(value = as.integer(round(value)))
+      mutate(value = as.integer(sprintf("%.0f", value)))
 
     n_bar_slots <- df_bars %>%
       group_by(.data[[x_axis_var]]) %>%
@@ -418,9 +418,9 @@ generate_bar_category_slide <- function(
     geom_text(
       aes(
         label = if (unit_label == "") {
-          round(value, 1)
+          sprintf("%.1f", value)
         } else {
-          paste0(round(value, 0), unit_label)
+          paste0(sprintf("%.0f", value), unit_label)
         },
         y = value / 2
       ),

@@ -142,7 +142,7 @@ generate_stacked_vertical_slide <- function(
           summarise(value = mean(.data[[metric_var]], na.rm = TRUE), .groups = "drop") %>%
           mutate(
             bar_position = bar_label,
-            label = round(value, 1),
+            label = sprintf("%.1f", value),
             y_pos = 1.13
           )
         label_df <- bind_rows(label_df, subset_avg)
@@ -256,7 +256,7 @@ generate_stacked_vertical_slide <- function(
         group_by(x) %>%
         summarise(value = mean(.data[[metric_var]], na.rm = TRUE), .groups = "drop") %>%
         mutate(
-          label = round(value, 1),
+          label = sprintf("%.1f", value),
           y_pos = 1.13
         ) %>%
         left_join(x_map, by = "x")
@@ -566,7 +566,7 @@ generate_stacked_horizontal_slide <- function(
         .groups = "drop"
       ) %>%
       mutate(
-        label = round(value, 1),
+        label = sprintf("%.1f", value),
         x_pos = x_max + 0.02
       ) %>%
       left_join(bar_positions, by = c("y_group", "subset_label"))

@@ -20,7 +20,7 @@ generate_circle_slide <- function(
   unit_label <- instruction$unit %||% ""
   category_var <- instruction$category$name
   order_var <- instruction$category$order
-  metric_var <- instruction$metric %||% NULL
+  metric_var <- instruction$metric
   group_info <- instruction$focal_group
   
   # ------ FILTER FOCAL GROUP DATA ----------------------------------------
@@ -48,7 +48,6 @@ generate_circle_slide <- function(
       unique() %>%
       sort()
   }
-  
   # ------ AGGREGATE DATA -------------------------------------------------
   df_summary <- df %>%
     group_by(.data[[category_var]]) %>%
@@ -75,10 +74,10 @@ generate_circle_slide <- function(
     mutate(
       x = seq_len(n()),
       y = 0,
-      label_value = if (unit_label == "%") {
-        paste0(round(value), unit_label)
+      label_value = if (is.null(metric_var) || unit_label == "%") {
+        paste0(sprintf("%.0f", value), unit_label)
       } else {
-        paste0(round(value, 1), unit_label)
+        paste0(sprintf("%.1f", value), unit_label)
       }
     )
   

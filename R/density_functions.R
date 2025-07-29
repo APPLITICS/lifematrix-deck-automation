@@ -43,7 +43,7 @@ generate_density_slide <- function(
     labels <- mapply(
       function(data_comp, cg) {
         avg <- round(mean(data_comp[[metric_col]], na.rm = TRUE), 1)
-        paste0(cg$name, " ", cg$subset$value, " Avg. = ", avg)
+        paste0(cg$name, " ", cg$subset$value, " Avg. = ",  sprintf("%.1f", avg))
       },
       comparison_data_list,
       instruction$comparison_groups,
@@ -155,7 +155,7 @@ generate_density_slide <- function(
       "text",
       x = avg_focal - 0.5,
       y = y_max_pad * 1.05,
-      label = paste("Avg. =", avg_focal),
+      label = paste("Avg. =", sprintf("%.1f", avg_focal)),
       color = "yellow",
       size = 7,
       fontface = "bold",
