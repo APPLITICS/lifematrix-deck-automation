@@ -60,9 +60,63 @@ generate_stacked_vertical_slide <- function(
   # ------ DETERMINE X LEVELS ------------------------------------------------
   base_x_value <- category_x[[1]]$value %||% NULL
   
-  if (!is.null(base_x_value)) {
-  df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
-}
+
+  # ------ HANDLE STYLED reunion_class LABELS --------------------------------
+  # ------ FILTER AND HANDLE X-AXIS VALUES -----------------------------------
+  
+  base_x_value <- category_x[[1]]$value %||% NULL
+  
+  # ------ HANDLE reunion_class WITH SPECIAL STYLING ---------------------------
+  
+  if (base_x_name == "reunion_class") {
+    # Style reunion_class values before filtering
+    if (!is.null(base_x_value)) {
+      base_x_value <- style_ordinal_suffix(base_x_value)
+    }
+    df[[base_x_name]] <- style_ordinal_suffix(df[[base_x_name]])
+    
+    if (!is.null(base_x_value)) {
+      df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
+    }
+    
+    # Determine order of levels (styled)
+    ordered_levels <- if (!is.null(base_x_order) &&
+                          all(c(base_x_name, base_x_order) %in% names(df))) {
+      df %>%
+        select(x_val = all_of(base_x_name), x_order = all_of(base_x_order)) %>%
+        filter(!is.na(x_val), !is.na(x_order)) %>%
+        distinct() %>%
+        arrange(x_order) %>%
+        pull(x_val)
+    } else {
+      unique(df[[base_x_name]])
+    }
+    
+    styled_levels <- style_ordinal_suffix(ordered_levels)
+    df[[base_x_name]] <- factor(df[[base_x_name]], levels = styled_levels, ordered = TRUE)
+    lvl_x <- styled_levels
+    
+  } else {
+    
+    # ------ HANDLE STANDARD X-AXIS FILTERING ----------------------------------
+    
+    if (!is.null(base_x_value)) {
+      df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
+    }
+    
+    lvl_x <- if (!is.null(base_x_order) &&
+                 all(c(base_x_name, base_x_order) %in% names(df))) {
+      df %>%
+        select(x_val = all_of(base_x_name), x_order = all_of(base_x_order)) %>%
+        filter(!is.na(x_val), !is.na(x_order)) %>%
+        distinct() %>%
+        arrange(x_order) %>%
+        pull(x_val)
+    } else {
+      unique(df[[base_x_name]])
+    }
+  }
+  
   
   lvl_x <- if (!is.null(base_x_order) && all(c(base_x_name, base_x_order) %in% names(data))) {
     df %>%
@@ -264,9 +318,9 @@ generate_stacked_vertical_slide <- function(
   }
   
   # ------ FINAL PLOT BUILDING ----------------------------------------------
-  y_limit_top  <- if (!is.null(label_df)) max(label_df$y_pos, 1.1) else 1.1
-  fill_levels  <- unique(combined_data$y)
-  pal          <- get_color_palette(fill_levels)
+  y_limit_top <- if (!is.null(label_df)) max(label_df$y_pos, 1.1) else 1.1
+  fill_levels <- unique(combined_data$y)
+  pal <- get_color_palette(fill_levels)
   
   plot_obj <- ggplot(combined_data) +
     geom_bar(
@@ -276,7 +330,7 @@ generate_stacked_vertical_slide <- function(
     ) +
     geom_text(
       data = combined_data %>% filter(prop >= 0.03),
-      aes(x = x_offset, y = prop, label = scales::percent(prop, accuracy = 1)),
+      aes(x = x_offset, y = prop, label = percent(prop, accuracy = 1)),
       stat = "identity",
       position = position_stack(vjust = 0.5),
       color = "black",
@@ -324,14 +378,12 @@ generate_stacked_vertical_slide <- function(
       }
     } +
     geom_hline(yintercept = 0, color = "white", linewidth = 1.5) +
-    geom_text(
+    geom_richtext(
       data = bottom_group_labels,
       aes(x = x_num, y = -0.07, label = label),
-      inherit.aes = FALSE,
-      size = 7,
-      fontface = "bold",
-      color = "white"
-    ) +
+      fill = NA, label.color = NA,
+      size = 7, fontface = "bold", color = "white"
+    ) + 
     scale_x_continuous(
       breaks = x_map$x_num,
       labels = rep("", length(x_map$x_num)),
@@ -347,7 +399,7 @@ generate_stacked_vertical_slide <- function(
     labs(x = NULL, y = NULL, fill = NULL) +
     global_theme() +
     theme(
-      axis.text.x = element_blank(),
+      axis.text.x = element_markdown(),
       axis.ticks.x = element_blank(),
       axis.line.x = element_blank(),
       axis.text.y = element_blank(),

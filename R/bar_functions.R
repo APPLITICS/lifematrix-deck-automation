@@ -285,7 +285,7 @@ generate_bar_metric_slide <- function(
       left_join(target_map, by = "target") %>%
       left_join(df_labels %>% select(group, metric, x_center), by = c("group", "metric")) %>% 
       mutate(value = as.integer(sprintf("%.0f", value)))
-
+    
     n_bar_slots <- df_bars %>%
       group_by(.data[[x_axis_var]]) %>%
       summarise(n = n(), .groups = "drop") %>%
@@ -367,7 +367,7 @@ generate_bar_category_slide <- function(
     subset_col <- group_info$subset$title
     subset_val <- group_info$subset$value
     if (!is.null(subset_col) && !is.null(subset_val)) {
-      df <- df %>% filter(.data[[subset_col]] == subset_val)
+      df <- df %>% filter(.data[[subset_col]] %in% subset_val)
     }
   }
   
@@ -382,10 +382,11 @@ generate_bar_category_slide <- function(
     arrange(order) %>%
     pull(category)
   
+
   # ------ AGGREGATE METRIC VALUES --------------------------------------------
   # Compute average metric value per category and apply factor levels
   df <- df %>%
-    group_by(.data[[category_var]]) %>%
+    group_by(.data[[category_var]] ) %>%
     summarise(
       value = mean(.data[[metric_var]], na.rm = TRUE),
       .groups = "drop"
@@ -407,6 +408,21 @@ generate_bar_category_slide <- function(
   # ------ Y AXIS MAX ----------------------------------------------------------
   # Compute y-axis maximum for consistent scale
   y_max <- ceiling(max(df$value, na.rm = TRUE))
+  # ------ HANDLE STYLED CATEGORY VAR -------------------------------------------
+  # Use styled HTML version if it exists (e.g., reunion_class_html)
+  if (category_var == "reunion_class") {
+    df[[category_var]] <- style_ordinal_suffix(df[[category_var]])
+    
+    # Also apply ordered factor using styled levels
+    styled_levels <- style_ordinal_suffix(ordered_levels)
+    
+    df[[category_var]] <- factor(
+      df[[category_var]],
+      levels = styled_levels,
+      ordered = TRUE
+    )
+  }
+  
   
   # ------ BUILD PLOT ----------------------------------------------------------
   # Construct ggplot2 bar chart with value labels and formatting
@@ -445,6 +461,7 @@ generate_bar_category_slide <- function(
     ) +
     global_theme() +
     theme(
+      axis.text.x = ggtext::element_markdown(),
       plot.title = element_text(
         color = "white", face = "bold", size = 26, hjust = 0
       ),
@@ -542,7 +559,6 @@ generate_horizontal_bar_slide <- function(
       label = factor(label, levels = label_levels),
       type = factor(type, levels = x_titles)
     )
-  
   # ------ VISUAL SETTINGS --------------------------------------------------
   if (has_subj) {
     facet_layer <- facet_grid(

@@ -530,6 +530,30 @@ instructions <- list(
     y_title = "Percent Meeting Meaningfulness+",
     focal_group = list(
       name = focal_group,
+      subset = list(
+        title = "reunion_class",
+        value = c(
+          "1st", "5th")
+        
+      )
+      
+    ),
+    trend_line = FALSE
+  ),
+  # ------ Slide 70: Meaningfulness by Reunion Class ---------------------------
+  list(
+    function_name = "generate_bar_category_slide",
+    metric = "meaningfulness",
+    category = list(
+      name = "reunion_class",
+      order = "reunion_class_levels"
+    ),
+    unit = "%",
+    title = "PERCENT MEETING MEANINGFULNESS+ AT WORK",
+    x_title = "Reunion Class",
+    y_title = "Percent Meeting Meaningfulness+",
+    focal_group = list(
+      name = focal_group,
       subset = NULL
     ),
     trend_line = FALSE
@@ -703,7 +727,7 @@ instructions <- list(
         subset = list(
           title = "reunion_class",
           value = c(
-            "5th", "10th", "15th",
+            "5th", "1st", "15th",
             "20th", "25th", "30th"
           )
         )
@@ -1183,7 +1207,7 @@ instructions <- list(
       list(
         name = "reunion_class",
         order = "reunion_class_levels",
-        value = c("5th", "10th", "15th", "20th", "25th", "30th"),
+        value = c("5th", "10th", "30th"),
         subset = NULL
       )
     ),
@@ -1206,8 +1230,8 @@ instructions <- list(
         value = "Women"
       )
     )
-  )
-  ,
+  ),
+  
   
   # ------ SLIDE 45: Industry (All sectors, ordered fill) --------------------------
   list(
