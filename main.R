@@ -1,6 +1,8 @@
 # ------ LIBRARIES ------------------------------------------------------------
-
 library(ggplot2)
+library(ggtext)
+library(ggrepel)
+library(patchwork)
 library(dplyr)
 library(tidyr)
 library(officer)
@@ -11,10 +13,14 @@ library(cowplot)
 library(stringr)
 library(scales)
 library(tibble)
+library(forcats)
+library(data.table)
+
+
 # ------ LOAD DATA ------------------------------------------------------------
-
-pipeline_data <- data.table::fread("data/simulated_pipeline_input.csv")
-
+pipeline_data <- fread("data/simulated_pipeline_input.csv")
+# ------ LOAD MAPPING FILE --------------------------------------------------
+variable_map  <- fread("inputs/mapping_file.csv")
 # ------ DEFINE GROUPS ---------------------------------------------------------
 
 focal_group <- "Xilio"

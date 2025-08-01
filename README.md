@@ -9,6 +9,7 @@ This README documents the Phase 3 slide generation pipeline of the LIFE Matrix D
 R/
 ├── bar_functions.R            # Bar chart slide generation functions
 ├── density_functions.R        # Density chart slide generation functions
+|── ...
 ├── helpers.R                  # Shared utility functions
 ├── run_pipeline.R             # Core function to build all slides
 ├── instructions.R             # Structured list of slide instructions
@@ -16,13 +17,21 @@ R/
 data/
 ├── simulated_pipeline_input.csv  # Preprocessed survey data for pipeline
 
+inputs/
+├── template.pptx              # PowerPoint template for slide layout
+├── mapping.csv                # Mapping of survey metrics to slide displayed labels
+
+output/
+├── generated_slides.pptx      # Output PowerPoint file with generated slides
+
 provided_reference_deck.pptx   # Reference slide deck for validation
 main.R                         # Script to load data and run the pipeline
 ```
 ---
 ## Data Format 
 
-The `simulated_pipeline_input.csv` file contains detailed survey data and is the main data source for the slide generation pipeline. Each row represents a participant, and each column provides a specific metric or category.
+- The `simulated_pipeline_input.csv` file contains detailed survey data and is the main data source for the slide generation pipeline. Each row represents a participant, and each column provides a specific metric or category.
+- The `mapping_file.csv` file provides a mapping of survey data columns, whether metrics or categories, to their corresponding display labels used in the slides. This ensures a direct and consistent translation of internal variable names to presentation-friendly labels.
 
 ### Preprocessing Requirements
 
@@ -95,8 +104,6 @@ This function automates the creation of PowerPoint slides from preprocessed surv
 
 Slides are generated using dedicated functions specified in the `function_name` field of each instruction. The pipeline dynamically dispatches these functions to build complete slides.
 
----
-
 ### A. Density Graphs
 
 **Function:**
@@ -114,35 +121,50 @@ generate_density_slide(
 #### Key Features
 
 - Plots a density chart for a given metric.
+- Supports dynamic y-axis formatting based on the `unit` parameter: percentages with `unit = "%"`, or fractions when `unit = NULL`.
 - Shows focal group average (dashed line).
 - Adds comparison group averages as annotated green boxes.
 
-#### Example Instruction: Slide 3
+#### Example Instruction: Slide 3 (Focal Only – Y-axis as Fractions)
 
 ```r
 list(
   function_name = "generate_density_slide",
-  metric = "life_satisfaction",
-  x_title = "Life Satisfaction",
-  y_title = "Density",
-  title = "LIFE SATISFACTION",
-  focal_group = list(name = focal_group, subset = NULL),
+  metric        = "life_satisfaction",
+  unit          =  NULL,
+  x_title       = "Life Satisfaction",
+  y_title       = "Density",
+  title         = "LIFE SATISFACTION",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = NULL
 )
 ```
-#### Example Instruction: Slide 5 (With Comparisons)
+#### Example Instruction: Slide 5 (With Comparisons – Y-axis as Percent)
 
 ```r
 list(
   function_name = "generate_density_slide",
-  metric = "life_satisfaction",
-  x_title = "Life Satisfaction",
-  y_title = "Density",
-  title = "LIFE SATISFACTION",
-  focal_group = list(name = focal_group, subset = NULL),
+  metric        = "life_satisfaction",
+  unit          = "%",
+  x_title       = "Life Satisfaction",
+  y_title       = "Density",
+  title         = "LIFE SATISFACTION",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Women")
+    ),
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Men")
+    )
   )
 )
 ```
@@ -169,38 +191,56 @@ Based on the provided PowerPoint file, this function includes:
 - X-axis = metric names.
 - Optional: target lines, placeholder groups.
 
-**Example: Slide 12**
+#### Example: Slide 12
 
 ```r
 list(
   function_name = "generate_bar_metric_slide",
-  bar_value = c("joy", "achievement", "meaningfulness"),
-  target = NULL
-  unit = "%",
-  title = "IMPORTANCE OF JAM",
-  y_title = "% High Importance",
-  focal_group = list(name = focal_group, subset = NULL),
+  bar_value     = c("joy", "achievement", "meaningfulness"),
+  target        = NULL,
+  unit          = "%",
+  title         = "IMPORTANCE OF JAM",
+  y_title       = "% High Importance",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = NA, subset = NULL)
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Women")
+    ),
+    list(
+      name   = NA,
+      subset = NULL
+    )
   )
 )
 ```
 
-**Example: Slide 14 with Targets**
+#### Example: Slide 14 with Targets
 
 ```r
 list(
   function_name = "generate_bar_metric_slide",
-  bar_value = c("joy", "achievement", "meaningfulness"),
-  target = c("joy_min", "achievement_min", "meaningfulness_min"),
-  unit = "%",
-  title = "IMPORTANCE OF JAM",
-  y_title = "% High Importance",
-  focal_group = list(name = focal_group, subset = NULL),
+  bar_value     = c("joy", "achievement", "meaningfulness"),
+  target        = c("joy_min", "achievement_min", "meaningfulness_min"),
+  unit          = "%",
+  title         = "IMPORTANCE OF JAM",
+  y_title       = "% High Importance",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
   comparison_groups = list(
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-    list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Women")
+    ),
+    list(
+      name   = comparison_group_1,
+      subset = list(title = "gender", value = "Men")
+    )
   )
 )
 ```
@@ -225,60 +265,767 @@ Based on the provided PowerPoint file, this function includes:
 - Does not support comparison groups
 - Supports trend lines.
 
-**Example: Slide 67 with Income Grouping + Trend**
+#### Example: Slide 67 with Income Grouping + Trend
 
 ```r
 list(
   function_name = "generate_bar_category_slide",
-  metric = "life_satisfaction",
-  category = list(
-    name = "income_range",
+  metric        = "life_satisfaction",
+  category      = list(
+    name  = "income_range",
     order = "income_range_levels"
   ),
-  unit = NULL,
-  title = "LIFE SATISFACTION BY INCOME",
-  x_title = "Income ($)",
-  y_title = "Life Satisfaction",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line = TRUE
+  unit          = NULL,
+  title         = "LIFE SATISFACTION BY INCOME",
+  x_title       = "Income ($)",
+  y_title       = "Life Satisfaction",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
+  trend_line    = TRUE
 )
 ```
 
-**Example: Slide 72 without Y-Axis**
+#### Example: Slide 72 without Y-Axis
 
 ```r
 list(
   function_name = "generate_bar_category_slide",
-  metric = "n_children",
-  category = list(
-    name = "reunion_class",
+  metric        = "n_children",
+  category      = list(
+    name  = "reunion_class",
     order = "reunion_class_levels"
   ),
-  unit = NULL,
-  title = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
-  x_title = "Reunion Class",
-  y_title = "Number of Children",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line = FALSE
+  unit          = NULL,
+  title         = "KIDS - AVERAGE NUMBER BY REUNION CLASS",
+  x_title       = "Reunion Class",
+  y_title       = "Number of Children",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
+  trend_line    = FALSE
 )
 ```
 
-**Example: Slide 73 with Grouped Numeric Category**
+#### Example: Slide 73 with Grouped Numeric Category
 
 ```r
 list(
   function_name = "generate_bar_category_slide",
-  metric = "life_satisfaction",
-  category = list(
-    name = "children_range",
+  metric        = "life_satisfaction",
+  category      = list(
+    name  = "children_range",
     order = "children_range_levels"
   ),
-  unit = NULL,
-  title = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
-  x_title = "Number of Children",
-  y_title = "Life satisfaction",
-  focal_group = list(name = focal_group, subset = NULL),
-  trend_line = TRUE
+  unit          = NULL,
+  title         = "LIFE SATISFACTION BY NUMBER OF CHILDREN",
+  x_title       = "Number of Children",
+  y_title       = "Life satisfaction",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  ),
+  trend_line    = TRUE
+)
+```
+
+
+### C. Circle Graphs
+
+**Function:**
+
+```r
+generate_circle_slide(
+  data,
+  instructions,
+  ppt_doc
+)
+```
+
+**Used In:** Slides 75–78
+
+#### Key Features
+
+- Displays one value per category for the focal group.
+- If `metric` is provided, shows the summary value (e.g., mean) of that metric per category.
+- If `metric = NULL`, shows the **count of participant** per category for the focal group.
+- Supports subsetting focal group data by category or other variables.
+
+#### Example: Slide 75 (Counts per Category)
+
+```r
+list(
+  function_name = "generate_circle_slide",
+  metric        = NULL,
+  category      = list(
+    name  = "reunion_class",
+    order = "reunion_class_levels"
+  ),
+  unit          = NULL,
+  title         = "CURRENT SAMPLE",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+
+#### Example: Slide 76 (Metric-Based Summary)
+
+```r
+list(
+  function_name = "generate_circle_slide",
+  metric        = "life_satisfaction",
+  category      = list(
+    name  = "reunion_class",
+    order = "reunion_class_levels"
+  ),
+  unit          = NULL,
+  title         = "LIFE SATISFACTION",
+  focal_group   = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+
+#### Example: Slide 78 (Filtered Categories)
+
+```r
+list(
+  function_name = "generate_circle_slide",
+  metric        = "meaningfulness_work",
+  category      = list(
+    name  = "reunion_class",
+    order = "reunion_class_levels"
+  ),
+  unit          = "%",
+  title         = "PERCENT MEETING MEANINGFULNESS",
+  focal_group   = list(
+    name   = focal_group,
+    subset = list(
+      title = "reunion_class",
+      value = c("1st", "5th", "10th", "15th", "20th", "25th")
+    )
+  )
+)
+```
+### D. Tile Charts
+
+**Function:**
+
+```r
+generate_tile_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 24–32
+
+#### Key Features
+
+- **Focal or comparison view**: Show top activities for one group or compare up to 4 groups side by side.
+- **Top activity selection**: Automatically selects and ranks the top `n_activities` based on metric values.
+- **Color by preference**: Changes tile color based on whether higher or lower values are preferred.
+- **Group filtering**: Supports filtering groups by variables like gender or reunion class.
+
+#### Example 1: Focal vs Comparison (High Value Activities)
+
+```r
+list(
+    function_name = "generate_tile_slide",
+    metric        = c(
+        "catching_up_hours", "reading_hours", "care_giving_hours",
+        "exercising_hours", "chores_with_others_hours",
+        "chores_with_family_hours", "watching_TV_with_others_hours",
+        "watching_TV_alone_hours", "eating_with_others_hours"
+    ),
+    title         = "MOST COMMON HIGH VALUE ACTIVITIES",
+    focal_group   = list(
+        name   = focal_group,
+        subset = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name   = comparison_group_1,
+            subset = NULL
+        )
+    ),
+    preferred_value = "high",
+    n_activities    = 5
+)
+```
+#### Example 2: Filtered Comparison by Category
+
+```r
+list(
+    function_name = "generate_tile_slide",
+    metric        = c(
+        "catching_up_hours", "reading_hours", "care_giving_hours",
+        "exercising_hours", "chores_with_others_hours",
+        "chores_with_family_hours", "watching_TV_with_others_hours",
+        "watching_TV_alone_hours", "eating_with_others_hours"
+    ),
+    title         = "MOST COMMON HIGH VALUE ACTIVITIES",
+    focal_group   = list(
+        name   = focal_group,
+        subset = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name   = comparison_group_1,
+            subset = list(
+                title = "reunion_class",
+                value = c("5th", "10th", "15th", "20th", "25th", "30th")
+            )
+        )
+    ),
+    preferred_value = "high",
+    n_activities    = 5
+)
+```
+#### Example 3: Focal + 3 Comparison Groups (Low Value Activities)
+
+```r
+list(
+    function_name = "generate_tile_slide",
+    metric        = c(
+        "social_media_hours", "watching_TV_alone_hours", "eating_alone_hours",
+        "chores_alone_hours", "commuting_alone_hours", "hanging_out_alone_hours"
+    ),
+    title         = "MOST COMMON HIGH VALUE ACTIVITIES",
+    focal_group   = list(
+        name   = focal_group,
+        subset = NULL
+    ),
+    comparison_groups = list(
+        list(name = comparison_group_2, subset = NULL),
+        list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
+        list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+    ),
+    preferred_value = "low",
+    n_activities    = 5
+)
+```
+### E. Horizontal Bar Charts
+
+**Function:**
+
+```r
+generate_horizontal_bar_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 53–54
+
+#### Key Features
+
+- **Focal group only**: This function displays data for a single group without including any comparisons to others. It is designed for clear and focused group-specific insights.
+- **Supports hours and subjective values**: Set `subjective_value` to `TRUE` to include both average weekly hours and corresponding subjective values on separate x-axes, or `FALSE` to show only the hour values.
+
+#### Example 1: Hours Only (Focal Group)
+
+```r
+list(
+    function_name     = "generate_horizontal_bar_slide",
+    metric            = c(
+        "volunteering_hours",
+        "therapy_hours",
+        "gaming_hours",
+        "school_learning_hours",
+        "side_projects_hours",
+        "job_searching_hours",
+        "napping_hours",
+        "hobbies_hours"
+    ),
+    subjective_value  = NULL,
+    title             = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title           = c("Avg. Hours Per Week"),
+    y_title           = "Activity",
+    focal_group       = list(
+        name          = focal_group,
+        subset        = NULL
+    )
+)
+```
+
+#### Example 2: Hours + Subjective Value (Focal Group)
+
+```r
+list(
+    function_name     = "generate_horizontal_bar_slide",
+    metric            = c(
+        "volunteering_hours",
+        "therapy_hours",
+        "gaming_hours",
+        "school_learning_hours",
+        "side_projects_hours",
+        "job_searching_hours",
+        "napping_hours",
+        "hobbies_hours"
+    ),
+    subjective_value  = c(
+        "volunteering_subj_value",
+        "therapy_subj_value",
+        "gaming_subj_value",
+        "school_learning_subj_value",
+        "side_projects_subj_value",
+        "job_searching_subj_value",
+        "napping_subj_value",
+        "hobbies_subj_value"
+    ),
+    title             = "DISCRETIONARY TIME – ACTIVITIES",
+    x_title           = c("Avg. Hours Per Week", "Avg. Subjective Value"),
+    y_title           = "Activity",
+    focal_group       = list(
+        name          = focal_group,
+        subset        = NULL
+    )
+)
+```
+### F. Donut Charts
+
+**Function:**
+
+```r
+generate_donut_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 81–83
+
+#### Key Features
+
+- Supports focal and comparison groups to display category distributions across one or multiple segments.
+- Handles empty or undefined comparison groups by inserting placeholders to preserve layout structure.
+- Accepts optional category ordering through the `order` field.
+
+#### Example 1: Focal Group Only
+
+```r
+list(
+    function_name  = "generate_donut_slide",
+    category       = list(
+        name   = "jam_type_distribution",
+        order  = NULL
+    ),
+    title          = "JAM TYPE DISTRIBUTION",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    ),
+    comparison_groups = NULL
+)
+```
+
+#### Example 2: Focal Group + Placeholder
+
+```r
+list(
+    function_name  = "generate_donut_slide",
+    category       = list(
+        name   = "jam_type_distribution",
+        order  = NULL
+    ),
+    title          = "JAM TYPE DISTRIBUTION",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name    = NA,
+            subset  = NULL
+        )
+    )
+)
+```
+
+#### Example 3: Focal Group + Comparison Group with Subsets
+
+```r
+list(
+    function_name  = "generate_donut_slide",
+    category       = list(
+        name   = "jam_type_distribution",
+        order  = NULL
+    ),
+    title          = "JAM TYPE DISTRIBUTION",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    ),
+    comparison_groups = list(
+        list(
+            name    = comparison_group_1,
+            subset  = list(
+                title  = "gender",
+                value  = "Women"
+            )
+        ),
+        list(
+            name    = comparison_group_1,
+            subset  = list(
+                title  = "gender",
+                value  = "Men"
+            )
+        )
+    )
+)
+```
+### F. Line Charts
+
+**Function:**
+
+```r
+generate_line_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 84–87
+
+#### Key Features
+
+- Supports one or multiple **metrics** plotted as separate lines across a categorical x-axis (e.g., income levels).
+- Filters data by **focal group**, with optional **subset filtering** (e.g., Women only).
+- Accepts optional **category ordering** via `instruction$category$order`.
+
+#### Example 1: Perceived vs Behavioral Achievement
+
+```r
+list(
+    function_name  = "generate_line_slide",
+    metric         = c(
+        "achievement_behavioral",
+        "achievement_perceived"
+    ),
+    category       = list(
+        name   = "income_range",
+        order  = "income_range_levels"
+    ),
+    title          = "PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
+    y_title        = "Achievement Rating",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = list(
+            title  = "gender",
+            value  = "Women"
+        )
+    )
+)
+```
+#### Example 2: JAM Gap Distribution Across Income Levels
+
+```r
+list(
+    function_name  = "generate_line_slide",
+    metric         = c(
+        "joy_gap",
+        "achievement_gap",
+        "meaningfulness_gap"
+    ),
+    category       = list(
+        name   = "income_range",
+        order  = "income_range_levels"
+    ),
+    unit           = "%",
+    title          = "GAP IN PERCEIVED VS BEHAVIORAL JAM",
+    y_title        = "Gap",
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    )
+)
+```
+### G. Vertical Stacked Bar Charts
+
+**Function:**
+
+```r
+generate_stacked_vertical_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slides 66, 68, 71, 80
+
+#### Key Features
+
+- Supports **one or multiple x-axis categories** (e.g., gender, with/without kids) and **one or multiple y-axis categories** (e.g., work level, partner status).
+- Automatically generates **stacked bars**, optionally grouped side-by-side when multiple `category_x` or `category_y` are provided.
+- Accepts **subset filtering** to split bars by values (e.g., "Kids" vs "No Kids") and aligns them under common x-axis groupings.
+- Dynamically calculates and annotates **percentage labels**, **top-level subset labels**, and **average metric values** above each bar.
+- Handles **ordering of categories** via the `order` field to control bar and segment arrangement.
+
+#### Example 1: Percent Who Have Kids
+
+```r
+list(
+    function_name  = "generate_stacked_vertical_slide",
+    title          = "PERCENT WHO HAVE KIDS",
+    metric         = NULL,
+    unit           = "N°",
+    category_x     = list(
+        list(
+            name   = "reunion_class",
+            order  = "reunion_class_levels"
+        )
+    ),
+    category_y     = list(
+        list(
+            name   = "with_child",
+            order  = "with_child_levels",
+            value  = "Kids"
+        )
+    ),
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    )
+)
+```
+##### Example Highlights:
+
+- Shows the **proportion of participants with children** across `reunion_class`.
+- `category_y` is filtered to only `"Kids"` to emphasize this specific outcome.
+- Bars are simple stacked bars (no subgroups), with percentage labels on each segment.
+- 
+#### Example 2: Industry Distribution by Gender and Parental Status
+
+```r
+list(
+    function_name  = "generate_stacked_vertical_slide",
+    title          = "INDUSTRY",
+    metric         = "working_hours",
+    unit           = "hrs",
+    category_x     = list(
+        list(
+            name   = "gender",
+            order  = NULL,
+            subset = list(
+                title = "with_child",
+                value = "Kids"
+            )
+        ),
+        list(
+            name   = "gender",
+            order  = NULL,
+            subset = list(
+                title = "with_child",
+                value = "No Kids"
+            )
+        )
+    ),
+    category_y     = list(
+        list(
+            name   = "working_range",
+            order  = "working_range_levels",
+            value  = NULL
+        )
+    ),
+    focal_group    = list(
+        name    = focal_group,
+        subset  = NULL
+    )
+)
+```
+##### Example Highlights:
+
+- Compares **working hour distribution** across gender and child status.
+- Generates **grouped stacked bars**: one for each `gender` × `with_child` subgroup.
+- Y-axis segments show working hour brackets, stacked with percentages.
+- Annotates average working hours at the top of each bar using `metric = "working_hours"`.
+- Ideal for visualizing how work engagement varies across family structure and gender.
+
+
+### H. Horizontal Stacked Bar Charts
+
+**Function:**
+
+```r
+generate_stacked_horizontal_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+**Used In:** Slides 69, 87
+
+#### Key Features
+
+- Creates **horizontal stacked bar charts**, grouped by one or more y-axis categories (e.g., gender, relationship status).
+- Stacks are defined by x-axis categories (e.g., working range), with **optional ordering and filtering**.
+- Supports **subset filtering** (e.g., show "Kids" and "No Kids" under each gender).
+- Can optionally display **average values** (e.g., average working hours) to the right of each bar.
+
+
+#### Example 1: Industry by Gender and Child Status
+
+```r
+list(
+  function_name = "generate_stacked_horizontal_slide",
+  title         = "INDUSTRY (Horizontal)",
+  metric        = NULL,
+  unit          = NULL,
+  category_y    = list(
+    list(
+      name   = "gender",
+      order  = NULL,
+      subset = list(
+        title = "with_child",
+        value = "Kids"
+      )
+    ),
+    list(
+      name   = "gender",
+      order  = NULL,
+      subset = list(
+        title = "with_child",
+        value = "No Kids"
+      )
+    )
+  ),
+  category_x = list(
+    list(
+      name  = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    )
+  ),
+  focal_group = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+
+#### Example 2: Work Hours by Gender (5th & 20th Reunion Classes)
+```r
+list(
+  function_name = "generate_stacked_horizontal_slide",
+  title         = "GENDER AND WORK HOURS (5th - 20th)",
+  metric        = NULL,
+  unit          = NULL,
+  category_y    = list(
+    list(
+      name   = "gender",
+      subset = NULL
+    )
+  ),
+  category_x = list(
+    list(
+      name  = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    )
+  ),
+  focal_group = list(
+    name   = focal_group,
+    subset = list(
+      title = "reunion_class",
+      value = c("5th", "20th")
+    )
+  )
+)
+```
+#### Example 3: Work Hours and Averages (All Focal Group)
+
+```r
+list(
+  function_name = "generate_stacked_horizontal_slide",
+  title         = "GENDER AND WORK HOURS FOR ALL FOCAL GROUP",
+  metric        = "working_hours",
+  unit          = "hrs",
+  category_y    = list(
+    list(
+      name   = "gender",
+      subset = NULL
+    )
+  ),
+  category_x = list(
+    list(
+      name  = "working_range",
+      order = "working_range_levels",
+      value = NULL
+    )
+  ),
+  focal_group = list(
+    name   = focal_group,
+    subset = NULL
+  )
+)
+```
+### I. Scatter Plot
+
+**Function:**
+
+```r
+generate_scatter_slide(
+    data,
+    instruction,
+    ppt_doc
+)
+```
+
+**Used In:** Slide 55
+
+
+#### Key Features
+
+- Creates a **scatter plot** where each dot represents one activity.
+- The **x-axis** shows average **hours per week** spent on that activity.
+- The **y-axis** shows the **subjective value**.
+- The chart focuses on a **single focal group** (e.g. "Xilio"), which can be filtered further using one category like similar. **It does not support comparison groups**.
+- Uses `variable_map` to convert variable names into readable labels.
+
+
+#### Example: Women from focal group — Time vs Subjective Value
+
+```r
+list(
+  function_name    = "generate_activity_scatter_slide",
+  title            = "TIME VS VALUE FROM DISCRETIONARY ACTIVITIES",
+  metric           = c(
+    "volunteering_hours",
+    "therapy_hours",
+    "gaming_hours",
+    "school_learning_hours",
+    "side_projects_hours",
+    "job_searching_hours",
+    "napping_hours",
+    "hobbies_hours"
+  ),
+  subjective_value = c(
+    "volunteering_subj_value",
+    "therapy_subj_value",
+    "gaming_subj_value",
+    "school_learning_subj_value",
+    "side_projects_subj_value",
+    "job_searching_subj_value",
+    "napping_subj_value",
+    "hobbies_subj_value"
+  ),
+  x_title          = "Hours/Week",
+  y_title          = "Subjective Value",
+  focal_group      = list(
+    name   = focal_group,
+    subset = NULL
+  )
 )
 ```
 ---

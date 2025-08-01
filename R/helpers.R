@@ -170,3 +170,28 @@ export_plot_to_slide <- function(
   
   return(ppt_doc)
 }
+
+
+
+
+# ------ STYLE ORDINAL SUFFIX -------------------------------------------------
+#' Format ordinal numbers with superscript suffixes (e.g., 40th+ → 40<sup>th+</sup>)
+#'
+#' @param x A character or numeric vector of ordinal labels.
+#' @return A character vector with HTML-styled ordinal suffixes.
+style_ordinal_suffix <- function(x) {
+  x <- as.character(x)
+  
+  x <- ifelse(
+    grepl("^[0-9]+(st|nd|rd|th)(\\+?)$", x),
+    sub(
+      pattern = "^(\\d+)(st\\+|nd\\+|rd\\+|th\\+|st|nd|rd|th)$",
+      replacement = "\\1<sup>\\2</sup>",
+      x,
+      perl = TRUE
+    ),
+    x
+  )
+  
+  return(x)
+}
