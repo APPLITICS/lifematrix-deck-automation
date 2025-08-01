@@ -59,13 +59,7 @@ generate_stacked_vertical_slide <- function(
   
   # ------ DETERMINE X LEVELS ------------------------------------------------
   base_x_value <- category_x[[1]]$value %||% NULL
-  
 
-  # ------ HANDLE STYLED reunion_class LABELS --------------------------------
-  # ------ FILTER AND HANDLE X-AXIS VALUES -----------------------------------
-  
-  base_x_value <- category_x[[1]]$value %||% NULL
-  
   # ------ HANDLE reunion_class WITH SPECIAL STYLING ---------------------------
   
   if (base_x_name == "reunion_class") {
@@ -133,13 +127,11 @@ generate_stacked_vertical_slide <- function(
   if (!is.null(base_x_value)) {
     lvl_x <- lvl_x[lvl_x %in% base_x_value]
   }
-  
   # ------ MULTIPLE SUBSET BARS PER X ---------------------------------------
   df <- df %>% rename(x = all_of(base_x_name))
   subset_tabs <- list()
   label_df <- NULL
   if (multi_x) {
-    
     for (i in seq_along(category_x)) {
       cx <- category_x[[i]]
       subset_df <- df
@@ -233,7 +225,7 @@ generate_stacked_vertical_slide <- function(
     
   } else {
     all_y_names <- purrr::map_chr(category_y, "name")
-        lvl_y_global <- df %>%
+    lvl_y_global <- df %>%
       select(any_of(all_y_names)) %>%
       pivot_longer(cols = everything(), values_to = "val", names_to = NULL) %>%
       filter(!is.na(val)) %>%
@@ -390,7 +382,6 @@ generate_stacked_vertical_slide <- function(
       expand = expansion(add = x_expand)
     ) +
     scale_y_continuous(
-      limits = c(-0.1, y_limit_top),
       breaks = NULL,
       labels = NULL,
       expand = expansion(mult = c(0, 0.2))
@@ -661,13 +652,6 @@ generate_stacked_horizontal_slide <- function(
       yend = max(y_label_df$y_label_pos) + 1,
       color = "white", linewidth = 1.5
     ) +
-    annotate(
-      "rect",
-      xmin = x_max + 0.001, xmax = x_max + 0.15,
-      ymin = min(y_label_df$y_label_pos) - 1,
-      ymax = max(y_label_df$y_label_pos) + 1,
-      fill = "#005377", color = NA
-    ) +
     geom_text(
       data = bar_positions %>%
         filter(!is.na(subset_label)),
@@ -701,7 +685,11 @@ generate_stacked_horizontal_slide <- function(
   # Apply visual theming and coordinate limits.
   plot_obj <- plot_obj +
     scale_fill_manual(values = pal, drop = FALSE) +
-    scale_x_continuous(expand = expansion(mult = c(0, 0.02))) +
+    scale_x_continuous(
+      breaks = NULL,
+      labels = NULL,
+      expand = expansion(mult = c(0, 0.2))
+    ) +
     scale_y_continuous(
       breaks = y_label_df$y_label_pos,
       labels = y_label_df$y_group,
@@ -731,7 +719,7 @@ generate_stacked_horizontal_slide <- function(
       legend.key.height = unit(20, "pt"),
       legend.key.width = unit(20, "pt"),
       legend.title = element_blank(),
-      plot.margin = margin(t = 0, r = 40, b = 0, l = 80)
+      plot.margin = margin(t = 0, r = 0, b = 0, l = 80)
     ) +
     coord_cartesian(clip = "off")
   
