@@ -12,7 +12,7 @@
 #'   `metric`, `unit`, `focal_group`, `comparison_groups`, `category`, etc.
 
 instructions <- list(
-  # ------ Slide 3: Density without comparisons ------------------------------
+  #------ Slide 3: Density without comparisons ------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
@@ -1519,7 +1519,30 @@ instructions <- list(
       subset=NULL
     )
   ),
-  
+  # ------ SLIDE 54: Status and Work Hours (< 45 Hours) --------------------------
+  list(
+    function_name="generate_stacked_horizontal_slide",
+    title="STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
+    metric= NULL,
+    unit= NULL,
+    category_y=list(
+      list(
+        name="relationship_status",
+        subset=NULL
+      )
+    ),
+    category_x=list(
+      list(
+        name="working_range",
+        order="working_range_levels",
+        value=c("0 - 35", "45 - 55", "35 - 45")
+      )
+    ),
+    focal_group=list(
+      name=focal_group,
+      subset=NULL
+    )
+  ),
   # ------ SLIDE 54: Status and Work Hours (< 45 Hours) --------------------------
   list(
     function_name="generate_stacked_horizontal_slide",
