@@ -21,7 +21,7 @@ generate_scatter_slide <- function(
   # ------ EXTRACT INSTRUCTION SETTINGS -----------------------------------
   x_vars <- instruction$metric
   y_vars <- instruction$subjective_value
-  focal  <- instruction$focal_group
+  focal <- instruction$focal_group
   
   # ------ FILTER TO FOCAL GROUP ------------------------------------------
   if (!is.null(focal)) {
