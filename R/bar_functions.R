@@ -376,8 +376,9 @@ generate_bar_category_slide <- function(
   ordered_levels <- df %>%
     select(
       category = all_of(category_var),
-      order = all_of(order_var)
+      order    = all_of(order_var)
     ) %>%
+    filter(!is.na(category), !is.na(order)) %>%
     distinct() %>%
     arrange(order) %>%
     pull(category)
@@ -386,14 +387,14 @@ generate_bar_category_slide <- function(
   # ------ AGGREGATE METRIC VALUES --------------------------------------------
   # Compute average metric value per category and apply factor levels
   df <- df %>%
-    group_by(.data[[category_var]] ) %>%
+    filter(
+      !is.na(.data[[category_var]]),
+      is.finite(.data[[metric_var]])
+    ) %>%
+    group_by(.data[[category_var]]) %>%
     summarise(
       value = mean(.data[[metric_var]], na.rm = TRUE),
       .groups = "drop"
-    ) %>%
-    filter(
-      !is.na(.data[[category_var]]),
-      is.finite(value)
     ) %>%
     mutate(
       !!category_var := factor(
@@ -404,6 +405,7 @@ generate_bar_category_slide <- function(
     ) %>%
     arrange(.data[[category_var]]) %>%
     mutate(x_center = seq_len(n()))
+  
   
   # ------ Y AXIS MAX ----------------------------------------------------------
   # Compute y-axis maximum for consistent scale

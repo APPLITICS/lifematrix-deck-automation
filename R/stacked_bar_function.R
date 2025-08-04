@@ -53,6 +53,16 @@ generate_stacked_vertical_slide <- function(
       df <- df %>% filter(.data[[subset_col]] %in% subset_val)
     }
   }
+  # ------ REMOVE ROWS WITH NA IN KEY VARIABLES -------------------------------
+  key_vars <- c(
+    category_x[[1]]$name,
+    purrr::map_chr(category_y, "name"),
+    metric_var
+  )
+  key_vars <- intersect(key_vars, names(df))
+  df <- df %>%
+    filter(if_all(all_of(key_vars), ~ !is.na(.)))
+  
   # ------ EXTRACT BASE X VARIABLE ------------------------------------------
   base_x_name <- category_x[[1]]$name
   base_x_order <- category_x[[1]]$order
@@ -475,7 +485,22 @@ generate_stacked_horizontal_slide <- function(
         filter(.data[[subset_col]] %in% subset_val)
     }
   }
+    # ------ REMOVE ROWS WITH NA IN KEY VARIABLES -------------------------------
+  key_vars <- c(
+    category_y[[1]]$name,
+    cat_x_name,
+    metric_var
+  )
   
+  # Add subset variable of category_y (if exists)
+  if (!is.null(category_y[[1]]$subset)) {
+    key_vars <- c(key_vars, category_y[[1]]$subset$title)
+  }
+  
+  
+  key_vars <- intersect(key_vars, names(df))
+  df <- df %>%
+    filter(if_all(all_of(key_vars), ~ !is.na(.)))
   # ------ VALIDATE VARIABLES ------------------------------------------------
   # Ensure all required columns are present.
   if (!cat_x_name %in% names(df)) return(NULL)

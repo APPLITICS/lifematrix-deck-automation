@@ -48,7 +48,6 @@ generate_line_slide <- function(
     data_focal <- data_focal %>%
       filter(.data[[fg_subset_col]] == fg_subset_val)
   }
-  
   # ------ AGGREGATE TO MEAN BY CATEGORY ----------------------------------
   # Reshapes data and computes mean of each metric per category
   plot_data <- data_focal %>%
@@ -58,11 +57,17 @@ generate_line_slide <- function(
       names_to = "metric",
       values_to = "value"
     ) %>%
+    filter(
+      !is.na(.data[[category_var]]),
+      !is.na(.data[[category_order]]),
+      !is.na(value)
+    ) %>%
     group_by(.data[[category_var]], .data[[category_order]], metric) %>%
     summarise(
       value = mean(value, na.rm = TRUE),
       .groups = "drop"
     )
+  
   
   # ------ HANDLE CATEGORY ORDERING ---------------------------------------
   # Ensures category appears in desired order in the plot

@@ -15,7 +15,6 @@ generate_density_slide <- function(
     instruction,
     ppt_doc
 ) {
-  unit <- instruction$unit
   # ------ HELPERS -------------------------------------------------------------
   # Define custom axis step functions and comparison label drawer
   get_y_step <- function(y_max) {
@@ -78,6 +77,7 @@ generate_density_slide <- function(
   
   # ------ DATA FILTERING ------------------------------------------------------
   # Filter data for focal group and validate required columns
+  unit <- instruction$unit
   metric_col <- instruction$metric
   subset_col <- instruction$focal_group$subset$title %||% NULL
   
@@ -117,12 +117,13 @@ generate_density_slide <- function(
   x_max <- max(values_focal, na.rm = TRUE)
   x_min <- if (x_min < 5) 0 else x_min
   dens <- density(
-    values_focal,
+    values_focal[!is.na(values_focal)],
     adjust = 1.2,
     from = x_min,
     to = x_max,
     n = 100
   )
+  
   
   data_dens <- data.frame(
     x = dens$x,

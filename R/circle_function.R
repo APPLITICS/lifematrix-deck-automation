@@ -11,25 +11,36 @@
 #' @param ppt_doc Optional `read_pptx()` object to append the slide to.
 #'
 #' @return Updated pptx object if `ppt_doc` is given; otherwise, `NULL`.
+
 generate_circle_slide <- function(
     data,
     instruction,
     ppt_doc
 ) {
   # ------ EXTRACT instruction FIELDS -------------------------------------
-  unit_label <- instruction$unit %||% ""
+  unit_label   <- instruction$unit %||% ""
   category_var <- instruction$category$name
-  order_var <- instruction$category$order
-  metric_var <- instruction$metric
-  group_info <- instruction$focal_group
-  
+  order_var    <- instruction$category$order
+  metric_var   <- instruction$metric
+  group_info   <- instruction$focal_group
   # ------ FILTER FOCAL GROUP DATA ----------------------------------------
   df <- data %>%
     filter(group == group_info$name)
+
+  # ------ REMOVE NA / EMPTY / INF ----------------------------------------
+  df <- df %>%
+    filter(
+      !is.na(.data[[category_var]]),
+      .data[[category_var]] != ""
+    )
   
-  if (!is.null(group_info$subset)) {
-    df <- df %>%
-      filter(.data[["reunion_class"]] %in% group_info$subset$value)
+  if (!is.null(metric_var)) {
+    df <- df %>% filter(is.finite(.data[[metric_var]]))
+  }
+  
+  # ------ STYLE reunion_class SUFFIX IF APPLICABLE -----------------------
+  if (category_var == "reunion_class") {
+    df[[category_var]] <- style_ordinal_suffix(df[[category_var]])
   }
   
   # ------ EXTRACT CATEGORY ORDER -----------------------------------------
@@ -37,8 +48,9 @@ generate_circle_slide <- function(
     df %>%
       select(
         category = all_of(category_var),
-        order = all_of(order_var)
+        order    = all_of(order_var)
       ) %>%
+      filter(!is.na(category), !is.na(order)) %>%
       distinct() %>%
       arrange(order) %>%
       pull(category)
@@ -48,6 +60,7 @@ generate_circle_slide <- function(
       unique() %>%
       sort()
   }
+  
   # ------ AGGREGATE DATA -------------------------------------------------
   df_summary <- df %>%
     group_by(.data[[category_var]]) %>%
@@ -66,7 +79,7 @@ generate_circle_slide <- function(
     mutate(
       !!category_var := factor(
         .data[[category_var]],
-        levels = ordered_levels,
+        levels  = ordered_levels,
         ordered = TRUE
       )
     ) %>%
@@ -77,9 +90,15 @@ generate_circle_slide <- function(
       label_value = if (is.null(metric_var) || unit_label == "%") {
         paste0(sprintf("%.0f", value), unit_label)
       } else {
-        paste0(sprintf("%.1f", value), unit_label)
+        paste0(sprintf("%.1f", value), ifelse(unit_label != "", paste0(" ", unit_label), ""))
       }
     )
+  
+  # ------ HANDLE EMPTY DATA ----------------------------------------------
+  if (nrow(df_summary) == 0) {
+    warning("No data available to plot in circle chart.")
+    return(ppt_doc)
+  }
   
   # ------ CREATE PLOT ----------------------------------------------------
   plot_obj <- ggplot(df_summary, aes(x = x, y = y)) +
@@ -126,10 +145,10 @@ generate_circle_slide <- function(
   # ------ EXPORT TO SLIDE ------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
-      ppt_doc = ppt_doc,
-      plot_obj = plot_obj,
+      ppt_doc    = ppt_doc,
+      plot_obj   = plot_obj,
       title_text = instruction$title %||% " ",
-      is_first = instruction$is_first
+      is_first   = instruction$is_first
     )
     return(ppt_doc)
   }

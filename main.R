@@ -18,7 +18,23 @@ library(data.table)
 
 
 # ------ LOAD DATA ------------------------------------------------------------
-pipeline_data <- fread("data/simulated_pipeline_input.csv")
+#pipeline_data <- fread("data/simulated_pipeline_input.csv")
+pipeline_data <- fread("data/Corrupted_Simulated_Data.csv")
+
+
+pipeline_data <- pipeline_data[, lapply(.SD, function(x) {
+  if (is.numeric(x)) {
+    x[is.infinite(x)] <- NA  # Handle real Inf values
+  } else if (is.character(x)) {
+    x <- trimws(x)
+    x[tolower(x) %in% c("inf", "")] <- NA  # Handle string "inf" and empty
+  }
+  x
+})]
+
+
+
+
 # ------ LOAD MAPPING FILE --------------------------------------------------
 variable_map  <- fread("inputs/mapping_file.csv")
 # ------ DEFINE GROUPS ---------------------------------------------------------
