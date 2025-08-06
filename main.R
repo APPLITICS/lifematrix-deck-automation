@@ -19,7 +19,7 @@ library(data.table)
 
 # ------ LOAD DATA ------------------------------------------------------------
 #pipeline_data <- fread("data/simulated_pipeline_input.csv")
-pipeline_data <- fread("data/Corrupted_Simulated_Data.csv")
+pipeline_data <- fread("data/simulated_pipeline_input.csv")
 
 # replace empty and inf values by NA. Add to the list if any other element is relevant
 na_equivilent <- c("inf", "")
