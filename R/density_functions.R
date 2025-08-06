@@ -81,28 +81,35 @@ generate_density_slide <- function(
   metric_col <- instruction$metric
   subset_col <- instruction$focal_group$subset$title %||% NULL
   
-  # ------ VALIDATION -----------------------------------------------------------
-  # Ensure metric column exists
+  # ------ VALIDATION: REQUIRED COLUMNS -----------------------------------------
+  missing_cols <- character()
+  
+  # Check main metric column
   if (!(instruction$metric %in% names(data))) {
-    message("❌ Column '", instruction$metric, "' not found in data. Slide skipped.")
-    return(NULL)
+    missing_cols <- c(missing_cols, instruction$metric)
   }
   
-  # Ensure subset column exists (if specified)
+  # Check focal group subset column
   subset_col <- instruction$focal_group$subset$title %||% NULL
   if (!is.null(subset_col) && !(subset_col %in% names(data))) {
-    message("❌ Subset column '", subset_col, "' not found in data. Slide skipped.")
-    return(NULL)
+    missing_cols <- c(missing_cols, subset_col)
   }
-  # ------ VALIDATION: COMPARISON SUBSETS --------------------------------------
+  
+  # Check comparison group subset columns
   if (!is.null(instruction$comparison_groups)) {
     for (cg in instruction$comparison_groups) {
       subset_col_cg <- cg$subset$title %||% NULL
       if (!is.null(subset_col_cg) && !(subset_col_cg %in% names(data))) {
-        message("❌ Subset column '", subset_col_cg, "' not found in data. Slide skipped.")
-        return(NULL)
+        missing_cols <- c(missing_cols, subset_col_cg)
       }
     }
+  }
+  
+  # If any are missing, report them all and exit
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(unique(missing_cols), collapse = ", "),
+            ". Slide skipped.")
+    return(invisible(NULL))
   }
   # ------ FILTER FOCAL DATA ----------------------------------------------------
   data_focal <- data %>% filter(group == instruction$focal_group$name)
