@@ -31,6 +31,31 @@ generate_donut_slide <- function(
   comp_groups <- instruction$comparison_groups %||% list()
   has_comparisons <- length(comp_groups) > 0
   
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  # Collect all required column names
+  required_cols <- c(category_var)
+  
+  if (!is.null(order_var)) {
+    required_cols <- c(required_cols, order_var)
+  }
+  
+  if (!is.null(fg_subset_col)) {
+    required_cols <- c(required_cols, fg_subset_col)
+  }
+  
+  for (cg in comp_groups) {
+    if (is.list(cg) && !is.null(cg$subset) && !is.null(cg$subset$title)) {
+      required_cols <- c(required_cols, cg$subset$title)
+    }
+  }
+  
+  # Determine which required columns are missing
+  missing_cols <- setdiff(unique(required_cols), names(data))
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
   # ------ COLOR PALETTE -----------------------------------------------------
   # Define color palette to assign to donut slices
   palette_colors <- c(

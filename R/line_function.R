@@ -26,16 +26,33 @@ generate_line_slide <- function(
   
   # ------ EXTRACT SETTINGS -----------------------------------------------
   # Extracts all relevant parameters from the instruction list
-  metrics <- instruction$metric
-  category_var <- instruction$category$name
-  category_order <- instruction$category$order %||% NULL
-  chart_title <- instruction$title %||% ""
-  y_axis_title <- instruction$y_title %||% NULL
-  unit <- instruction$unit %||% NULL
-  focal_group <- instruction$focal_group
-  focal_name <- focal_group$name
+  # ------ EXTRACT SETTINGS ------------------------------------------------
+  focal_group   <- instruction$focal_group
+  focal_name    <- focal_group$name
   fg_subset_col <- focal_group$subset$title %||% NULL
   fg_subset_val <- focal_group$subset$value %||% NULL
+  category_var  <- instruction$category$name
+  category_order <- instruction$category$order %||% NULL
+  metrics       <- instruction$metric
+  chart_title   <- instruction$title %||% ""
+  y_axis_title  <- instruction$y_title %||% NULL
+  unit          <- instruction$unit %||% NULL
+  
+  # ------ EARLY VALIDATION ------------------------------------------------
+  required_cols <- unique(c(
+    metrics %||% character(),
+    category_var,
+    category_order,
+    fg_subset_col
+  ))
+  
+  missing_cols <- setdiff(required_cols, names(data))
+  
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
   
   # ------ FILTER FOCAL GROUP DATA ----------------------------------------
   # Filters dataset to keep only focal group and optional subset

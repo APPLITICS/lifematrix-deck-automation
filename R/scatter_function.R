@@ -23,6 +23,18 @@ generate_scatter_slide <- function(
   y_vars <- instruction$subjective_value
   focal <- instruction$focal_group
   
+  # ------ EARLY VALIDATION ------------------------------------------------
+  required_cols <- unique(na.omit(c(
+    x_vars,
+    y_vars,
+    focal$subset$title %||% NULL
+  )))
+  
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
   # ------ FILTER TO FOCAL GROUP ------------------------------------------
   if (!is.null(focal)) {
     group_filter <- data$group == focal$name

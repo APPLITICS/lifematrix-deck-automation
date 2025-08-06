@@ -81,6 +81,30 @@ generate_density_slide <- function(
   metric_col <- instruction$metric
   subset_col <- instruction$focal_group$subset$title %||% NULL
   
+  # ------ VALIDATION -----------------------------------------------------------
+  # Ensure metric column exists
+  if (!(instruction$metric %in% names(data))) {
+    message("❌ Column '", instruction$metric, "' not found in data. Slide skipped.")
+    return(NULL)
+  }
+  
+  # Ensure subset column exists (if specified)
+  subset_col <- instruction$focal_group$subset$title %||% NULL
+  if (!is.null(subset_col) && !(subset_col %in% names(data))) {
+    message("❌ Subset column '", subset_col, "' not found in data. Slide skipped.")
+    return(NULL)
+  }
+  # ------ VALIDATION: COMPARISON SUBSETS --------------------------------------
+  if (!is.null(instruction$comparison_groups)) {
+    for (cg in instruction$comparison_groups) {
+      subset_col_cg <- cg$subset$title %||% NULL
+      if (!is.null(subset_col_cg) && !(subset_col_cg %in% names(data))) {
+        message("❌ Subset column '", subset_col_cg, "' not found in data. Slide skipped.")
+        return(NULL)
+      }
+    }
+  }
+  # ------ FILTER FOCAL DATA ----------------------------------------------------
   data_focal <- data %>% filter(group == instruction$focal_group$name)
   if (!is.null(subset_col)) {
     data_focal <- data_focal %>%

@@ -39,12 +39,15 @@ run_pipeline <- function(
   # Loop over instructions and generate slides using specified chart functions
   for (i in seq_along(instructions)) {
     inst <- instructions[[i]]
+    
+    message("\n------------------------------------------------------------")
+    message(paste0("➡️  [", i, "] Generating slide using ", inst$function_name %||% "N/A", "()"))
+    
     if (!is.null(inst$function_name)) {
       func_name <- inst$function_name
-      message(paste0("➡️ Generating slide using ", func_name, "()"))
-
+      
       tryCatch({
-        ppt_doc <- do.call(
+        result <- do.call(
           what = match.fun(func_name),
           args = list(
             data = data,
@@ -52,24 +55,29 @@ run_pipeline <- function(
             ppt_doc = ppt_doc
           )
         )
+        
+        if (is.null(result)) {
+          message(paste0("⚠️  [", i, "] Slide not generated due to missing column(s)."))
+        } else {
+          ppt_doc <- result
+          message(paste0("✅  [", i, "] Slide successfully added."))
+        }
+        
       }, error = function(e) {
-        message(paste0(
-          "❌ Error in function ", func_name, ": ", e$message
-        ))
+        message(paste0("❌  [", i, "] Error in function ", func_name, ": ", e$message))
       })
+      
     } else {
-      message(paste0(
-        "⚠️ Skipping instruction ", i,
-        ": no function_name provided"
-      ))
+      message(paste0("⚠️  [", i, "] Skipping instruction: no function_name provided."))
     }
+    
   }
-
+  
   # ------ SAVE TO UNIQUE FILE -------------------------------------------------
   # Save the final PowerPoint to a unique output path
   unique_path <- get_unique_path(ppt_output_path)
 
   print(ppt_doc, target = unique_path)
-
+  message("\n----------------------------------------------------------\n")
   message(paste0("✅ Presentation saved to: ", unique_path))
 }

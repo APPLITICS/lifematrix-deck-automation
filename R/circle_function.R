@@ -17,6 +17,35 @@ generate_circle_slide <- function(
     instruction,
     ppt_doc
 ) {
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  required_cols <- character()
+  
+  #  category$name, metric, order, subset
+  required_cols <- c(required_cols, instruction$category$name %||% character())
+  
+  if (!is.null(instruction$metric) && !is.na(instruction$metric)) {
+    required_cols <- c(required_cols, instruction$metric)
+  }
+    if (!is.null(instruction$category$order) && !is.na(instruction$category$order)) {
+    required_cols <- c(required_cols, instruction$category$order)
+  }
+    fg_subset <- instruction$focal_group$subset
+  if (!is.null(fg_subset) &&
+      !is.null(fg_subset$title) &&
+      !is.na(fg_subset$title)) {
+    required_cols <- c(required_cols, fg_subset$title)
+  }
+  
+  # Filter null/NA and duplicate
+  required_cols <- unique(na.omit(required_cols))
+  missing_cols <- setdiff(required_cols, names(data))
+  
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
+  
   # ------ EXTRACT instruction FIELDS -------------------------------------
   unit_label   <- instruction$unit %||% ""
   category_var <- instruction$category$name

@@ -28,6 +28,34 @@ generate_stacked_vertical_slide <- function(
   unit_label <- instruction$unit %||% ""
   chart_title <- instruction$title %||% " "
   
+  # ------ EARLY VALIDATION -------------------------------------------------
+  # Collect required column names manually
+  category_x_names <- unlist(lapply(category_x, function(x) c(
+    x$name,
+    x$order %||% NULL,
+    x$subset$title %||% NULL
+  )))
+  
+  category_y_names <- unlist(lapply(category_y, function(y) c(
+    y$name,
+    y$order %||% NULL
+  )))
+  
+  subset_col <- focal_subset$title %||% NULL
+  
+  required_cols <- unique(na.omit(c(
+    category_x_names,
+    category_y_names,
+    subset_col,
+    metric_var
+  )))
+  
+  missing_cols <- setdiff(required_cols, names(data))
+  
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
   # ------ VALIDITY CHECK ---------------------------------------------------
   if (length(category_x) > 1 && length(category_y) > 1) {
     stop("Multiple definitions in both category_x and category_y are not supported.")
@@ -469,6 +497,41 @@ generate_stacked_horizontal_slide <- function(
   cat_y_subset <- category_y[[1]]$subset %||% NULL
   bar_height <- if (is.null(cat_y_subset)) 0.5 else 0.3
   
+  # ------ EARLY VALIDATION -------------------------------------------------
+  # ------ EARLY VALIDATION -------------------------------------------------
+  x_cols <- c(
+    cat_x_name,
+    order_x %||% NULL
+  )
+  
+  y_cols <- c()
+  for (cy in category_y) {
+    y_cols <- c(y_cols, cy$name)
+    if (!is.null(cy$order)) {
+      y_cols <- c(y_cols, cy$order)
+    }
+    if (!is.null(cy$subset) && !is.null(cy$subset$title)) {
+      y_cols <- c(y_cols, cy$subset$title)
+    }
+  }
+  
+  fg_subset_col <- instruction$focal_group$subset$title %||% NULL
+  
+  required_cols <- unique(na.omit(c(
+    metric_var,
+    x_cols,
+    y_cols,
+    fg_subset_col
+    
+  )))
+  
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
+
   # ------ FILTER TO FOCAL GROUP --------------------------------------------
   # Retain only the relevant group for the chart (e.g., "Focal").
   df <- data %>%

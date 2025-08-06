@@ -331,6 +331,44 @@ generate_tile_slide <- function(
     ppt_doc
 ) {
   
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  # Collect required metric columns
+  metrics <- instruction$metric %||% character()
+  metrics <- metrics[!is.null(metrics) & !is.na(metrics)]
+  
+  missing_metrics <- setdiff(metrics, names(data))
+  
+  # Focal group subset
+  subset_cols <- character()
+  fg_subset <- instruction$focal_group$subset
+  if (!is.null(fg_subset) &&
+      !is.null(fg_subset$title) &&
+      !is.na(fg_subset$title)) {
+    subset_cols <- c(subset_cols, fg_subset$title)
+  }
+  
+  # Comparison group subsets
+  if (!is.null(instruction$comparison_groups)) {
+    for (cg in instruction$comparison_groups) {
+      if (!is.null(cg$subset) &&
+          !is.null(cg$subset$title) &&
+          !is.na(cg$subset$title)) {
+        subset_cols <- c(subset_cols, cg$subset$title)
+      }
+    }
+  }
+  
+  subset_cols <- unique(subset_cols)
+  missing_subset_cols <- setdiff(subset_cols, names(data))
+  
+  # Combine all missing columns
+  all_missing <- unique(c(missing_metrics, missing_subset_cols))
+  
+  if (length(all_missing) > 0) {
+    message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
   # ------ EXTRACT instruction FIELDS ------------------------------------------
   metric_names <- instruction$metric
   

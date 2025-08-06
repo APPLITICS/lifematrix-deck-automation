@@ -16,6 +16,88 @@ generate_bar_metric_slide <- function(
     instruction,
     ppt_doc
 ) {
+  
+  
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  # Collect all required metric columns
+  bar_metrics <- instruction$bar_value %||% character()
+  target_metrics <- instruction$target %||% character()
+  all_metrics <- unique(c(bar_metrics, target_metrics))
+  
+  missing_metrics <- setdiff(all_metrics, names(data))
+  
+  # Collect all required subset columns
+  required_subset_cols <- character()
+  
+  # Focal group subset
+  fg_subset <- instruction$focal_group$subset
+  if (!is.null(fg_subset) && !is.null(fg_subset$title)) {
+    required_subset_cols <- c(required_subset_cols, fg_subset$title)
+  }
+  
+  # Comparison group subsets
+  if (!is.null(instruction$comparison_groups)) {
+    comparison_subset_cols <- sapply(
+      instruction$comparison_groups,
+      function(cg) cg$subset$title %||% NULL,
+      USE.NAMES = FALSE
+    )
+    required_subset_cols <- c(required_subset_cols, comparison_subset_cols)
+  }
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  # Validate metric columns (bar_value and target), skipping NULL/NA
+  bar_metrics <- instruction$bar_value %||% character()
+  target_metrics <- instruction$target %||% character()
+  all_metrics <- unique(c(bar_metrics, target_metrics))
+  all_metrics <- all_metrics[!is.null(all_metrics) & !is.na(all_metrics)]
+  
+  missing_metrics <- setdiff(all_metrics, names(data))
+  
+  # Collect required subset columns (non-NULL, non-NA only)
+  required_subset_cols <- character()
+  
+  # Focal group subset
+  fg_subset <- instruction$focal_group$subset
+  if (!is.null(fg_subset) &&
+      !is.null(fg_subset$title) &&
+      !is.na(fg_subset$title)) {
+    required_subset_cols <- c(required_subset_cols, fg_subset$title)
+  }
+  
+  # Comparison group subsets
+  if (!is.null(instruction$comparison_groups)) {
+    for (cg in instruction$comparison_groups) {
+      if (!is.null(cg$subset) &&
+          !is.null(cg$subset$title) &&
+          !is.na(cg$subset$title)) {
+        required_subset_cols <- c(required_subset_cols, cg$subset$title)
+      }
+    }
+  }
+  
+  # Final check: which required subset columns are missing
+  required_subset_cols <- unique(required_subset_cols)
+  missing_subset_cols <- setdiff(required_subset_cols, names(data))
+  
+  # Combine all missing columns
+  all_missing <- unique(c(missing_metrics, missing_subset_cols))
+  
+  if (length(all_missing) > 0) {
+    message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+
+  # Remove NULLs and deduplicate
+  required_subset_cols <- unique(na.omit(required_subset_cols))
+  missing_subset_cols <- setdiff(required_subset_cols, names(data))
+  
+  # Combine and display all missing columns (metrics + subsets)
+  all_missing <- unique(c(missing_metrics, missing_subset_cols))
+  if (length(all_missing) > 0) {
+    message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
   # ------ MAPPIN & SETUP ------------------------------------------------------
   # Map bar metric IDs to labels, preserving order
   bar_value_labels <- tibble(variable = instruction$bar_value) %>%
@@ -351,6 +433,32 @@ generate_bar_category_slide <- function(
     instruction,
     ppt_doc
 ) {
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  required_cols <- c(
+    instruction$metric %||% character(),
+    instruction$category$name %||% character(),
+    instruction$category$order %||% character()
+  )
+  
+  # Add focal group subset column if present and non-null
+  fg_subset <- instruction$focal_group$subset
+  if (!is.null(fg_subset) &&
+      !is.null(fg_subset$title) &&
+      !is.na(fg_subset$title)) {
+    required_cols <- c(required_cols, fg_subset$title)
+  }
+  
+  # Filter out any NULL or NA column names
+  required_cols <- unique(na.omit(required_cols))
+  required_cols <- required_cols[!is.null(required_cols)]
+  
+  # Check for missing columns
+  missing_cols <- setdiff(required_cols, names(data))
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
   # ------ SETUP --------------------------------------------------------------
   # Extract key instruction fields and default unit
   unit_label <- instruction$unit %||% ""
@@ -519,16 +627,34 @@ generate_horizontal_bar_slide <- function(
     instruction,
     ppt_doc = NULL
 ) {
-  # ------ EXTRACT INSTRUCTION SETTINGS -------------------------------------
-  hour_ids <- instruction$metric
-  subj_ids <- instruction$subjective_value
-  x_titles <- instruction$x_title
-  y_title <- instruction$y_title
-  chart_title <- instruction$title %||% ""
-  focal_group <- instruction$focal_group
-  has_subj <- !is.null(subj_ids)
   
-  # ------ FILTER TO FOCAL GROUP IF NEEDED ----------------------------------
+  # ------ EXTRACT & VALIDATE INSTRUCTION SETTINGS -----------------------------
+  hour_ids     <- instruction$metric %||% character()
+  subj_ids     <- instruction$subjective_value %||% character()
+  x_titles     <- instruction$x_title
+  y_title      <- instruction$y_title
+  chart_title  <- instruction$title %||% ""
+  focal_group  <- instruction$focal_group
+  has_subj     <- length(subj_ids) > 0
+  
+  # Collect all columns that need to exist
+  all_metrics <- c(hour_ids, subj_ids)
+  all_metrics <- all_metrics[!is.null(all_metrics) & !is.na(all_metrics)]
+  
+  subset_cols <- character()
+  if (!is.null(focal_group$subset) &&
+      !is.null(focal_group$subset$title) &&
+      !is.na(focal_group$subset$title)) {
+    subset_cols <- focal_group$subset$title
+  }
+  
+  missing_cols <- setdiff(unique(c(all_metrics, subset_cols)), names(data))
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    return(NULL)
+  }
+  
+  # ------ FILTER TO FOCAL GROUP IF NEEDED ------------------------------------
   if (!is.null(focal_group)) {
     group_filter <- data$group == focal_group$name
     if (!is.null(focal_group$subset)) {
