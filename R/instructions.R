@@ -31,7 +31,7 @@ instructions <- list(
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
-    unit = "%",
+    unit = "%", # Use % to show density as a percentage
     x_title = "Life Satisfaction",
     y_title = "Density",
     title = "LIFE SATISFACTION",
