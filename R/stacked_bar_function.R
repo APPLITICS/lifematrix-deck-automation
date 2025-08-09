@@ -10,6 +10,7 @@
 #' @param ppt_doc A PowerPoint object to append slide to (optional).
 #' 
 #' @return Updated PowerPoint object (if provided), or invisible(NULL).
+
 generate_stacked_vertical_slide <- function(
     data,
     instruction,
@@ -19,7 +20,7 @@ generate_stacked_vertical_slide <- function(
   intra_group_offset <- 0.2
   inter_group_expand <- 0.35
   
-  # ------ EXTRACT SETTINGS -------------------------------------------------
+  # ------ EXTRACT SETTINGS --------------------------------------------------
   category_x <- instruction$category_x
   category_y <- instruction$category_y
   focal_name <- instruction$focal_group$name
@@ -28,52 +29,52 @@ generate_stacked_vertical_slide <- function(
   unit_label <- instruction$unit %||% ""
   chart_title <- instruction$title %||% " "
   
-  # ------ EARLY VALIDATION -------------------------------------------------
-  # Collect required column names manually
-  category_x_names <- unlist(lapply(category_x, function(x) c(
-    x$name,
-    x$order %||% NULL,
-    x$subset$title %||% NULL
-  )))
-  
-  category_y_names <- unlist(lapply(category_y, function(y) c(
-    y$name,
-    y$order %||% NULL
-  )))
-  
+  # ------ EARLY VALIDATION --------------------------------------------------
+  category_x_names <- unlist(lapply(
+    category_x,
+    function(x) c(x$name, x$order %||% NULL, x$subset$title %||% NULL)
+  ))
+  category_y_names <- unlist(lapply(
+    category_y,
+    function(y) c(y$name, y$order %||% NULL)
+  ))
   subset_col <- focal_subset$title %||% NULL
   
   required_cols <- unique(na.omit(c(
-    category_x_names,
-    category_y_names,
-    subset_col,
-    metric_var
+    category_x_names, category_y_names, subset_col, metric_var
   )))
-  
   missing_cols <- setdiff(required_cols, names(data))
-  
   if (length(missing_cols) > 0) {
-    message("❌ Missing column(s): ", paste(missing_cols, collapse = ", "), ". Slide skipped.")
+    message(
+      "❌ Missing column(s): ",
+      paste(missing_cols, collapse = ", "),
+      ". Slide skipped."
+    )
     return(NULL)
   }
-  # ------ VALIDITY CHECK ---------------------------------------------------
   if (length(category_x) > 1 && length(category_y) > 1) {
     stop("Multiple definitions in both category_x and category_y are not supported.")
   }
   
-  # ------ DETECT MULTIPLE AXES ---------------------------------------------
+  # ------ DETECT MULTI-AXIS CASES ------------------------------------------
   multi_y <- length(category_y) > 1
   multi_x <- length(category_x) > 1
   
-  # ------ ADJUST VISUAL PARAMETERS -----------------------------------------
-  bar_width <- if (multi_y || multi_x) 0.35 else 0.55
-  x_expand <- if (multi_y || multi_x) rep(inter_group_expand, 2) else c(0.1, 0.1)
-  plot_margin <- if (multi_y || multi_x) margin(0, 20, 0, 20) else margin(0, 100, 0, 100)
-  
+  # ------ VISUAL PARAMETERS -------------------------------------------------
+  bar_width <- if (multi_y || multi_x) 0.35 else 0.5
+  x_expand <- if (multi_y || multi_x) {
+    rep(inter_group_expand, 2)
+  } else {
+    c(0.1, 0.1)
+  }
+  plot_margin <- if (multi_y || multi_x) {
+    margin(0, 20, 10, 20)
+  } else {
+    margin(0, 100, 10, 100)
+  }
+
   # ------ FILTER TO FOCAL GROUP --------------------------------------------
-  df <- data %>%
-    filter(group == focal_name)
-  
+  df <- data %>% filter(group == focal_name)
   if (!is.null(focal_subset)) {
     subset_col <- focal_subset$title
     subset_val <- focal_subset$value
@@ -81,78 +82,31 @@ generate_stacked_vertical_slide <- function(
       df <- df %>% filter(.data[[subset_col]] %in% subset_val)
     }
   }
-  # ------ REMOVE ROWS WITH NA IN KEY VARIABLES -------------------------------
+  
+  # ------ DROP NAs IN KEY VARS ---------------------------------------------
   key_vars <- c(
     category_x[[1]]$name,
     purrr::map_chr(category_y, "name"),
     metric_var
   )
   key_vars <- intersect(key_vars, names(df))
-  df <- df %>%
-    filter(if_all(all_of(key_vars), ~ !is.na(.)))
+  df <- df %>% filter(if_all(all_of(key_vars), ~ !is.na(.)))
   
-  # ------ EXTRACT BASE X VARIABLE ------------------------------------------
+  # ------ EXTRACT BASE X ----------------------------------------------------
   base_x_name <- category_x[[1]]$name
   base_x_order <- category_x[[1]]$order
-  
-  # ------ DETERMINE X LEVELS ------------------------------------------------
   base_x_value <- category_x[[1]]$value %||% NULL
-
-  # ------ HANDLE reunion_class WITH SPECIAL STYLING ---------------------------
   
-  if (base_x_name == "reunion_class") {
-    # Style reunion_class values before filtering
-    if (!is.null(base_x_value)) {
-      base_x_value <- style_ordinal_suffix(base_x_value)
-    }
-    df[[base_x_name]] <- style_ordinal_suffix(df[[base_x_name]])
-    
-    if (!is.null(base_x_value)) {
-      df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
-    }
-    
-    # Determine order of levels (styled)
-    ordered_levels <- if (!is.null(base_x_order) &&
-                          all(c(base_x_name, base_x_order) %in% names(df))) {
-      df %>%
-        select(x_val = all_of(base_x_name), x_order = all_of(base_x_order)) %>%
-        filter(!is.na(x_val), !is.na(x_order)) %>%
-        distinct() %>%
-        arrange(x_order) %>%
-        pull(x_val)
-    } else {
-      unique(df[[base_x_name]])
-    }
-    
-    styled_levels <- style_ordinal_suffix(ordered_levels)
-    df[[base_x_name]] <- factor(df[[base_x_name]], levels = styled_levels, ordered = TRUE)
-    lvl_x <- styled_levels
-    
-  } else {
-    
-    # ------ HANDLE STANDARD X-AXIS FILTERING ----------------------------------
-    
-    if (!is.null(base_x_value)) {
-      df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
-    }
-    
-    lvl_x <- if (!is.null(base_x_order) &&
-                 all(c(base_x_name, base_x_order) %in% names(df))) {
-      df %>%
-        select(x_val = all_of(base_x_name), x_order = all_of(base_x_order)) %>%
-        filter(!is.na(x_val), !is.na(x_order)) %>%
-        distinct() %>%
-        arrange(x_order) %>%
-        pull(x_val)
-    } else {
-      unique(df[[base_x_name]])
-    }
+  if (!is.null(base_x_value)) {
+    df <- df %>% filter(.data[[base_x_name]] %in% base_x_value)
   }
-  
-  
-  lvl_x <- if (!is.null(base_x_order) && all(c(base_x_name, base_x_order) %in% names(data))) {
+  lvl_x <- if (!is.null(base_x_order) &&
+               all(c(base_x_name, base_x_order) %in% names(df))) {
     df %>%
-      select(x_val = all_of(base_x_name), x_order = all_of(base_x_order)) %>%
+      select(
+        x_val = all_of(base_x_name),
+        x_order = all_of(base_x_order)
+      ) %>%
       filter(!is.na(x_val), !is.na(x_order)) %>%
       distinct() %>%
       arrange(x_order) %>%
@@ -161,19 +115,15 @@ generate_stacked_vertical_slide <- function(
     unique(df[[base_x_name]])
   }
   
-  # ------ FILTER X LEVELS BASED ON VALUE (if defined) -----------------------
-  if (!is.null(base_x_value)) {
-    lvl_x <- lvl_x[lvl_x %in% base_x_value]
-  }
-  # ------ MULTIPLE SUBSET BARS PER X ---------------------------------------
+  # ------ PREPARE X + SUBSET BARS ------------------------------------------
   df <- df %>% rename(x = all_of(base_x_name))
   subset_tabs <- list()
   label_df <- NULL
+  
   if (multi_x) {
     for (i in seq_along(category_x)) {
       cx <- category_x[[i]]
       subset_df <- df
-      
       if (!is.null(cx$subset)) {
         sub_col <- cx$subset$title
         sub_val <- cx$subset$value
@@ -184,143 +134,143 @@ generate_stacked_vertical_slide <- function(
       }
       
       cat_y <- category_y[[1]]
-      cat_y_name <- cat_y$name
-      cat_y_order <- cat_y$order
-      cat_y_value <- cat_y$value %||% NULL
+      cy_name <- cat_y$name
+      cy_order <- cat_y$order
+      cy_value <- cat_y$value %||% NULL
       
-      lvl_y <- if (!is.null(cat_y_order) && all(c(cat_y_name, cat_y_order) %in% names(data))) {
+      lvl_y <- if (!is.null(cy_order) &&
+                   all(c(cy_name, cy_order) %in% names(df))) {
         df %>%
-          select(y_val = all_of(cat_y_name), y_order = all_of(cat_y_order)) %>%
+          select(
+            y_val = all_of(cy_name),
+            y_order = all_of(cy_order)
+          ) %>%
           filter(!is.na(y_val), !is.na(y_order)) %>%
           distinct() %>%
           arrange(y_order) %>%
           pull(y_val)
       } else {
         df %>%
-          pull(cat_y_name) %>%
+          pull(all_of(cy_name)) %>%
           unique() %>%
           na.omit()
       }
       
+      totals <- subset_df %>%
+        count(x, bar_position = bar_label, name = "total_n")
+      
       tab <- subset_df %>%
-        filter(.data[[cat_y_name]] %in% lvl_y) %>%
-        rename(y = all_of(cat_y_name)) %>%
+        { if (!is.null(cy_value)) {
+          filter(., .data[[cy_name]] %in% cy_value)
+        } else . } %>%
+        filter(.data[[cy_name]] %in% lvl_y) %>%
+        rename(y = all_of(cy_name)) %>%
         mutate(
           y = factor(y, levels = lvl_y),
           bar_position = bar_label
         ) %>%
-        count(x, bar_position, y) %>%
-        group_by(x, bar_position) %>%
-        mutate(prop = n / sum(n)) %>%
-        ungroup()
-      
-      if (!is.null(cat_y_value)) {
-        tab <- tab %>% filter(y %in% cat_y_value)
-      }
+        count(x, bar_position, y, name = "n") %>%
+        left_join(totals, by = c("x", "bar_position")) %>%
+        mutate(prop = n / total_n) %>%
+        select(-n, -total_n)
       
       subset_tabs[[i]] <- tab
-      
-      if (!is.null(metric_var) && metric_var %in% names(subset_df)) {
-        subset_avg <- subset_df %>%
-          group_by(x) %>%
-          summarise(value = mean(.data[[metric_var]], na.rm = TRUE), .groups = "drop") %>%
-          mutate(
-            bar_position = bar_label,
-            label = sprintf("%.1f", value),
-            y_pos = 1.13
-          )
-        label_df <- bind_rows(label_df, subset_avg)
-      }
     }
+    
     combined_data <- bind_rows(subset_tabs) %>%
       mutate(x = factor(x, levels = lvl_x))
     
-    x_map <- tibble(x = factor(lvl_x, levels = lvl_x), x_num = seq_along(lvl_x))
+    x_map <- tibble(
+      x = factor(lvl_x, levels = lvl_x),
+      x_num = seq_along(lvl_x)
+    )
     n_pos <- length(unique(combined_data$bar_position))
     offsets <- seq(-intra_group_offset, intra_group_offset, length.out = n_pos)
     offset_map <- tibble(
       bar_position = unique(combined_data$bar_position),
       offset = offsets
     )
-    
     combined_data <- combined_data %>%
       left_join(x_map, by = "x") %>%
       left_join(offset_map, by = "bar_position") %>%
       mutate(x_offset = x_num + offset)
     
-    if (!is.null(label_df)) {
-      label_df <- label_df %>%
-        left_join(x_map, by = "x") %>%
-        left_join(offset_map, by = "bar_position") %>%
-        mutate(x_offset = x_num + offset)
-    }
-    
     top_bar_labels <- combined_data %>%
       distinct(x, x_num, bar_position, x_offset) %>%
       mutate(label = bar_position)
     
-    bottom_group_labels <- x_map %>% mutate(label = as.character(x))
+    bottom_group_labels <- x_map %>%
+      mutate(label = style_ordinal_suffix(as.character(x)))
     
   } else {
-    all_y_names <- purrr::map_chr(category_y, "name")
-    lvl_y_global <- df %>%
-      select(any_of(all_y_names)) %>%
-      pivot_longer(cols = everything(), values_to = "val", names_to = NULL) %>%
-      filter(!is.na(val)) %>%
-      count(val) %>%
-      arrange(desc(n)) %>%
-      pull(val) %>%
-      as.character()
-    
     all_tabs <- list()
     for (i in seq_along(category_y)) {
-      cat_y_info <- category_y[[i]]
-      cat_y_name <- cat_y_info$name
-      order_y <- cat_y_info$order
-      value_y <- cat_y_info$value %||% NULL
+      cy <- category_y[[i]]
+      cy_name <- cy$name
+      order_y <- cy$order
+      value_y <- cy$value %||% NULL
       
-      label_match <- variable_map$label[variable_map$variable == cat_y_name]
-      bar_label <- if (length(label_match) > 0) label_match else paste0("Bar_", i)
+      label_match <- variable_map$label[
+        variable_map$variable == cy_name
+      ]
+      bar_label <- if (length(label_match) > 0) {
+        label_match
+      } else {
+        paste0("Bar_", i)
+      }
       
-      lvl_y <- if (!is.null(order_y) && all(c(cat_y_name, order_y) %in% names(data))) {
+      lvl_y <- if (!is.null(order_y) &&
+                   all(c(cy_name, order_y) %in% names(df))) {
         df %>%
-          select(y_val = all_of(cat_y_name), y_order = all_of(order_y)) %>%
+          select(
+            y_val = all_of(cy_name),
+            y_order = all_of(order_y)
+          ) %>%
           filter(!is.na(y_val), !is.na(y_order)) %>%
           distinct() %>%
           arrange(y_order) %>%
           pull(y_val)
       } else {
-        intersect(lvl_y_global, unique(na.omit(df[[cat_y_name]])))
+        df %>%
+          pull(all_of(cy_name)) %>%
+          unique() %>%
+          na.omit()
       }
       
+      totals <- df %>%
+        count(x, bar_position = bar_label, name = "total_n")
+      
       tab <- df %>%
-        filter(.data[[cat_y_name]] %in% lvl_y) %>%
-        rename(y = all_of(cat_y_name)) %>%
+        { if (!is.null(value_y)) {
+          filter(., .data[[cy_name]] %in% value_y)
+        } else . } %>%
+        filter(.data[[cy_name]] %in% lvl_y) %>%
+        rename(y = all_of(cy_name)) %>%
         mutate(
           y = factor(y, levels = lvl_y),
           bar_position = bar_label
         ) %>%
-        count(x, bar_position, y) %>%
-        group_by(x, bar_position) %>%
-        mutate(prop = n / sum(n)) %>%
-        ungroup()
-      
-      if (!is.null(value_y)) {
-        tab <- tab %>% filter(y %in% value_y)
-      }
+        count(x, bar_position, y, name = "n") %>%
+        left_join(totals, by = c("x", "bar_position")) %>%
+        mutate(prop = n / total_n) %>%
+        select(-n, -total_n)
       
       all_tabs[[i]] <- tab
     }
+    
     combined_data <- bind_rows(all_tabs) %>%
       mutate(x = factor(x, levels = lvl_x))
-    x_map <- tibble(x = factor(lvl_x, levels = lvl_x), x_num = seq_along(lvl_x))
+    
+    x_map <- tibble(
+      x = factor(lvl_x, levels = lvl_x),
+      x_num = seq_along(lvl_x)
+    )
     n_pos <- length(unique(combined_data$bar_position))
     offsets <- seq(-0.22, 0.22, length.out = n_pos)
     offset_map <- tibble(
       bar_position = unique(combined_data$bar_position),
       offset = if (multi_y) offsets else rep(0, n_pos)
     )
-    
     combined_data <- combined_data %>%
       left_join(x_map, by = "x") %>%
       left_join(offset_map, by = "bar_position") %>%
@@ -330,37 +280,77 @@ generate_stacked_vertical_slide <- function(
       combined_data %>%
         distinct(x, x_num, bar_position, x_offset) %>%
         mutate(label = bar_position)
-    } else NULL
-    
-    bottom_group_labels <- x_map %>% mutate(label = as.character(x))
-    
-    if (!is.null(metric_var) && metric_var %in% names(df)) {
-      label_df <- df %>%
-        select(x, all_of(metric_var)) %>%
-        group_by(x) %>%
-        summarise(value = mean(.data[[metric_var]], na.rm = TRUE), .groups = "drop") %>%
-        mutate(
-          label = sprintf("%.1f", value),
-          y_pos = 1.13
-        ) %>%
-        left_join(x_map, by = "x")
+    } else {
+      NULL
     }
+    
+    bottom_group_labels <- x_map %>%
+      mutate(label = style_ordinal_suffix(as.character(x)))
   }
   
-  # ------ FINAL PLOT BUILDING ----------------------------------------------
-  y_limit_top <- if (!is.null(label_df)) max(label_df$y_pos, 1.1) else 1.1
+  # ------ RESCALE BY VISIBLE ONLY ------------------------------------------
+  bar_totals <- combined_data %>%
+    group_by(x, bar_position) %>%
+    summarise(
+      visible_total = sum(prop, na.rm = TRUE),
+      .groups = "drop"
+    )
+  max_visible <- max(bar_totals$visible_total, na.rm = TRUE)
+  scale_factor <- if (is.finite(max_visible) && max_visible > 0) 1 / max_visible else 1
+  
+  combined_data <- combined_data %>%
+    left_join(bar_totals, by = c("x", "bar_position")) %>%
+    mutate(prop_rescaled = prop * scale_factor) %>%
+    select(-visible_total)
+  
+  # ------ LABEL Y POSITIONS -------------------------------------------------
+  max_bar_height <- combined_data %>%
+    group_by(x, bar_position) %>%
+    summarise(
+      total = sum(prop_rescaled, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    pull(total) %>%
+    max(na.rm = TRUE)
+  
+  subset_label_y <- max_bar_height + 0.025
+  avg_value_label_y <- subset_label_y + 0.05
+  
+  # ------ OPTIONAL: NUMERIC AVERAGE LABELS ---------------------------------
+  if (!is.null(metric_var) && metric_var %in% names(df)) {
+    label_df <- df %>%
+      select(x, all_of(metric_var)) %>%
+      group_by(x) %>%
+      summarise(
+        value = mean(.data[[metric_var]], na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      mutate(label = sprintf("%.1f", value)) %>%
+      left_join(x_map, by = "x")
+  }
+  
+  # ------ PLOT BUILD --------------------------------------------------------
   fill_levels <- unique(combined_data$y)
   pal <- get_color_palette(fill_levels)
   
   plot_obj <- ggplot(combined_data) +
     geom_bar(
-      aes(x = x_offset, y = prop, fill = y, group = interaction(x, bar_position)),
+      aes(
+        x = x_offset,
+        y = prop_rescaled,
+        fill = y,
+        group = interaction(x, bar_position)
+      ),
       stat = "identity",
       width = bar_width
     ) +
     geom_text(
       data = combined_data %>% filter(prop >= 0.03),
-      aes(x = x_offset, y = prop, label = percent(prop, accuracy = 1)),
+      aes(
+        x = x_offset,
+        y = prop_rescaled,
+        label = percent(prop, accuracy = 1)
+      ),
       stat = "identity",
       position = position_stack(vjust = 0.5),
       color = "black",
@@ -371,11 +361,16 @@ generate_stacked_vertical_slide <- function(
       if (!is.null(top_bar_labels)) {
         geom_text(
           data = top_bar_labels,
-          aes(x = x_offset, y = 1.05, label = label),
+          aes(
+            x = x_offset,
+            y = subset_label_y * 1.05,
+            label = label
+          ),
           inherit.aes = FALSE,
           size = 4,
           fontface = "bold",
-          color = "white"
+          color = "white",
+          vjust = 0
         )
       }
     } +
@@ -385,21 +380,27 @@ generate_stacked_vertical_slide <- function(
           geom_text(
             data = label_df,
             aes(
-              x = .data[[if ("x_offset" %in% names(label_df)) "x_offset" else "x_num"]],
-              y = y_pos,
+              x = .data[[if ("x_offset" %in% names(label_df)) {
+                "x_offset"
+              } else {
+                "x_num"
+              }]],
+              y = avg_value_label_y * 1.1,
               label = label
             ),
             inherit.aes = FALSE,
             color = "yellow",
             fontface = "bold",
-            size = 7
+            size = 7,
+            vjust = 0
           ),
           annotate(
             "text",
-            x = 0.5,
-            y = label_df$y_pos[1],
-            label = paste0("Avg ", unit_label, ":"),
+            x = min(x_map$x_num) - 0.4,
+            y = avg_value_label_y * 1.1,
+            label = paste0("Avg ", unit_label %||% "", ":"),
             hjust = 1,
+            vjust = 0,
             color = "yellow",
             fontface = "bold",
             size = 7
@@ -411,9 +412,12 @@ generate_stacked_vertical_slide <- function(
     geom_richtext(
       data = bottom_group_labels,
       aes(x = x_num, y = -0.07, label = label),
-      fill = NA, label.color = NA,
-      size = 7, fontface = "bold", color = "white"
-    ) + 
+      fill = NA,
+      label.color = NA,
+      size = 7,
+      fontface = "bold",
+      color = "white"
+    ) +
     scale_x_continuous(
       breaks = x_map$x_num,
       labels = rep("", length(x_map$x_num)),
@@ -439,14 +443,19 @@ generate_stacked_vertical_slide <- function(
       plot.margin = plot_margin,
       legend.position = if (length(fill_levels) <= 1) "none" else "bottom",
       legend.direction = "horizontal",
-      legend.text = element_text(color = "white", size = 14, face = "bold"),
+      legend.text = element_text(
+        color = "white",
+        size = 14,
+        face = "bold"
+      ),
       legend.key.height = unit(12, "pt"),
       legend.key.width = unit(12, "pt"),
-      legend.title = element_blank()
+      legend.title = element_blank(),
+      legend.box.margin = margin(t = 5)
     ) +
     coord_cartesian(clip = "off")
   
-  # ------ EXPORT TO SLIDE (IF NEEDED) --------------------------------------
+  # ------ EXPORT TO SLIDE ---------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
       ppt_doc = ppt_doc,
@@ -531,7 +540,7 @@ generate_stacked_horizontal_slide <- function(
     return(NULL)
   }
   
-
+  
   # ------ FILTER TO FOCAL GROUP --------------------------------------------
   # Retain only the relevant group for the chart (e.g., "Focal").
   df <- data %>%
@@ -548,7 +557,7 @@ generate_stacked_horizontal_slide <- function(
         filter(.data[[subset_col]] %in% subset_val)
     }
   }
-    # ------ REMOVE ROWS WITH NA IN KEY VARIABLES -------------------------------
+  # ------ REMOVE ROWS WITH NA IN KEY VARIABLES -------------------------------
   key_vars <- c(
     category_y[[1]]$name,
     cat_x_name,
