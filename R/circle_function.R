@@ -47,11 +47,11 @@ generate_circle_slide <- function(
   
   
   # ------ EXTRACT instruction FIELDS -------------------------------------
-  unit_label   <- instruction$unit %||% ""
+  unit_label <- instruction$unit %||% ""
   category_var <- instruction$category$name
-  order_var    <- instruction$category$order
-  metric_var   <- instruction$metric
-  group_info   <- instruction$focal_group
+  order_var <- instruction$category$order
+  metric_var <- instruction$metric
+  group_info <- instruction$focal_group
   # ------ FILTER FOCAL GROUP DATA ----------------------------------------
   df <- data %>%
     filter(group == group_info$name)
@@ -77,7 +77,7 @@ generate_circle_slide <- function(
     df %>%
       select(
         category = all_of(category_var),
-        order    = all_of(order_var)
+        order = all_of(order_var)
       ) %>%
       filter(!is.na(category), !is.na(order)) %>%
       distinct() %>%
@@ -108,7 +108,7 @@ generate_circle_slide <- function(
     mutate(
       !!category_var := factor(
         .data[[category_var]],
-        levels  = ordered_levels,
+        levels = ordered_levels,
         ordered = TRUE
       )
     ) %>%
@@ -174,10 +174,10 @@ generate_circle_slide <- function(
   # ------ EXPORT TO SLIDE ------------------------------------------------
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
-      ppt_doc    = ppt_doc,
-      plot_obj   = plot_obj,
+      ppt_doc = ppt_doc,
+      plot_obj = plot_obj,
       title_text = instruction$title %||% " ",
-      is_first   = instruction$is_first
+      is_first = instruction$is_first
     )
     return(ppt_doc)
   }

@@ -99,10 +99,33 @@ generate_bar_metric_slide <- function(
   }
   
   # ------ MAPPIN & SETUP ------------------------------------------------------
+  # ------ ENSURE ALL bar_value VARIABLES ARE PRESENT IN variable_map ----------
+  missing_bar_vars <- setdiff(instruction$bar_value, variable_map$variable)
+  if (length(missing_bar_vars) > 0) {
+    variable_map <- bind_rows(
+      variable_map,
+      tibble(
+        variable = missing_bar_vars,
+        label = missing_bar_vars
+      )
+    )
+  }
+  
+  # ------ ENSURE ALL target VARIABLES ARE PRESENT IN variable_map -------------
+  target_vars <- instruction$target %||% character()
+  missing_target_vars <- setdiff(target_vars, variable_map$variable)
+  if (length(missing_target_vars) > 0) {
+    variable_map <- bind_rows(
+      variable_map,
+      tibble(
+        variable = missing_target_vars,
+        label = missing_target_vars
+      )
+    )
+  }
   # Map bar metric IDs to labels, preserving order
   bar_value_labels <- tibble(variable = instruction$bar_value) %>%
     left_join(variable_map, by = "variable")
-  
   # Map target metric IDs to labels
   target_value_labels <- variable_map %>%
     filter(variable %in% (instruction$target %||% character())) %>%
@@ -283,7 +306,6 @@ generate_bar_metric_slide <- function(
   ) +
     geom_col(width = bar_width, position = position_setting) +
     scale_y_continuous(
-      limits = c(0, y_max),
       expand = c(0, 0),
       labels = function(x) paste0(x, unit_label)
     ) +
@@ -342,6 +364,7 @@ generate_bar_metric_slide <- function(
   # ------ TARGET LINES --------------------------------------------------------
   
   if (!is.null(instruction$target)) {
+
     data_targets <- list(preprocess_group(data, instruction$focal_group, instruction$target))
     if (!is.null(instruction$comparison_groups)) {
       for (cg in instruction$comparison_groups) {
@@ -360,13 +383,20 @@ generate_bar_metric_slide <- function(
       rename(target = metric)
     
     target_map <- tibble(
-      target = instruction$target,
-      metric = instruction$bar_value
+      metric = instruction$bar_value,
+      target = instruction$target
+      
     )
+    
     df_targets <- df_targets %>%
       left_join(target_map, by = "target") %>%
       left_join(df_labels %>% select(group, metric, x_center), by = c("group", "metric")) %>% 
       mutate(value = as.integer(sprintf("%.0f", value)))
+    # Ensure the final y-range includes targets (+5 for your fixed label offset)
+    y_max <- max(
+      y_max,
+      ceiling((max(df_targets$value, na.rm = TRUE) + 5) / 10) * 10
+    )
     
     n_bar_slots <- df_bars %>%
       group_by(.data[[x_axis_var]]) %>%
@@ -375,6 +405,8 @@ generate_bar_metric_slide <- function(
       max()
     
     offset <- bar_width / (n_bar_slots * 2)
+    
+    plot_obj <- plot_obj + coord_cartesian(ylim = c(0, y_max), clip = "off")
     
     if (nrow(df_targets) > 0) {
       plot_obj <- plot_obj +
@@ -466,7 +498,7 @@ generate_bar_category_slide <- function(
   order_var <- instruction$category$order
   metric_var <- instruction$metric
   group_info <- instruction$focal_group
-  
+
   # ------ FILTER GROUP -------------------------------------------------------
   # Keep rows for focal group and apply optional subset filter
   df <- data %>% filter(group == group_info$name)
@@ -478,20 +510,18 @@ generate_bar_category_slide <- function(
       df <- df %>% filter(.data[[subset_col]] %in% subset_val)
     }
   }
-  
   # ------ ORDER CATEGORIES ---------------------------------------------------
   # Extract and sort category levels based on provided order column
   ordered_levels <- df %>%
     select(
       category = all_of(category_var),
-      order    = all_of(order_var)
+      order = all_of(order_var)
     ) %>%
     filter(!is.na(category), !is.na(order)) %>%
     distinct() %>%
     arrange(order) %>%
-    pull(category)
-  
-
+    pull(category) %>% 
+    na.omit() 
   # ------ AGGREGATE METRIC VALUES --------------------------------------------
   # Compute average metric value per category and apply factor levels
   df <- df %>%
@@ -512,8 +542,8 @@ generate_bar_category_slide <- function(
       )
     ) %>%
     arrange(.data[[category_var]]) %>%
-    mutate(x_center = seq_len(n()))
-  
+    mutate(x_center = seq_len(n())) %>% 
+    na.omit() 
   
   # ------ Y AXIS MAX ----------------------------------------------------------
   # Compute y-axis maximum for consistent scale
@@ -542,6 +572,7 @@ generate_bar_category_slide <- function(
       width = 0.5
     ) +
     geom_text(
+      data = df[df$value > 0, ],   # only rows with value > 0
       aes(
         label = if (unit_label == "") {
           sprintf("%.1f", value)
@@ -554,7 +585,7 @@ generate_bar_category_slide <- function(
       size = 6.5,
       fontface = "bold"
     ) +
-    scale_y_continuous(
+  scale_y_continuous(
       limits = c(0, y_max),
       breaks = if (unit_label == "%") {
         seq(0, y_max, 10)
@@ -571,7 +602,7 @@ generate_bar_category_slide <- function(
     ) +
     global_theme() +
     theme(
-      axis.text.x = ggtext::element_markdown(),
+      axis.text.x = element_markdown(),
       plot.title = element_text(
         color = "white", face = "bold", size = 26, hjust = 0
       ),
@@ -629,16 +660,16 @@ generate_horizontal_bar_slide <- function(
 ) {
   
   # ------ EXTRACT & VALIDATE INSTRUCTION SETTINGS -----------------------------
-  hour_ids     <- instruction$metric %||% character()
-  subj_ids     <- instruction$subjective_value %||% character()
-  x_titles     <- instruction$x_title
-  y_title      <- instruction$y_title
-  chart_title  <- instruction$title %||% ""
-  focal_group  <- instruction$focal_group
-  has_subj     <- length(subj_ids) > 0
+  metric_ids <- instruction$metric %||% character()
+  subj_ids <- instruction$subjective_value %||% character()
+  x_titles <- instruction$x_title
+  y_title <- instruction$y_title
+  chart_title <- instruction$title %||% ""
+  focal_group <- instruction$focal_group
+  has_subj <- length(subj_ids) > 0
   
   # Collect all columns that need to exist
-  all_metrics <- c(hour_ids, subj_ids)
+  all_metrics <- c(metric_ids, subj_ids)
   all_metrics <- all_metrics[!is.null(all_metrics) & !is.na(all_metrics)]
   
   subset_cols <- character()
@@ -664,7 +695,15 @@ generate_horizontal_bar_slide <- function(
     }
     data <- data[group_filter, ]
   }
-  
+  # ------ ENSURE LABELS EXIST FOR ALL METRICS ----------------------------------
+  all_ids <- unique(na.omit(c(metric_ids, subj_ids)))
+  missing_vars <- setdiff(all_ids, variable_map$variable)
+  if (length(missing_vars) > 0) {
+    variable_map <- bind_rows(
+      variable_map,
+      tibble(variable = missing_vars, label = missing_vars)
+    ) 
+  }
   # ------ PREPARE DATA FUNCTION --------------------------------------------
   prep_data <- function(ids, type_label) {
     data %>%
@@ -677,12 +716,16 @@ generate_horizontal_bar_slide <- function(
   }
   
   # ------ GENERATE DATA ----------------------------------------------------
-  df_hours <- prep_data(hour_ids, x_titles[[1]])
+  df_metric <- prep_data(metric_ids, x_titles[[1]])
   df_subj <- if (has_subj) prep_data(subj_ids, x_titles[[2]]) else NULL
   
   # ------ COMBINE & ORDER --------------------------------------------------
-  label_levels <- df_hours %>% arrange(value) %>% pull(label)
-  df_combined <- bind_rows(df_hours, df_subj) %>%
+  label_levels <- bind_rows(df_metric, df_subj) %>%
+    arrange(value) %>%
+    pull(label) %>%
+    unique()
+  
+  df_combined <- bind_rows(df_metric, df_subj) %>%
     mutate(
       label = factor(label, levels = label_levels),
       type = factor(type, levels = x_titles)

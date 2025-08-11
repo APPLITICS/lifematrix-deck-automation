@@ -16,7 +16,6 @@ library(tibble)
 library(forcats)
 library(data.table)
 
-
 # ------ LOAD DATA ------------------------------------------------------------
 #pipeline_data <- fread("data/simulated_pipeline_input.csv")
 pipeline_data <- fread("data/simulated_pipeline_input.csv")
@@ -33,11 +32,8 @@ pipeline_data <- pipeline_data[, lapply(.SD, function(x) {
   x
 })]
 
-
-
-
 # ------ LOAD MAPPING FILE -----------------------------------------------------
-variable_map  <- fread("inputs/mapping_file.csv")
+variable_map <- fread("inputs/mapping_file.csv")
 
 # ------ DEFINE GROUPS ---------------------------------------------------------
 focal_group <- "Xilio"

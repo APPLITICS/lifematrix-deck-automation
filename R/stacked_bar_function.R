@@ -56,6 +56,20 @@ generate_stacked_vertical_slide <- function(
     stop("Multiple definitions in both category_x and category_y are not supported.")
   }
   
+  
+  # ------ ENSURE VARIABLE MAP HAS NEEDED VARS ---------------------------------
+  needed_vars <- unique(na.omit(purrr::map_chr(category_y, "name")))
+  if (!exists("variable_map")) {
+    variable_map <- tibble(variable = character(), label = character())
+  }
+  missing_vars <- setdiff(needed_vars, variable_map$variable)
+  if (length(missing_vars) > 0) {
+    variable_map <- bind_rows(
+      variable_map,
+      tibble(variable = missing_vars, label = missing_vars)
+    ) %>% distinct(variable, .keep_all = TRUE)
+  }
+  
   # ------ DETECT MULTI-AXIS CASES ------------------------------------------
   multi_y <- length(category_y) > 1
   multi_x <- length(category_x) > 1
@@ -72,7 +86,7 @@ generate_stacked_vertical_slide <- function(
   } else {
     margin(0, 100, 10, 100)
   }
-
+  
   # ------ FILTER TO FOCAL GROUP --------------------------------------------
   df <- data %>% filter(group == focal_name)
   if (!is.null(focal_subset)) {
@@ -468,8 +482,6 @@ generate_stacked_vertical_slide <- function(
   
   return(invisible(NULL))
 }
-
-
 # ------ BAR STACKED HORIZONTAL SLIDE -----------------------------------------
 #' Horizontal Stacked Bar Slide
 #'

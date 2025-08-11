@@ -336,7 +336,7 @@ generate_tile_slide <- function(
   metrics <- instruction$metric %||% character()
   metrics <- metrics[!is.null(metrics) & !is.na(metrics)]
   
-  missing_metrics <- setdiff(metrics, names(data))
+  missing_vars_metrics <- setdiff(metrics, names(data))
   
   # Focal group subset
   subset_cols <- character()
@@ -359,13 +359,13 @@ generate_tile_slide <- function(
   }
   
   subset_cols <- unique(subset_cols)
-  missing_subset_cols <- setdiff(subset_cols, names(data))
+  missing_vars_subset_cols <- setdiff(subset_cols, names(data))
   
-  # Combine all missing columns
-  all_missing <- unique(c(missing_metrics, missing_subset_cols))
+  # Combine all missing_vars columns
+  all_missing_vars <- unique(c(missing_vars_metrics, missing_vars_subset_cols))
   
-  if (length(all_missing) > 0) {
-    message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
+  if (length(all_missing_vars) > 0) {
+    message("❌ missing_vars column(s): ", paste(all_missing_vars, collapse = ", "), ". Slide skipped.")
     return(NULL)
   }
   
@@ -458,10 +458,19 @@ generate_tile_slide <- function(
   
   group_levels <- c(group_levels, comp_names)
   
-  # ------ LOAD VARIABLE LABELS ------------------------------------------------
-  activity_map <- variable_map %>%
-    filter(variable %in% metric_names) %>%
+  missing_vars <- setdiff(metric_names, variable_map$variable)
+  if (length(missing_vars)) {
+    variable_map <- bind_rows(
+      variable_map,
+      tibble(variable = missing_vars, label = missing_vars)
+    ) %>% distinct(variable, .keep_all = TRUE)
+  }
+  # ------ LOAD VARIABLE LABELS ---------------------------------------------
+  activity_map <- tibble(variable = metric_names) %>%
+    left_join(variable_map %>% select(variable, label), by = "variable") %>%
+    mutate(label = coalesce(label, variable)) %>%
     select(variable, label)
+  
   
   # ------ PREPARE DATA FOR PLOT -----------------------------------------------
   tile_data <- summary_table %>%

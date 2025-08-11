@@ -26,17 +26,16 @@ generate_line_slide <- function(
   
   # ------ EXTRACT SETTINGS -----------------------------------------------
   # Extracts all relevant parameters from the instruction list
-  # ------ EXTRACT SETTINGS ------------------------------------------------
-  focal_group   <- instruction$focal_group
-  focal_name    <- focal_group$name
+  focal_group <- instruction$focal_group
+  focal_name <- focal_group$name
   fg_subset_col <- focal_group$subset$title %||% NULL
   fg_subset_val <- focal_group$subset$value %||% NULL
-  category_var  <- instruction$category$name
+  category_var <- instruction$category$name
   category_order <- instruction$category$order %||% NULL
-  metrics       <- instruction$metric
-  chart_title   <- instruction$title %||% ""
-  y_axis_title  <- instruction$y_title %||% NULL
-  unit          <- instruction$unit %||% NULL
+  metrics <- instruction$metric
+  chart_title <- instruction$title %||% ""
+  y_axis_title <- instruction$y_title %||% NULL
+  unit <- instruction$unit %||% NULL
   
   # ------ EARLY VALIDATION ------------------------------------------------
   required_cols <- unique(c(
@@ -112,25 +111,29 @@ generate_line_slide <- function(
   }
   
   # ------ APPLY DISPLAY LABELS TO METRICS --------------------------------
-  # Maps variable names to display labels if variable_map exists
-  metric_order <- instruction$metric
-  
-  if (exists("variable_map") &&
-      all(c("variable", "label") %in% names(variable_map))) {
-    matching <- variable_map %>%
-      filter(variable %in% metric_order)
-    
-    label_levels <- matching$label
-    names(label_levels) <- matching$variable
-    
-    plot_data$metric <- factor(
-      plot_data$metric,
-      levels = metric_order,
-      labels = label_levels[metric_order]
-    )
-  } else {
-    plot_data$metric <- factor(plot_data$metric, levels = metric_order)
+  metric_order <- instruction$metric %||% character()
+  # Add missing variables to variable_map with label = variable
+  missing_vars <- setdiff(metric_order, variable_map$variable)
+  if (length(missing_vars) > 0) {
+    variable_map <- bind_rows(
+      variable_map %>% select(variable, label),
+      tibble(variable = missing_vars, label = missing_vars)
+    ) %>%
+      distinct(variable, .keep_all = TRUE)
   }
+  
+  matching <- variable_map %>%
+    filter(variable %in% metric_order)
+  
+  label_levels <- matching$label
+  names(label_levels) <- matching$variable
+  
+  plot_data$metric <- factor(
+    plot_data$metric,
+    levels = metric_order,
+    labels = label_levels[metric_order] %||% metric_order
+  )
+  
   
   # ------ COLOR PALETTE --------------------------------------------------
   # Defines colors for each metric line

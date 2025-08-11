@@ -44,6 +44,20 @@ generate_scatter_slide <- function(
     }
     data <- data[group_filter, ]
   }
+  # ------ ENSURE VARIABLE MAP HAS ALL METRICS ------------------------------
+  all_vars <- unique(c(x_vars, y_vars))
+  missing_vars <- setdiff(all_vars, variable_map$variable)
+  
+  if (length(missing_vars) > 0) {
+    variable_map <- bind_rows(
+      variable_map,
+      tibble(
+        variable = missing_vars,
+        label = missing_vars
+      )
+    ) %>%
+      distinct(variable, .keep_all = TRUE)
+  }
   
   # ------ BUILD COORDINATE MAPPING TABLE ---------------------------------
   coord_map <- tibble(
