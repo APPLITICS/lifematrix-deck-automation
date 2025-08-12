@@ -19,7 +19,7 @@ data/
 
 inputs/
 ├── template.pptx              # PowerPoint template for slide layout
-├── mapping.csv                # Mapping of survey metrics to slide displayed labels
+├── mapping_file.csv           # Mapping of survey metrics to slide displayed labels
 
 output/
 ├── generated_slides.pptx      # Output PowerPoint file with generated slides
@@ -31,7 +31,7 @@ main.R                         # Script to load data and run the pipeline
 ## Data Format 
 
 - The `simulated_pipeline_input.csv` file contains detailed survey data and is the main data source for the slide generation pipeline. Each row represents a participant, and each column provides a specific metric or category.
-- The `mapping_file.csv` file provides a mapping of survey data columns, whether metrics or categories, to their corresponding display labels used in the slides. This ensures a direct and consistent translation of internal variable names to presentation-friendly labels.
+- The `mapping_file.csv` file provides a mapping of survey data columns, whether metrics or categories, to their corresponding display labels used in the slides. This ensures a direct and consistent translation of internal variable names to presentation-friendly labels. If a variable is not defined in this file, its original name is used by default, with the option for the end user to provide a custom label if desired.
 
 ### Preprocessing Requirements
 
