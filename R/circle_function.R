@@ -17,19 +17,27 @@ generate_circle_slide <- function(
     instruction,
     ppt_doc
 ) {
+  
+  # ------ EXTRACT instruction FIELDS -------------------------------------
+  unit_label <- instruction$unit %||% ""
+  category_var <- instruction$category$name
+  order_var <- instruction$category$order
+  metric_var <- instruction$metric
+  group_info <- instruction$focal_group
+  
   # ------ EARLY VALIDATION ----------------------------------------------------
   required_cols <- character()
   
   #  category$name, metric, order, subset
-  required_cols <- c(required_cols, instruction$category$name %||% character())
+  required_cols <- c(required_cols, category_var %||% character())
   
-  if (!is.null(instruction$metric) && !is.na(instruction$metric)) {
-    required_cols <- c(required_cols, instruction$metric)
+  if (!is.null(metric_var) && !is.na(metric_var)) {
+    required_cols <- c(required_cols, metric_var)
   }
-    if (!is.null(instruction$category$order) && !is.na(instruction$category$order)) {
-    required_cols <- c(required_cols, instruction$category$order)
+    if (!is.null(order_var) && !is.na(order_var)) {
+    required_cols <- c(required_cols, order_var)
   }
-    fg_subset <- instruction$focal_group$subset
+    fg_subset <- group_info$subset
   if (!is.null(fg_subset) &&
       !is.null(fg_subset$title) &&
       !is.na(fg_subset$title)) {
@@ -45,13 +53,6 @@ generate_circle_slide <- function(
     return(NULL)
   }
   
-  
-  # ------ EXTRACT instruction FIELDS -------------------------------------
-  unit_label <- instruction$unit %||% ""
-  category_var <- instruction$category$name
-  order_var <- instruction$category$order
-  metric_var <- instruction$metric
-  group_info <- instruction$focal_group
   # ------ FILTER FOCAL GROUP DATA ----------------------------------------
   df <- data %>%
     filter(group == group_info$name)

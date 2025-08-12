@@ -16,119 +16,74 @@ generate_bar_metric_slide <- function(
     instruction,
     ppt_doc
 ) {
-  
-  
   # ------ EARLY VALIDATION ----------------------------------------------------
-  # Collect all required metric columns
+  # Inputs (skip NULL/NA cleanly)
   bar_metrics <- instruction$bar_value %||% character()
   target_metrics <- instruction$target %||% character()
-  all_metrics <- unique(c(bar_metrics, target_metrics))
+  all_metrics <- unique(na.omit(c(bar_metrics, target_metrics)))
+  unit_label <- instruction$unit %||% ""
   
-  missing_metrics <- setdiff(all_metrics, names(data))
-  
-  # Collect all required subset columns
+  # Focal subset
   required_subset_cols <- character()
   
-  # Focal group subset
   fg_subset <- instruction$focal_group$subset
-  if (!is.null(fg_subset) && !is.null(fg_subset$title)) {
+  if (!is.null(fg_subset) && !is.null(fg_subset$title) && !is.na(fg_subset$title)) {
     required_subset_cols <- c(required_subset_cols, fg_subset$title)
   }
   
-  # Comparison group subsets
-  if (!is.null(instruction$comparison_groups)) {
-    comparison_subset_cols <- sapply(
-      instruction$comparison_groups,
-      function(cg) cg$subset$title %||% NULL,
-      USE.NAMES = FALSE
-    )
-    required_subset_cols <- c(required_subset_cols, comparison_subset_cols)
-  }
-  # ------ EARLY VALIDATION ----------------------------------------------------
-  # Validate metric columns (bar_value and target), skipping NULL/NA
-  bar_metrics <- instruction$bar_value %||% character()
-  target_metrics <- instruction$target %||% character()
-  all_metrics <- unique(c(bar_metrics, target_metrics))
-  all_metrics <- all_metrics[!is.null(all_metrics) & !is.na(all_metrics)]
-  
-  missing_metrics <- setdiff(all_metrics, names(data))
-  
-  # Collect required subset columns (non-NULL, non-NA only)
-  required_subset_cols <- character()
-  
-  # Focal group subset
-  fg_subset <- instruction$focal_group$subset
-  if (!is.null(fg_subset) &&
-      !is.null(fg_subset$title) &&
-      !is.na(fg_subset$title)) {
-    required_subset_cols <- c(required_subset_cols, fg_subset$title)
-  }
-  
-  # Comparison group subsets
+  # Comparison subsets
   if (!is.null(instruction$comparison_groups)) {
     for (cg in instruction$comparison_groups) {
-      if (!is.null(cg$subset) &&
-          !is.null(cg$subset$title) &&
-          !is.na(cg$subset$title)) {
+      if (!is.null(cg$subset) && !is.null(cg$subset$title) && !is.na(cg$subset$title)) {
         required_subset_cols <- c(required_subset_cols, cg$subset$title)
       }
     }
   }
-  
-  # Final check: which required subset columns are missing
-  required_subset_cols <- unique(required_subset_cols)
-  missing_subset_cols <- setdiff(required_subset_cols, names(data))
-  
-  # Combine all missing columns
-  all_missing <- unique(c(missing_metrics, missing_subset_cols))
-  
-  if (length(all_missing) > 0) {
-    message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
-    return(NULL)
-  }
-
-  # Remove NULLs and deduplicate
   required_subset_cols <- unique(na.omit(required_subset_cols))
+  
+  # Also validate that metric columns exist (you had missing_metrics <- character())
+  missing_metrics <- setdiff(all_metrics, names(data))
   missing_subset_cols <- setdiff(required_subset_cols, names(data))
   
-  # Combine and display all missing columns (metrics + subsets)
   all_missing <- unique(c(missing_metrics, missing_subset_cols))
   if (length(all_missing) > 0) {
     message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
     return(NULL)
   }
   
-  # ------ MAPPIN & SETUP ------------------------------------------------------
-  # ------ ENSURE ALL bar_value VARIABLES ARE PRESENT IN variable_map ----------
-  missing_bar_vars <- setdiff(instruction$bar_value, variable_map$variable)
-  if (length(missing_bar_vars) > 0) {
-    variable_map <- bind_rows(
-      variable_map,
-      tibble(
-        variable = missing_bar_vars,
-        label = missing_bar_vars
-      )
+  # ------ MAPPING & SETUP -----------------------------------------------------
+  # Ensure all needed variables exist in variable_map (fallback label = variable)
+  
+  vars_needed <- unique(na.omit(c(bar_metrics, target_metrics)))
+  
+  # Make sure variable_map exists and has required columns
+  if (is.null(variable_map)) variable_map <- data.frame()
+  if (!"variable" %in% names(variable_map)) variable_map$variable <- character(0)
+  if (!"label" %in% names(variable_map)) variable_map$label <- character(0)
+  
+  # Coerce to character to avoid factor issues
+  variable_map$variable <- as.character(variable_map$variable)
+  variable_map$label <- as.character(variable_map$label)
+  
+  # Add any missing variables with label = variable
+  existing_vars <- unique(variable_map$variable)
+  missing_vars <- setdiff(vars_needed, existing_vars)
+  
+  if (length(missing_vars) > 0) {
+    add_df <- data.frame(
+      variable = missing_vars,
+      label = missing_vars,
+      stringsAsFactors = FALSE
     )
+    variable_map <- rbind(variable_map, add_df)
   }
   
-  # ------ ENSURE ALL target VARIABLES ARE PRESENT IN variable_map -------------
-  target_vars <- instruction$target %||% character()
-  missing_target_vars <- setdiff(target_vars, variable_map$variable)
-  if (length(missing_target_vars) > 0) {
-    variable_map <- bind_rows(
-      variable_map,
-      tibble(
-        variable = missing_target_vars,
-        label = missing_target_vars
-      )
-    )
-  }
-  # Map bar metric IDs to labels, preserving order
-  bar_value_labels <- tibble(variable = instruction$bar_value) %>%
+  # Map IDs to labels, preserving order
+  bar_value_labels <- tibble(variable = bar_metrics) %>%
     left_join(variable_map, by = "variable")
-  # Map target metric IDs to labels
+  
   target_value_labels <- variable_map %>%
-    filter(variable %in% (instruction$target %||% character())) %>%
+    filter(variable %in% target_metrics) %>%
     distinct(variable, label)
   
   # Determine chart mode: single bar with no comparison = simple layout
@@ -136,32 +91,15 @@ generate_bar_metric_slide <- function(
     length(instruction$bar_value) == 1 &&
       (
         is.null(instruction$comparison_groups) ||
-          all(sapply(
-            instruction$comparison_groups,
-            function(cg) is.null(cg$name) || is.na(cg$name)
-          ))
+          all(sapply(instruction$comparison_groups, function(cg) is.null(cg$name) || is.na(cg$name)))
       )
   }
   
-  # Define bar and dodge width depending on layout
+  # Define bar/dodge width and position
   bar_width <- if (is_simple_group(instruction)) 0.4 else 0.7
   dodge_width <- 0.8
-  unit_label <- instruction$unit %||% ""
+  position_setting <- if (is_simple_group(instruction)) position_identity() else position_dodge(width = dodge_width)
   
-  # Position bars side-by-side or directly if no comparisons
-  position_setting <- if (is_simple_group(instruction)) {
-    position_identity()
-  } else {
-    position_dodge(width = dodge_width)
-  }
-  
-  # Validate presence of bar and target metrics in data
-  all_metrics <- unique(c(instruction$bar_value, instruction$target %||% character()))
-  missing_metrics <- setdiff(all_metrics, names(data))
-  if (length(missing_metrics) > 0) {
-    message(sprintf("Missing metric(s): %s", paste(missing_metrics, collapse = ", ")))
-    return(invisible(NULL))
-  }
   
   # Generate placeholder data for layout continuity
   generate_placeholder <- function(group_label, metric_list) {
@@ -656,7 +594,7 @@ generate_bar_category_slide <- function(
 generate_horizontal_bar_slide <- function(
     data,
     instruction,
-    ppt_doc = NULL
+    ppt_doc
 ) {
   
   # ------ EXTRACT & VALIDATE INSTRUCTION SETTINGS -----------------------------

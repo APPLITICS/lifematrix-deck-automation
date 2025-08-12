@@ -27,6 +27,7 @@ ppt_output <- "outputs/generated_slides.pptx"
 
 # ------ LOAD DATA -------------------------------------------------------------
 pipeline_data <- fread(data_path)
+variable_map <- fread(map_path)
 
 # ------ NORMALIZE NAs ---------------------------------------------------------
 # Replace numeric Inf with NA; replace "inf" or "" (case-insensitive) in chars.
@@ -40,9 +41,6 @@ pipeline_data <- pipeline_data[, lapply(.SD, function(x) {
   }
   x
 })]
-
-# ------ LOAD MAPPING FILE -----------------------------------------------------
-variable_map <- fread(map_path)
 
 # ------ DEFINE GROUPS ---------------------------------------------------------
 focal_group <- "Xilio"
