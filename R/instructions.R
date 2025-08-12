@@ -1,18 +1,12 @@
-# ------ INSTRUCTIONS ---------------------------------------------------------
+# ------ INSTRUCTIONS ----------------------------------------------------------
+#' Slide generation instructions for automated LIFE Matrix deck.
+#'
+#' Each list element defines chart type, metrics, groups, units, and labels.
+#' Used by `generate_*_slide()` functions to create slides.
 
-#' Slide instructions for automated chart generation
-#'
-#' A structured list where each element defines how a chart should be rendered
-#' in the LIFE Matrix deck—used by functions like `generate_density_slide()`
-#' and `generate_bar_*_slide()`.
-#'
-#' Includes group setup, metric(s), unit, axis labels, and chart type.
-#'
-#' @format A list of slide configs with fields like `slide`, `function_name`,
-#'   `metric`, `unit`, `focal_group`, `comparison_groups`, `category`, etc.
 
 instructions <- list(
-  #------ Slide 3: Density without comparisons ------------------------------
+  #------ Slide 1: Density without comparisons ---------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
@@ -27,7 +21,7 @@ instructions <- list(
     comparison_groups = NULL
   ),
   
-  # ------ Slide 4: Density with group comparison ----------------------------
+  # ------ Slide 2: Density with group comparison ------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
@@ -47,7 +41,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 5: Density with gender comparisons --------------------------
+  # ------ Slide 3: Density with gender comparisons ----------------------------
   list(
     function_name = "generate_density_slide",
     metric = "life_satisfaction",
@@ -77,7 +71,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 8: JAM - Focal only -----------------------------------------
+  # ------ Slide 4: JAM - Focal only -------------------------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -97,7 +91,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 9: JAM - NA comparison --------------------------------------
+  # ------ Slide 5: JAM - NA comparison ----------------------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -122,7 +116,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 10: JAM - Gender subset without value -----------------------
+  # ------ Slide 6: JAM - Gender subset without value --------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -150,7 +144,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 11: JAM - Two NA comparisons --------------------------------
+  # ------ Slide 7: JAM - Two NA comparisons -----------------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -179,7 +173,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 12: JAM - Women + NA comparison -----------------------------
+  # ------ Slide 8: JAM - Women + NA comparison --------------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -211,7 +205,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 13: JAM - Women + Men with targets --------------------------
+  # ------ Slide 9: JAM - Women + Men with targets -----------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -249,7 +243,7 @@ instructions <- list(
       "meaningfulness_min"
     )
   ),
-  # ------ Slide 14: Reading hours (no comparison) -----------------------------
+  # ------ Slide 10: Reading hours (no comparison) -----------------------------
   list(
     function_name = "generate_density_slide",
     metric = "reading_hours",
@@ -264,7 +258,7 @@ instructions <- list(
     comparison_groups = NULL
   ),
   
-  # ------ Slide 15: Reading hours by gender -----------------------------------
+  # ------ Slide 11: Reading hours by gender -----------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "reading_hours",
@@ -294,7 +288,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 16: Sleep hours (no comparison) -------------------------------
+  # ------ Slide 12: Sleep hours (no comparison) -------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "sleeping_hours",
@@ -309,7 +303,7 @@ instructions <- list(
     comparison_groups = NULL
   ),
   
-  # ------ Slide 17: Sleep hours by gender -------------------------------------
+  # ------ Slide 13: Sleep hours by gender -------------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "sleeping_hours",
@@ -339,7 +333,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 18: Exercise hours (no comparison) ----------------------------
+  # ------ Slide 14: Exercise hours (no comparison) ----------------------------
   list(
     function_name = "generate_density_slide",
     metric = "exercising_hours",
@@ -354,7 +348,7 @@ instructions <- list(
     comparison_groups = NULL
   ),
   
-  # ------ Slide 19: Exercise hours by gender ----------------------------------
+  # ------ Slide 15: Exercise hours by gender ----------------------------------
   list(
     function_name = "generate_density_slide",
     metric = "exercising_hours",
@@ -384,7 +378,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 62: Meaningfulness+ (focal only) ------------------------------
+  # ------ Slide 16: Meaningfulness+ (focal only) ------------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -400,7 +394,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 63: Meaningfulness+ (Women + NA) ------------------------------
+  # ------ Slide 17: Meaningfulness+ (Women + NA) ------------------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -428,7 +422,7 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 64: Meaningfulness+ (Women vs Men) w/ target ------------------
+  # ------ Slide 18: Meaningfulness+ (Women vs Men) w/ target ------------------
   list(
     function_name = "generate_bar_metric_slide",
     unit = "%",
@@ -459,7 +453,7 @@ instructions <- list(
     target = c("meaningfulness_min")
   ),
   
-  # ------ Slide 67: Life Satisfaction by Income -------------------------------
+  # ------ Slide 19: Life Satisfaction by Income -------------------------------
   list(
     function_name = "generate_bar_category_slide",
     metric = "life_satisfaction",
@@ -478,7 +472,7 @@ instructions <- list(
     trend_line = TRUE
   ),
   
-  # ------ Slide 68: Number of Children by Reunion Class -----------------------
+  # ------ Slide 20: Number of Children by Reunion Class -----------------------
   list(
     function_name = "generate_bar_category_slide",
     metric = "n_children",
@@ -497,7 +491,7 @@ instructions <- list(
     trend_line = FALSE
   ),
   
-  # ------ Slide 69: Life Satisfaction by Number of Children -------------------
+  # ------ Slide 21: Life Satisfaction by Number of Children -------------------
   list(
     function_name = "generate_bar_category_slide",
     metric = "life_satisfaction",
@@ -516,7 +510,7 @@ instructions <- list(
     trend_line = TRUE
   ),
   
-  # ------ Slide 70: Meaningfulness by Reunion Class ---------------------------
+  # ------ Slide 22: Meaningfulness by Reunion Class ---------------------------
   list(
     function_name = "generate_bar_category_slide",
     metric = "meaningfulness",
@@ -540,7 +534,7 @@ instructions <- list(
     ),
     trend_line = FALSE
   ),
-  # ------ Slide 70: Meaningfulness by Reunion Class ---------------------------
+  # ------ Slide 23: Meaningfulness by Reunion Class ---------------------------
   list(
     function_name = "generate_bar_category_slide",
     metric = "meaningfulness",
@@ -558,7 +552,7 @@ instructions <- list(
     ),
     trend_line = FALSE
   ),
-  # ------ Slide 75: Current sample by reunion class ---------------------------
+  # ------ Slide 24: Current sample by reunion class ---------------------------
   list(
     function_name = "generate_circle_slide",
     metric = NULL,
@@ -574,7 +568,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 76: Life Satisfaction by reunion class ------------------------
+  # ------ Slide 25: Life Satisfaction by reunion class ------------------------
   list(
     function_name = "generate_circle_slide",
     metric = "life_satisfaction",
@@ -590,7 +584,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 77: TQI by reunion class --------------------------------------
+  # ------ Slide 26: TQI by reunion class --------------------------------------
   list(
     function_name = "generate_circle_slide",
     metric = "tqi",
@@ -606,7 +600,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 78: Meaningfulness by reunion class ---------------------------
+  # ------ Slide 27: Meaningfulness by reunion class ---------------------------
   list(
     function_name = "generate_circle_slide",
     metric = "meaningfulness_work",
@@ -622,7 +616,7 @@ instructions <- list(
     )
   ),
   
-  # ------ Slide 79: Subset reunion classes only -------------------------------
+  # ------ Slide 28: Subset reunion classes only -------------------------------
   list(
     function_name = "generate_circle_slide",
     metric = "meaningfulness_work",
@@ -643,7 +637,7 @@ instructions <- list(
       )
     )
   ),
-  # ------ Slide 23: High value activities (1st & 10th reunion) ----------------
+  # ------ Slide 29: High value activities (1st & 10th reunion) ----------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -671,7 +665,7 @@ instructions <- list(
     n_activities = 5
   ),
   
-  # ------ Slide 24: High value activities (focal vs comparison) --------------
+  # ------ Slide 30: High value activities (focal vs comparison) ---------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -701,7 +695,7 @@ instructions <- list(
     n_activities = 5
   ),
   
-  # ------ Slide 25: High value of some reunion focal group  -------------------
+  # ------ Slide 31: High value of some reunion focal group  -------------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -737,7 +731,7 @@ instructions <- list(
     n_activities = 5
   ),
   
-  # ------ Slide 26: High value activities (IWF vs HBS gender groups) ----------
+  # ------ Slide 32: High value activities (IWF vs HBS gender groups) ----------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -771,7 +765,7 @@ instructions <- list(
     n_activities = 5
   ),
   
-  # ------ Slide 27: High value (3 comparison groups) -----------------------
+  # ------ Slide 33: High value (3 comparison groups) --------------------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -792,15 +786,30 @@ instructions <- list(
       subset = NULL
     ),
     comparison_groups = list(
-      list(name = comparison_group_2, subset = NULL),
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+      list(
+        name = comparison_group_2,
+        subset = NULL
+      ),
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Women"
+        )
+      ),
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Men"
+        )
+      )
     ),
     preferred_value = "high",
     n_activities = 5
   ),
   
-  # ------ Slide 28: Low value activities (1st & 10th) ----------------------
+  # ------ Slide 34: Low value activities (1st & 10th ) ------------------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -825,7 +834,7 @@ instructions <- list(
     n_activities = 6
   ),
   
-  # ------ Slide 29: Low value (focal vs comparison) ------------------------
+  # ------ Slide 35: Low value (focal vs comparison) ---------------------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -852,7 +861,7 @@ instructions <- list(
     n_activities = 6
   ),
   
-  # ------ Slide 30: Low value (reunion class filter) -----------------------
+  # ------ Slide 36: Low value (reunion class filter) --------------------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -885,7 +894,7 @@ instructions <- list(
     n_activities = 4
   ),
   
-  # ------ Slide 31: Low value (IWF vs gendered comparison) -----------------
+  # ------ SLIDE 37: Low value (IWF vs gendered comparison) ----------------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -897,20 +906,32 @@ instructions <- list(
       "hanging_out_alone_hours"
     ),
     unit = "hrs",
-    title = "MOST COMMON HIGH VALUE ACTIVITIES",
+    title = "MOST COMMON LOW VALUE ACTIVITIES",
     focal_group = list(
       name = "IWF",
       subset = NULL
     ),
     comparison_groups = list(
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Women"
+        )
+      ),
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Men"
+        )
+      )
     ),
     preferred_value = "low",
     n_activities = 5
   ),
   
-  # ------ Slide 32: Low value (focal group + 3 comparison groups) -------------
+  # ------ SLIDE 38: Low value (focal group + 3 comparison groups) ---------------
   list(
     function_name = "generate_tile_slide",
     metric = c(
@@ -922,20 +943,36 @@ instructions <- list(
       "hanging_out_alone_hours"
     ),
     unit = "hrs",
-    title = "MOST COMMON HIGH VALUE ACTIVITIES",
+    title = "MOST COMMON LOW VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
       subset = NULL
     ),
     comparison_groups = list(
-      list(name = comparison_group_2, subset = NULL),
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-      list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
+      list(
+        name = comparison_group_2,
+        subset = NULL
+      ),
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Women"
+        )
+      ),
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Men"
+        )
+      )
     ),
     preferred_value = "low",
     n_activities = 5
   ),
-  # ------ Slide 33: Activities horizontal bar for Xilio women -----------------
+  
+  # ------ SLIDE 39: Activities horizontal bar for Xilio women ------------------
   list(
     function_name = "generate_horizontal_bar_slide",
     metric = c(
@@ -952,9 +989,16 @@ instructions <- list(
     title = "DISCRETIONARY TIME – ACTIVITIES",
     x_title = c("Avg. Hours Per Week"),
     y_title = "Activity",
-    focal_group = list(name = focal_group, subset = list(title = "gender", value = "Women"))
+    focal_group = list(
+      name = focal_group,
+      subset = list(
+        title = "gender",
+        value = "Women"
+      )
+    )
   ),
-  # ------ Slide 34: Activities hours vs subjective values for focal group -----
+  
+  # ------ SLIDE 40: Activities hours vs subjective values (focal group) ---------
   list(
     function_name = "generate_horizontal_bar_slide",
     metric = c(
@@ -967,23 +1011,26 @@ instructions <- list(
       "napping_hours",
       "hobbies_hours"
     ),
-    subjective_value = 
-      c(
-        "volunteering_subj_value",
-        "therapy_subj_value",
-        "gaming_subj_value",
-        "school_learning_subj_value",
-        "side_projects_subj_value",
-        "job_searching_subj_value",
-        "napping_subj_value",
-        "hobbies_subj_value"
-      ),
+    subjective_value = c(
+      "volunteering_subj_value",
+      "therapy_subj_value",
+      "gaming_subj_value",
+      "school_learning_subj_value",
+      "side_projects_subj_value",
+      "job_searching_subj_value",
+      "napping_subj_value",
+      "hobbies_subj_value"
+    ),
     title = "DISCRETIONARY TIME – ACTIVITIES",
     x_title = c("Avg. Hours Per Week", "Avg. Subjective Value"),
     y_title = "Activity",
-    focal_group = list(name = focal_group, subset = NULL)
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
   ),
-  # ------ Slide 35: JAM type distribution Donut chart--------------------------
+  
+  # ------ SLIDE 41: JAM type distribution (focal only) ------------------------
   list(
     function_name = "generate_donut_slide",
     category = list(
@@ -997,6 +1044,8 @@ instructions <- list(
     ),
     comparison_groups = NULL
   ),
+  
+  # ------ SLIDE 42: JAM type distribution (focal + placeholder) ---------------
   list(
     function_name = "generate_donut_slide",
     category = list(
@@ -1008,48 +1057,65 @@ instructions <- list(
       name = focal_group,
       subset = NULL
     ),
-    comparison_groups =
+    comparison_groups = list(
       list(
-        list(
-          name = NA,
-          subset = NULL
+        name = NA,
+        subset = NULL
+      )
+    )
+  ),
+  
+  # ------ SLIDE 43: JAM type distribution (focal + 1 comparison) --------------
+  list(
+    function_name = "generate_donut_slide",
+    category = list(
+      name = "jam_type_distribution",
+      order = NULL
+    ),
+    title = "JAM TYPE DISTRIBUTION",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    ),
+    comparison_groups = list(
+      list(
+        name = comparison_group_1,
+        subset = NULL
+      )
+    )
+  ),
+  
+  # ------ SLIDE 44: JAM type distribution (focal + gendered comparison) -------
+  list(
+    function_name = "generate_donut_slide",
+    category = list(
+      name = "jam_type_distribution",
+      order = NULL
+    ),
+    title = "JAM TYPE DISTRIBUTION",
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    ),
+    comparison_groups = list(
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Women"
+        )
+      ),
+      list(
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Men"
         )
       )
+    )
   ),
-  list(
-    function_name = "generate_donut_slide",
-    category = list(
-      name = "jam_type_distribution",
-      order = NULL
-    ),
-    title = "JAM TYPE DISTRIBUTION",
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
-    ),
-    comparison_groups =
-      list(
-        list(name = comparison_group_1, subset = NULL)
-      )
-  ),
-  list(
-    function_name = "generate_donut_slide",
-    category = list(
-      name = "jam_type_distribution",
-      order = NULL
-    ),
-    title = "JAM TYPE DISTRIBUTION",
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
-    ),
-    comparison_groups =
-      list(
-        list(name = comparison_group_1, subset = list(title = "gender", value = "Women")),
-        list(name = comparison_group_1, subset = list(title = "gender", value = "Men"))
-      )
-  ),
-  # ----- SLIDE 38: Line chart comparing perceived vs behavioral achievement -----
+  
+  # ----- SLIDE 45: Line chart comparing perceived vs behavioral achievement ---
   list(
     function_name="generate_line_slide",
     metric=c(
@@ -1071,7 +1137,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 39: JAM gap distribution across income levels ----------------
+  # ------ SLIDE 46: JAM gap distribution across income levels -----------------
   list(
     function_name = "generate_line_slide",
     metric = c(
@@ -1092,7 +1158,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 40: Share of participants who have children ------------------
+  # ------ SLIDE 47: Share of participants who have children -------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "PERCENT WHO HAVE KIDS",
@@ -1116,7 +1182,7 @@ instructions <- list(
       subset = NULL
     )
   ),
-  #------ SLIDE 41: Relationship status (partial: in relationship / married) ------
+  #------ SLIDE 48: Relationship status (partial: in relationship / married) ---
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "RELATIONSHIP STATUS",
@@ -1142,7 +1208,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 42: Relationship status (all categories) --------------------------
+  # ------ SLIDE 49: Relationship status (all categories) ----------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "RELATIONSHIP STATUS",
@@ -1168,7 +1234,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 43: Work hours by reunion class (Women only) ----------------------
+  # ------ SLIDE 50: Work hours by reunion class (Women only) ------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "WORK HOURS",
@@ -1197,7 +1263,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 44: Industry (Life satisfaction, Women only) ----------------------
+  # ------ SLIDE 51: Industry (Life satisfaction, Women only) ------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "INDUSTRY",
@@ -1233,7 +1299,7 @@ instructions <- list(
   ),
   
   
-  # ------ SLIDE 45: Industry (All sectors, ordered fill) --------------------------
+  # ------ SLIDE 52: Industry (All sectors, ordered fill) ----------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "INDUSTRY",
@@ -1264,7 +1330,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 46: Industry (Filtered to 3 sectors) ------------------------------
+  # ------ SLIDE 53: Industry (Filtered to 3 sectors) --------------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "INDUSTRY",
@@ -1294,8 +1360,38 @@ instructions <- list(
       subset = NULL
     )
   ),
+  # ------ SLIDE 54: Industry (Filtered to 3 sectors) --------------------------
+  list(
+    function_name = "generate_stacked_vertical_slide",
+    title = "INDUSTRY",
+    metric = NULL,
+    unit = NULL,
+    category_x = list(
+      list(
+        name = "reunion_class",
+        order = "reunion_class_levels",
+        subset = NULL
+      )
+    ),
+    category_y = list(
+      list(
+        name = "industry_graduation",
+        order = "industry_graduation_levels",
+        value = c("Tech")
+      ),
+      list(
+        name = "industry_current",
+        order = "industry_current_levels",
+        value = c("Tech")
+      )
+    ),
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
+  ),
   
-  # ------ SLIDE 47: Industry (Overall by Gender) -----------------------------
+  # ------ SLIDE 55: Industry (Overall by Gender) ------------------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "INDUSTRY",
@@ -1321,7 +1417,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 48: Industry (Gender x With Child) ---------------------------
+  # ------ SLIDE 56: Industry (Gender x With Child) ----------------------------
   list(
     function_name = "generate_stacked_vertical_slide",
     title = "INDUSTRY",
@@ -1357,7 +1453,7 @@ instructions <- list(
       subset = NULL
     )
   ),
-  # ------ SLIDE 49: Industry (Horizontal, Gender x With Child) ----------------
+  # ------ SLIDE 57: Industry (Horizontal, Gender x With Child) ----------------
   list(
     function_name = "generate_stacked_horizontal_slide",
     title = "INDUSTRY (Horizontal)",
@@ -1394,7 +1490,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 50: Gender and Work Hours (5th - 20th) ---------------------------
+  # ------ SLIDE 58: Gender and Work Hours (5th - 20th) ------------------------
   list(
     function_name="generate_stacked_horizontal_slide",
     title="GENDER AND WORK HOURS (5th - 20th)",
@@ -1422,7 +1518,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 51: Gender and Work Hours (All Focal Group) ----------------------
+  # ------ SLIDE 59: Gender and Work Hours (All Focal Group) -------------------
   list(
     function_name="generate_stacked_horizontal_slide",
     title="GENDER AND WORK HOURS FOR ALL FOCAL GROUP",
@@ -1447,7 +1543,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 52: Gender and Work Hours by Children (5th - 20th) ---------------
+  # ------ SLIDE 60: Gender and Work Hours by Children (5th - 20th) ------------
   list(
     function_name="generate_stacked_horizontal_slide",
     title="GENDER AND WORK HOURS (5th - 20th)",
@@ -1485,7 +1581,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 53: Gender and Work Hours by Children (All Focal Group) ---------
+  # ------ SLIDE 61: Gender and Work Hours by Children (All Focal Group) -------
   list(
     function_name="generate_stacked_horizontal_slide",
     title="GENDER AND WORK HOURS ALL FOCAL GROUP",
@@ -1519,7 +1615,7 @@ instructions <- list(
       subset=NULL
     )
   ),
-  # ------ SLIDE 54: Status and Work Hours (< 45 Hours) --------------------------
+  # ------ SLIDE 62: Status and Work Hours (< 45 Hours) ------------------------
   list(
     function_name="generate_stacked_horizontal_slide",
     title="STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
@@ -1543,7 +1639,7 @@ instructions <- list(
       subset=NULL
     )
   ),
-  # ------ SLIDE 54: Status and Work Hours (< 45 Hours) --------------------------
+  # ------ SLIDE 63: Status and Work Hours (< 45 Hours) ------------------------
   list(
     function_name="generate_stacked_horizontal_slide",
     title="STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
@@ -1578,7 +1674,7 @@ instructions <- list(
     )
   ),
   
-  # ------ SLIDE 55: Time vs Subjective Value Scatter Plot -------
+  # ------ SLIDE 64: Time vs Subjective Value Scatter Plot ---------------------
   list(
     function_name = "generate_scatter_slide",
     metric = c(

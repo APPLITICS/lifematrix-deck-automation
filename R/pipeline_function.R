@@ -1,5 +1,4 @@
 # ------ PIPELINE FUNCTIONS ----------------------------------------------------
-
 #' Run chart generation pipeline and export slides
 #'
 #' Applies a list of slide instructions to generate a PowerPoint deck.
@@ -14,14 +13,14 @@
 run_pipeline <- function(
     data,
     instructions,
-    ppt_template_path = "inputs/template.pptx",
-    ppt_output_path = "outputs/generated_slides.pptx"
+    ppt_template_path="inputs/template.pptx",
+    ppt_output_path="outputs/generated_slides.pptx"
 ) {
-  # ------ HELPERS -------------------------------------------------------------
+  # ------ HELPER: UNIQUE FILE PATH ------------------------------------------
   get_unique_path <- function(path) {
     if (!file.exists(path)) return(path)
     base <- tools::file_path_sans_ext(path)
-    ext  <- tools::file_ext(path)
+    ext <- tools::file_ext(path)
     i <- 2
     repeat {
       candidate <- paste0(base, "_", i, ".", ext)
@@ -30,74 +29,71 @@ run_pipeline <- function(
     }
   }
   
-  # Print warnings immediately with slide label, suppressing end-of-pipeline repeats
+  # ------ HELPER: INLINE WARNINGS -------------------------------------------
+  # Prints warnings immediately with slide label
   run_with_inline_warnings <- function(label, expr) {
-    old_opts <- options(warn = 1)
-    on.exit(options(old_opts), add = TRUE)
+    old_opts <- options(warn=1)
+    on.exit(options(old_opts), add=TRUE)
     withCallingHandlers(
       expr,
-      warning = function(w) {
+      warning=function(w) {
         message("\n")
         message("⚠️  ", label, " Warning: ", conditionMessage(w))
         message("\n")
-        
         invokeRestart("muffleWarning")
-        
       }
     )
   }
   
-  # ------ LOAD TEMPLATE -------------------------------------------------------
+  # ------ LOAD TEMPLATE -----------------------------------------------------
   ppt_doc <- read_pptx(ppt_template_path)
   
-  # ------ GENERATE SLIDES -----------------------------------------------------
+  # ------ GENERATE SLIDES ---------------------------------------------------
   for (i in seq_along(instructions)) {
     inst <- instructions[[i]]
     fn_name <- inst$function_name
     has_fn <- !is.null(fn_name)
-    label <- paste0("[", i, "] ", if (has_fn) paste0(fn_name, "()") else "N/A")
+    label <-  if (has_fn) paste0(fn_name, "()") else "N/A"
     
     message("\n------------------------------------------------------------")
-    message("➡️ Generating", label, "...")
-    
+    message("➡️ Generating slide with ", label, "...")
     
     if (!has_fn) {
-      message("⚠️  [", i, "] Skipping instruction: no function_name provided.")
+      message("⚠️  [", i, "] Skipping: no function_name provided.")
       next
     }
     
-    # Resolve function once
     fn <- match.fun(fn_name)
     
     tryCatch(
       {
         result <- run_with_inline_warnings(
-          label = label,
-          expr = fn(
-            data = data,
-            instruction = inst,
-            ppt_doc = ppt_doc
+          label=label,
+          expr=fn(
+            data=data,
+            instruction=inst,
+            ppt_doc=ppt_doc
           )
         )
         
         if (is.null(result)) {
-          message("⚠️  [", i, "] Slide not generated (e.g., missing column/s).")
+          message("⚠️  [", i,
+                  "] Slide not generated (e.g., missing column/s).")
         } else {
           ppt_doc <- result
           message("✅  [", i, "] Slide successfully added.")
         }
       },
-      error = function(e) {
-        message("❌  [", i, "] Error in function ", fn_name, ": ", conditionMessage(e))
-
+      error=function(e) {
+        message("❌  [", i, "] Error in ", fn_name, ": ",
+                conditionMessage(e))
       }
     )
   }
   
-  # ------ SAVE TO UNIQUE FILE -------------------------------------------------
+  # ------ SAVE TO UNIQUE FILE -----------------------------------------------
   unique_path <- get_unique_path(ppt_output_path)
-  print(ppt_doc, target = unique_path)
+  print(ppt_doc, target=unique_path)
   message("\n----------------------------------------------------------\n")
   message("✅ Presentation saved to: ", unique_path)
 }
-
