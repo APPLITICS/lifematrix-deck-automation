@@ -218,7 +218,7 @@ generate_density_slide <- function(
       plot.title = element_text(
         color = "white", face = "bold", size = 26, hjust = 0
       ),
-      plot.margin = margin(t = 30, r = 20, b = 15, l = 20),
+      plot.margin = margin(t = 90, r = 20, b = 10, l = 20),
       legend.position = "none"
     )
   
