@@ -1,10 +1,10 @@
-# ------ BAR METRIC SLIDE ------------------------------------------------------
+# ------ BAR METRIC SLIDE (no placeholders) -----------------------------------
 
 #' Generate Grouped Bar Chart and Export to PowerPoint
 #'
 #' Creates a grouped bar chart comparing a focal group to optional comparison
-#' groups across metrics, with optional target lines and placeholder logic.
-#' Supports unit displaying, custom labels, and slide export via `officer`.
+#' groups across metrics, with optional target lines. Supports unit displaying,
+#' custom labels, and slide export via `officer`.
 #'
 #' @param data A data frame of pre-processed values.
 #' @param instruction A list with plot settings.
@@ -16,59 +16,67 @@ generate_bar_metric_slide <- function(
     instruction,
     ppt_doc
 ) {
-  # ------ EARLY VALIDATION ----------------------------------------------------
-  # Inputs (skip NULL/NA cleanly)
+  # ------ EARLY VALIDATION ------------------------------------------------
+  # Collect required metrics, subset columns, and check data availability.
+  # If any are missing, log a message and skip the slide.
   bar_metrics <- instruction$bar_value %||% character()
   target_metrics <- instruction$target %||% character()
   all_metrics <- unique(na.omit(c(bar_metrics, target_metrics)))
   unit_label <- instruction$unit %||% ""
   
-  # Focal subset
   required_subset_cols <- character()
   
+  # focal subset col
   fg_subset <- instruction$focal_group$subset
-  if (!is.null(fg_subset) && !is.null(fg_subset$title) && !is.na(fg_subset$title)) {
+  if (!is.null(fg_subset) &&
+      !is.null(fg_subset$title) &&
+      !is.na(fg_subset$title)) {
     required_subset_cols <- c(required_subset_cols, fg_subset$title)
   }
   
-  # Comparison subsets
-  if (!is.null(instruction$comparison_groups)) {
-    for (cg in instruction$comparison_groups) {
-      if (!is.null(cg$subset) && !is.null(cg$subset$title) && !is.na(cg$subset$title)) {
+  # comparison and placeholders subsets
+  if (!is.null(instruction$comparison_groups) || !is.null(instruction$placeholders)) {
+    merged_list <- c(instruction$comparison_groups, instruction$placeholders)
+    for (cg in merged_list) {
+      if (!is.null(cg$subset) &&
+          !is.null(cg$subset$title) &&
+          !is.na(cg$subset$title)) {
         required_subset_cols <- c(required_subset_cols, cg$subset$title)
       }
     }
   }
+  
   required_subset_cols <- unique(na.omit(required_subset_cols))
   
-  # Also validate that metric columns exist (you had missing_metrics <- character())
+  # missing columns check
   missing_metrics <- setdiff(all_metrics, names(data))
   missing_subset_cols <- setdiff(required_subset_cols, names(data))
-  
   all_missing <- unique(c(missing_metrics, missing_subset_cols))
+  
   if (length(all_missing) > 0) {
-    message("❌ Missing column(s): ", paste(all_missing, collapse = ", "), ". Slide skipped.")
+    message(
+      "❌ Missing column(s): ",
+      paste(all_missing, collapse = ", "),
+      ". Slide skipped."
+    )
     return(NULL)
   }
   
-  # ------ MAPPING & SETUP -----------------------------------------------------
-  # Ensure all needed variables exist in variable_map (fallback label = variable)
   
+  # ------ VARIABLE MAP ----------------------------------------------------
+  # Ensure that all variables have labels using the mapping file.
+  # Missing entries are filled with their raw variable names.
   vars_needed <- unique(na.omit(c(bar_metrics, target_metrics)))
   
-  # Make sure variable_map exists and has required columns
   if (is.null(variable_map)) variable_map <- data.frame()
   if (!"variable" %in% names(variable_map)) variable_map$variable <- character(0)
   if (!"label" %in% names(variable_map)) variable_map$label <- character(0)
   
-  # Coerce to character to avoid factor issues
   variable_map$variable <- as.character(variable_map$variable)
   variable_map$label <- as.character(variable_map$label)
   
-  # Add any missing variables with label = variable
   existing_vars <- unique(variable_map$variable)
   missing_vars <- setdiff(vars_needed, existing_vars)
-  
   if (length(missing_vars) > 0) {
     add_df <- data.frame(
       variable = missing_vars,
@@ -78,7 +86,6 @@ generate_bar_metric_slide <- function(
     variable_map <- rbind(variable_map, add_df)
   }
   
-  # Map IDs to labels, preserving order
   bar_value_labels <- tibble(variable = bar_metrics) %>%
     left_join(variable_map, by = "variable")
   
@@ -86,48 +93,63 @@ generate_bar_metric_slide <- function(
     filter(variable %in% target_metrics) %>%
     distinct(variable, label)
   
-  # Determine chart mode: single bar with no comparison = simple layout
+  # ------ GROUPING LOGIC --------------------------------------------------
+  # Determine if the plot is "simple" (single bar, no comparisons).
   is_simple_group <- function(instruction) {
     length(instruction$bar_value) == 1 &&
-      (
-        is.null(instruction$comparison_groups) ||
-          all(sapply(instruction$comparison_groups, function(cg) is.null(cg$name) || is.na(cg$name)))
-      )
+      (is.null(instruction$comparison_groups) ||
+         all(sapply(
+           instruction$comparison_groups,
+           function(cg) is.null(cg$name) || is.na(cg$name)
+         )))
   }
   
-  # Define bar/dodge width and position
   bar_width <- if (is_simple_group(instruction)) 0.4 else 0.7
   dodge_width <- 0.8
-  position_setting <- if (is_simple_group(instruction)) position_identity() else position_dodge(width = dodge_width)
-  
-  
-  # Generate placeholder data for layout continuity
-  generate_placeholder <- function(group_label, metric_list) {
-    tibble(group = group_label, metric = metric_list, value = 0)
+  position_setting <- if (is_simple_group(instruction)) {
+    position_identity()
+  } else {
+    position_dodge(width = dodge_width)
   }
   
-  # Extract group values, filter subset if needed, and summarize
-  preprocess_group <- function(df_input, group_info, metric_list) {
-    df <- df_input %>% filter(group == group_info$name)
+  # ------ HELPER FUNCTIONS ------------------------------------------------
+  # 1. preprocess_group(): filters and summarises values per group.
+  # 2. get_x_centers(): retrieves x-axis positions for label placement.
+  preprocess_group <- function(df_input, group_info, metric_list, placeholder = FALSE) {
+    df <- df_input %>%
+      filter(group == group_info$name)
+    
     if (!is.null(group_info$subset) &&
         !is.null(group_info$subset$value) &&
-        group_info$subset$title %in% names(df)) {
-      df <- df %>% filter(.data[[group_info$subset$title]] == group_info$subset$value)
+        !is.null(group_info$subset$title) &&
+        (group_info$subset$title %in% names(df))) {
+      df <- df %>%
+        filter(.data[[group_info$subset$title]] == group_info$subset$value)
     }
     if (nrow(df) == 0) return(NULL)
-    values <- df %>% summarise(across(all_of(metric_list), ~ mean(.x, na.rm = TRUE)))
+    
+    values <- df %>%
+      summarise(
+        across(
+          all_of(metric_list),
+          ~ mean(.x, na.rm = TRUE)
+        )
+      )
+    
     group_label <- group_info$name
-    if (!is.null(group_info$subset) && !is.null(group_info$subset$value)) {
+    if (!is.null(group_info$subset) &&
+        !is.null(group_info$subset$value)) {
       group_label <- paste(group_label, group_info$subset$value)
     }
+    
     tibble(
       group = group_label,
       metric = metric_list,
-      value = as.numeric(values[1, ])
+      value = as.numeric(values[1, ]),
+      is_placeholder = placeholder
     )
   }
   
-  # Compute bar center positions for accurate label/target placement
   get_x_centers <- function(df_plot, x_axis_var) {
     tmp_plot <- ggplot(
       df_plot,
@@ -137,104 +159,216 @@ generate_bar_metric_slide <- function(
         fill = .data$fill_group_show,
         group = interaction(group, metric)
       )
-    ) + geom_col(width = bar_width, position = position_setting)
+    ) +
+      geom_col(
+        width = bar_width,
+        position = position_setting
+      )
     
     bar_layer <- ggplot_build(tmp_plot)$data[[1]]
     df_plot %>%
       bind_cols(x_center = bar_layer$x) %>%
-      select(group, metric, value, fill_group, fill_group_show, x_center)
+      select(
+        group,
+        metric,
+        value,
+        fill_group,
+        fill_group_show,
+        x_center
+      )
   }
   
-  # Generate empty string placeholders (e.g., "  ", "   ") for layout
-  generate_placeholder_label <- function(index) {
-    paste(rep(" ", index), collapse = "")
-  }
-  
-  # ------ PREPROCESS BARS -----------------------------------------------------
-  
+  # ------ PREPROCESS BARS -------------------------------------------------
+  # Collect focal, comparison, and placeholder bars. `is_placeholder` ensures 
+  # placeholders reserve axis space without drawing bars or entering the legend.
   group_labels <- character(0)
+  group_labels_display <- character(0)
   data_bars <- list()
-  placeholder_count <- 0
   
-  # Focal group setup
-  fg_label <- instruction$focal_group$name
-  if (!is.null(instruction$focal_group$subset) &&
-      !is.null(instruction$focal_group$subset$value)) {
-    fg_label <- paste(fg_label, instruction$focal_group$subset$value)
+  # Add focal group bars
+  if (!is.null(instruction$focal_group$name)) {
+    fg_label <- instruction$focal_group$name
+    if (!is.null(instruction$focal_group$subset) &&
+        !is.null(instruction$focal_group$subset$value)) {
+      fg_label <- paste(fg_label, instruction$focal_group$subset$value)
+    }
+    group_labels <- c(group_labels, fg_label)
+    group_labels_display <- c(group_labels_display, fg_label)
+    data_bars <- c(
+      data_bars,
+      list(
+        preprocess_group(
+          data,
+          instruction$focal_group,
+          instruction$bar_value,
+          placeholder = FALSE
+        )
+      )
+    )
   }
   
-  group_labels <- c(group_labels, fg_label)
-  data_bars <- c(
-    data_bars,
-    list(preprocess_group(data, instruction$focal_group, instruction$bar_value))
-  )
-  
-  # Comparison groups
+  # Add comparison group bars
   if (!is.null(instruction$comparison_groups)) {
     for (cg in instruction$comparison_groups) {
-      if (is.null(cg$name) || is.na(cg$name)) {
-        placeholder_count <- placeholder_count + 1
-        placeholder_label <- generate_placeholder_label(placeholder_count)
-        group_labels <- c(group_labels, placeholder_label)
-        data_bars <- c(
-          data_bars,
-          list(generate_placeholder(placeholder_label, instruction$bar_value))
-        )
-      } else {
+      if (!is.null(cg$name) && !is.na(cg$name)) {
         cg_label <- cg$name
         if (!is.null(cg$subset) && !is.null(cg$subset$value)) {
           cg_label <- paste(cg_label, cg$subset$value)
         }
         group_labels <- c(group_labels, cg_label)
+        group_labels_display <- c(group_labels_display, cg_label)
         data_bars <- c(
           data_bars,
-          list(preprocess_group(data, cg, instruction$bar_value))
+          list(
+            preprocess_group(
+              data,
+              cg,
+              instruction$bar_value,
+              placeholder = FALSE
+            )
+          )
         )
       }
     }
   }
   
-  # Combine and label bars
+  # Add placeholders
+  if (!is.null(instruction$placeholders)) {
+    for (ph in instruction$placeholders) {
+      if (!is.null(ph$name) && !is.na(ph$name)) {
+        ph_label <- ph$name
+        if (!is.null(ph$subset) && !is.null(ph$subset$value)) {
+          ph_label <- paste(ph_label, ph$subset$value)
+        }
+        group_labels <- c(group_labels, ph_label)
+        data_bars <- c(
+          data_bars,
+          list(
+            preprocess_group(
+              data,
+              ph,
+              instruction$bar_value,
+              placeholder = TRUE
+            )
+          )
+        )
+      }
+    }
+  }
+  
   group_labels <- unique(group_labels)
-  df_bars <- bind_rows(data_bars)
-  if (nrow(df_bars) == 0) return(invisible(NULL))
+  group_labels_display <- unique(group_labels_display)
   
-  df_bars <- df_bars %>%
+  df_bars_all <- bind_rows(data_bars)
+  if (is.null(df_bars_all) || nrow(df_bars_all) == 0) {
+    return(invisible(NULL))
+  }
+  
+  # Join metric labels and mark placeholders
+  df_bars_all <- df_bars_all %>%
     left_join(bar_value_labels, by = c("metric" = "variable")) %>%
-    rename(metric_label = label)
-  
-  df_bars <- df_bars %>%
+    rename(metric_label = label) %>%
     mutate(
       fill_group = group,
-      fill_group_show = ifelse(group %in% group_labels & str_trim(group) != "", as.character(group), NA)
+      fill_group_show = if_else(
+        !is_placeholder,
+        as.character(group),
+        NA_character_
+      )
     )
   
-  # Choose axis and legend layout
-  x_axis_var <- if (length(instruction$bar_value) == 1) "group" else "metric_label"
-  x_axis_levels <- if (x_axis_var == "group") group_labels else bar_value_labels$label
+  # ------ AXIS SETUP ------------------------------------------------------
+  # Define x-axis variable (group or metric) and compute scale limits.
+  x_axis_var <- if (length(instruction$bar_value) == 1) {
+    "group"
+  } else {
+    "metric_label"
+  }
   
-  # Set factor levels for plotting
-  df_bars[[x_axis_var]] <- factor(df_bars[[x_axis_var]], levels = x_axis_levels)
-  df_bars$group <- factor(df_bars$group, levels = group_labels)
-  df_bars$fill_group <- factor(df_bars$fill_group, levels = group_labels)
-  df_bars$fill_group_show <- factor(df_bars$fill_group_show, levels = setdiff(group_labels, " "))
+  x_axis_levels <- if (x_axis_var == "group") {
+    group_labels
+  } else {
+    bar_value_labels$label
+  }
   
-  df_bars <- df_bars %>%
+  df_bars_all <- df_bars_all %>%
     mutate(value = as.integer(sprintf("%.0f", value)))
-  # Determine whether to show legend
+  y_max <- ceiling((max(df_bars_all$value, na.rm = TRUE)) / 10) * 10
+  
+  # Filter only display groups for plotting
+  df_bars <- df_bars_all %>%
+    filter(!is_placeholder)
+  if (nrow(df_bars) == 0) return(invisible(NULL))
+  
+  df_bars[[x_axis_var]] <- factor(
+    df_bars[[x_axis_var]],
+    levels = x_axis_levels
+  )
+  df_bars$group <- factor(df_bars$group, levels = group_labels)
+  df_bars$fill_group <- factor(df_bars$fill_group, levels = group_labels_display)
+  df_bars$fill_group_show <- factor(df_bars$fill_group_show, levels = group_labels_display)
+  
+  # ------ PLACEHOLDER RENDERING -------------------------------------------
+  # Add zero-height rows for placeholders to reserve axis slots.
+  ph_groups <- setdiff(group_labels, group_labels_display)
+  
+  if (length(ph_groups) > 0) {
+    ph_df <- expand.grid(
+      group = ph_groups,
+      metric = instruction$bar_value,
+      stringsAsFactors = FALSE
+    ) %>%
+      mutate(
+        value = 0,
+        is_placeholder = TRUE,
+        metric_label = bar_value_labels$label[
+          match(metric, bar_value_labels$variable)
+        ],
+        fill_group = group,
+        fill_group_show = NA_character_
+      )
+    
+    ph_df$group <- factor(ph_df$group, levels = group_labels)
+    ph_df$fill_group <- factor(ph_df$fill_group, levels = group_labels_display)
+    ph_df$fill_group_show <- factor(ph_df$fill_group_show, levels = group_labels_display)
+    
+    ph_df[[x_axis_var]] <- if (x_axis_var == "group") {
+      factor(ph_df$group, levels = group_labels)
+    } else {
+      factor(ph_df$metric_label, levels = bar_value_labels$label)
+    }
+    
+    df_bars_render <- bind_rows(df_bars, ph_df)
+  } else {
+    df_bars_render <- df_bars
+  }
+  
+  df_bars_render[[x_axis_var]] <- factor(
+    df_bars_render[[x_axis_var]],
+    levels = x_axis_levels
+  )
+  
+  # ------ LEGEND & COLORS -------------------------------------------------
+  # Define which groups appear in the legend and assign colors.
   non_zero_groups <- df_bars %>%
-    filter(group != " ", value > 0) %>%
+    filter(value > 0) %>%
     pull(fill_group_show) %>%
     unique()
   
   hide_legend_elements <- (length(non_zero_groups) <= 1 || x_axis_var == "group")
-  legend_colors <- get_color_palette(setdiff(group_labels, " "))
-  y_max <- ceiling((max(df_bars$value, na.rm = TRUE) + 10) / 10) * 10
+  legend_colors <- get_color_palette(group_labels_display)
   
-  # ------ BUILD BAR PLOT ------------------------------------------------------
+  # ------ BUILD PLOT ------------------------------------------------------
+  # Create ggplot object with bars, axes, labels, and legend setup.
+  breaks_x <- if (x_axis_var == "group") {
+    group_labels_display
+  } else {
+    x_axis_levels
+  }
+  labels_x <- breaks_x
   
   plot_obj <- ggplot(
-    df_bars,
+    df_bars_render,
     aes(
       x = .data[[x_axis_var]],
       y = value,
@@ -242,10 +376,19 @@ generate_bar_metric_slide <- function(
       group = interaction(group, metric)
     )
   ) +
-    geom_col(width = bar_width, position = position_setting) +
+    geom_col(
+      width = bar_width,
+      position = position_setting
+    ) +
     scale_y_continuous(
       expand = c(0, 0),
       labels = function(x) paste0(x, unit_label)
+    ) +
+    scale_x_discrete(
+      drop = FALSE,
+      limits = x_axis_levels,
+      breaks = breaks_x,
+      labels = labels_x
     ) +
     scale_fill_manual(
       values = legend_colors,
@@ -256,7 +399,10 @@ generate_bar_metric_slide <- function(
       x = instruction$x_title,
       y = if (!is.null(instruction$y_title)) {
         if (unit_label != "" &&
-            !str_detect(str_trim(instruction$y_title), fixed(unit_label))) {
+            !str_detect(
+              str_trim(instruction$y_title),
+              fixed(unit_label)
+            )) {
           paste0(instruction$y_title, " (", unit_label, ")")
         } else {
           instruction$y_title
@@ -269,49 +415,88 @@ generate_bar_metric_slide <- function(
     ) +
     global_theme() +
     theme(
-      plot.title = element_text(color = "white", face = "bold", size = 26, hjust = 0),
+      plot.title = element_text(
+        color = "white",
+        face = "bold",
+        size = 26,
+        hjust = 0
+      ),
       plot.margin = margin(t = 0, r = 40, b = 0, l = 40),
       legend.position = "bottom",
-      legend.text = if (hide_legend_elements) element_blank() else element_text(color = "white", size = 16, face = "bold"),
+      legend.text = if (hide_legend_elements) {
+        element_blank()
+      } else {
+        element_text(color = "white", size = 16, face = "bold")
+      },
       legend.title = element_blank(),
       legend.spacing.y = unit(10, "pt")
     ) +
     guides(
       fill = guide_legend(
-        override.aes = if (hide_legend_elements) list(fill = NA, color = NA) else list(),
+        override.aes = if (hide_legend_elements) {
+          list(fill = NA, color = NA)
+        } else {
+          list()
+        },
         title = NULL,
-        label.theme = if (hide_legend_elements) element_blank() else element_text()
+        label.theme = if (hide_legend_elements) {
+          element_blank()
+        } else {
+          element_text()
+        }
       )
-    )
+    ) +
+    coord_cartesian(ylim = c(0, y_max), clip = "off")
   
-  # ------ LABELS --------------------------------------------------------------
-  
-  df_labels <- get_x_centers(df_bars, x_axis_var) %>%
-    filter(value > 0, group != " ")
+  # ------ VALUE LABELS ----------------------------------------------------
+  # Add numeric labels inside each bar.
+  df_labels <- get_x_centers(
+    df_bars_render,
+    x_axis_var
+  ) %>%
+    filter(!is.na(fill_group_show), value > 0)
   
   plot_obj <- plot_obj +
     geom_text(
       data = df_labels,
-      aes(x = x_center, y = value / 2, label = paste0(value, unit_label)),
+      aes(
+        x = x_center,
+        y = value / 2,
+        label = paste0(value, unit_label)
+      ),
       inherit.aes = FALSE,
       color = "black",
       size = 6.5,
-      fontface = "bold"
+      fontface = "bold",
+      vjust = 0.5,
+      hjust = 0.5
     )
   
-  # ------ TARGET LINES --------------------------------------------------------
-  
+  # ------ TARGET LINES ----------------------------------------------------
+  # Draw horizontal dashed lines to show target values (if provided).
   if (!is.null(instruction$target)) {
-
-    data_targets <- list(preprocess_group(data, instruction$focal_group, instruction$target))
+    data_targets <- list(
+      preprocess_group(
+        data,
+        instruction$focal_group,
+        instruction$target,
+        placeholder = FALSE
+      )
+    )
     if (!is.null(instruction$comparison_groups)) {
       for (cg in instruction$comparison_groups) {
         if (!is.null(cg$name) && !is.na(cg$name)) {
-          data_targets <- c(data_targets, list(preprocess_group(data, cg, instruction$target)))
-        } else {
-          placeholder_count <- placeholder_count + 1
-          placeholder_label <- generate_placeholder_label(placeholder_count)
-          data_targets <- c(data_targets, list(generate_placeholder(placeholder_label, instruction$target)))
+          data_targets <- c(
+            data_targets,
+            list(
+              preprocess_group(
+                data,
+                cg,
+                instruction$target,
+                placeholder = FALSE
+              )
+            )
+          )
         }
       }
     }
@@ -323,34 +508,40 @@ generate_bar_metric_slide <- function(
     target_map <- tibble(
       metric = instruction$bar_value,
       target = instruction$target
-      
     )
     
     df_targets <- df_targets %>%
       left_join(target_map, by = "target") %>%
-      left_join(df_labels %>% select(group, metric, x_center), by = c("group", "metric")) %>% 
+      left_join(
+        df_labels %>% select(group, metric, x_center),
+        by = c("group", "metric")
+      ) %>%
       mutate(value = as.integer(sprintf("%.0f", value)))
-    # Ensure the final y-range includes targets (+5 for your fixed label offset)
-    y_max <- max(
-      y_max,
-      ceiling((max(df_targets$value, na.rm = TRUE) + 5) / 10) * 10
-    )
-    
-    n_bar_slots <- df_bars %>%
-      group_by(.data[[x_axis_var]]) %>%
-      summarise(n = n(), .groups = "drop") %>%
-      pull(n) %>%
-      max()
-    
-    offset <- bar_width / (n_bar_slots * 2)
-    
-    plot_obj <- plot_obj + coord_cartesian(ylim = c(0, y_max), clip = "off")
     
     if (nrow(df_targets) > 0) {
+      y_max <- max(
+        y_max,
+        ceiling((max(df_targets$value, na.rm = TRUE) ) / 10) * 10
+      )
+      plot_obj$coordinates$limits$y <- c(0, y_max)  
+      
+      n_bar_slots <- df_bars_render %>%
+        group_by(.data[[x_axis_var]]) %>%
+        summarise(n = n(), .groups = "drop") %>%
+        pull(n) %>%
+        max()
+      
+      offset <- bar_width / (n_bar_slots * 2)
+      
       plot_obj <- plot_obj +
         geom_segment(
           data = df_targets,
-          aes(x = x_center - offset, xend = x_center + offset, y = value, yend = value),
+          aes(
+            x = x_center - offset,
+            xend = x_center + offset,
+            y = value,
+            yend = value
+          ),
           color = "#f9f871",
           linetype = "dashed",
           linewidth = 1.5,
@@ -358,7 +549,11 @@ generate_bar_metric_slide <- function(
         ) +
         geom_text(
           data = df_targets,
-          aes(x = x_center, y = value + 5, label = paste0(value, unit_label)),
+          aes(
+            x = x_center,
+            y = value + 5,
+            label = paste0(value, unit_label)
+          ),
           color = "#f9f871",
           size = 6.5,
           fontface = "bold",
@@ -367,8 +562,8 @@ generate_bar_metric_slide <- function(
     }
   }
   
-  # ------ EXPORT TO POWERPOINT ------------------------------------------------
-  
+  # ------ EXPORT TO POWERPOINT -------------------------------------------
+  # Append plot to PowerPoint if ppt_doc is provided, otherwise return NULL.
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
       ppt_doc = ppt_doc,
@@ -381,8 +576,6 @@ generate_bar_metric_slide <- function(
   
   return(invisible(NULL))
 }
-
-
 
 # ------ BAR CATEGORY SLIDE ----------------------------------------------------
 
@@ -436,7 +629,7 @@ generate_bar_category_slide <- function(
   order_var <- instruction$category$order
   metric_var <- instruction$metric
   group_info <- instruction$focal_group
-
+  
   # ------ FILTER GROUP -------------------------------------------------------
   # Keep rows for focal group and apply optional subset filter
   df <- data %>% filter(group == group_info$name)
@@ -523,7 +716,7 @@ generate_bar_category_slide <- function(
       size = 6.5,
       fontface = "bold"
     ) +
-  scale_y_continuous(
+    scale_y_continuous(
       limits = c(0, y_max),
       breaks = if (unit_label == "%") {
         seq(0, y_max, 10)

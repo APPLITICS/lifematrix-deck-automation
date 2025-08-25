@@ -83,6 +83,7 @@ instructions <- list(
       subset = NULL
     ),
     comparison_groups = NULL,
+    placeholders = NULL,
     bar_value = c(
       "joy",
       "achievement",
@@ -102,10 +103,14 @@ instructions <- list(
       name = focal_group,
       subset = NULL
     ),
-    comparison_groups = list(
+    comparison_groups = NULL,
+    placeholders = list(
       list(
-        name = NA,
-        subset = NULL
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = NULL
+        )
       )
     ),
     bar_value = c(
@@ -136,6 +141,7 @@ instructions <- list(
         )
       )
     ),
+    placeholders = NULL,
     bar_value = c(
       "joy",
       "achievement",
@@ -155,14 +161,21 @@ instructions <- list(
       name = focal_group,
       subset = NULL
     ),
-    comparison_groups = list(
+    comparison_groups = NULL,
+    placeholders = list(
       list(
-        name = NA,
-        subset = NULL
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Women"
+        )
       ),
       list(
-        name = NA,
-        subset = NULL
+        name = comparison_group_2,
+        subset = list(
+          title = "gender",
+          value = "Women"
+        )
       )
     ),
     bar_value = c(
@@ -173,76 +186,85 @@ instructions <- list(
     target = NULL
   ),
   
-  # ------ Slide 8: JAM - Women + NA comparison --------------------------------
-  list(
-    function_name = "generate_bar_metric_slide",
-    unit = "%",
-    x_title = NULL,
-    y_title = "% High Importance",
-    title = "IMPORTANCE OF JAM",
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
-    ),
-    comparison_groups = list(
-      list(
-        name = comparison_group_1,
-        subset = list(
-          title = "gender",
-          value = "Women"
-        )
-      ),
-      list(
-        name = NA,
-        subset = NULL
-      )
-    ),
-    bar_value = c(
-      "joy",
-      "achievement",
-      "meaningfulness"
-    ),
-    target = NULL
-  ),
-  
-  # ------ Slide 9: JAM - Women + Men with targets -----------------------------
-  list(
-    function_name = "generate_bar_metric_slide",
-    unit = "%",
-    x_title = NULL,
-    y_title = "% High Importance",
-    title = "IMPORTANCE OF JAM",
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
-    ),
-    comparison_groups = list(
-      list(
-        name = comparison_group_1,
-        subset = list(
-          title = "gender",
-          value = "Women"
-        )
-      ),
-      list(
-        name = comparison_group_1,
-        subset = list(
-          title = "gender",
-          value = "Men"
-        )
-      )
-    ),
-    bar_value = c(
-      "joy",
-      "achievement",
-      "meaningfulness"
-    ),
-    target = c(
-      "joy_min",
-      "achievement_min",
-      "meaningfulness_min"
-    )
-  ),
+ # ------ Slide 8: JAM - Women + NA comparison --------------------------------
+ list(
+   function_name = "generate_bar_metric_slide",
+   unit = "%",
+   x_title = NULL,
+   y_title = "% High Importance",
+   title = "IMPORTANCE OF JAM",
+   focal_group = list(
+     name = focal_group,
+     subset = NULL
+   ),
+   comparison_groups = list(
+     list(
+       name = comparison_group_1,
+       subset = list(
+         title = "gender",
+         value = "Women"
+       )
+     )
+   ),
+   
+   placeholders = list(
+     list(),
+     list(
+       name = comparison_group_2,
+       subset = list(
+         title = "gender",
+         value = "Women"
+       )
+     )
+   ),
+   
+   bar_value = c(
+     "joy",
+     "achievement",
+     "meaningfulness"
+   ),
+   target = NULL
+ ),
+ 
+ # ------ Slide 9: JAM - Women + Men with targets -----------------------------
+ list(
+   function_name = "generate_bar_metric_slide",
+   unit = "%",
+   x_title = NULL,
+   y_title = "% High Importance",
+   title = "IMPORTANCE OF JAM",
+   focal_group = list(
+     name = focal_group,
+     subset = NULL
+   ),
+   comparison_groups = list(
+     list(
+       name = comparison_group_1,
+       subset = list(
+         title = "gender",
+         value = "Women"
+       )
+     ),
+     list(
+       name = comparison_group_1,
+       subset = list(
+         title = "gender",
+         value = "Men"
+       )
+     )
+   ),
+   placeholders = NULL,
+   bar_value = c(
+     "joy",
+     "achievement",
+     "meaningfulness"
+   ),
+   target = c(
+     "joy_min",
+     "achievement_min",
+     "meaningfulness_min"
+   )
+ ),
   # ------ Slide 10: Reading hours (no comparison) -----------------------------
   list(
     function_name = "generate_density_slide",
@@ -390,6 +412,7 @@ instructions <- list(
       subset = NULL
     ),
     comparison_groups = NULL,
+    placeholders = NULL,
     bar_value = c("meaningfulness"),
     target = NULL
   ),
@@ -412,10 +435,15 @@ instructions <- list(
           title = "gender",
           value = "Women"
         )
-      ),
+      )
+    ),
+    placeholders = list(
       list(
-        name = NA,
-        subset = NULL
+        name = comparison_group_1,
+        subset = list(
+          title = "gender",
+          value = "Men"
+        )
       )
     ),
     bar_value = c("meaningfulness"),
@@ -449,6 +477,7 @@ instructions <- list(
         )
       )
     ),
+    placeholders = NULL,
     bar_value = c("meaningfulness"),
     target = c("meaningfulness_min")
   ),
