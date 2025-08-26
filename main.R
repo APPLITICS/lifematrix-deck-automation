@@ -14,14 +14,13 @@ library(stringr)
 library(scales)
 library(tibble)
 library(forcats)
-library(data.table)
 library(readr)
 
 
 # ------ PATHS -----------------------------------------------------------------
 #data_path <- "data/simulated_pipeline_input.csv"
 data_path <- "data/Corrupted_Simulated_Data.csv"
-map_path  <- "inputs/mapping_file.csv"
+map_path <- "inputs/mapping_file.csv"
 ppt_template <- "inputs/template.pptx"
 ppt_output <- "outputs/generated_slides.pptx"
 
@@ -37,8 +36,8 @@ comparison_group_2 <- "IWF"
 # ------ LOAD FUNCTIONS & INSTRUCTIONS ----------------------------------------
 invisible(lapply(
   list.files(
-    path       = "R",
-    pattern    = "\\.R$",
+    path = "R",
+    pattern = "\\.R$",
     full.names = TRUE
   ),
   source
