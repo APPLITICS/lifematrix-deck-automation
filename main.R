@@ -15,6 +15,8 @@ library(scales)
 library(tibble)
 library(forcats)
 library(data.table)
+library(readr)
+
 
 # ------ PATHS -----------------------------------------------------------------
 #data_path <- "data/simulated_pipeline_input.csv"
@@ -23,24 +25,9 @@ map_path  <- "inputs/mapping_file.csv"
 ppt_template <- "inputs/template.pptx"
 ppt_output <- "outputs/generated_slides.pptx"
 
-
-
-# ------ LOAD DATA -------------------------------------------------------------
-pipeline_data <- fread(data_path)
-variable_map <- fread(map_path)
-
-# ------ NORMALIZE NAs ---------------------------------------------------------
-# Replace numeric Inf with NA; replace "inf" or "" (case-insensitive) in chars.
-na_equivalent <- c("inf", "")
-pipeline_data <- pipeline_data[, lapply(.SD, function(x) {
-  if (is.numeric(x)) {
-    x[is.infinite(x)] <- NA_real_
-  } else if (is.character(x)) {
-    x <- trimws(x)
-    x[tolower(x) %in% na_equivalent] <- NA_character_
-  }
-  x
-})]
+## ------ LOAD DATA  -----------------------------------------------------------
+pipeline_data <- read_csv(data_path)
+variable_map <- read_csv(map_path)
 
 # ------ DEFINE GROUPS ---------------------------------------------------------
 focal_group <- "Xilio"
@@ -56,6 +43,15 @@ invisible(lapply(
   ),
   source
 ))
+
+# ------ NORMALIZE NAs ---------------------------------------------------------
+# Replace numeric Inf with NA; replace "inf" or "" (case-insensitive) in chars.
+na_equivalent <- c("inf", "")
+
+pipeline_data <- normalize_na_tbl(
+  data = pipeline_data, 
+  na_equivalent = na_equivalent
+)
 
 # ------ RUN PIPELINE ----------------------------------------------------------
 run_pipeline(
