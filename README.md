@@ -209,12 +209,16 @@ list(
     list(
       name   = comparison_group_1,
       subset = list(title = "gender", value = "Women")
-    ),
-    list(
-      name   = NA,
-      subset = NULL
     )
-  )
+  ),
+  placeholders = list(
+    list(
+      name     = comparison_group_2,
+      subset   = list(title = "gender", value = "Men")
+    )
+  ),
+  target  = c("joy_min", "achievement_min", "meaningfulness_min"),
+  show_target = FALSE
 )
 ```
 
@@ -224,7 +228,7 @@ list(
 list(
   function_name = "generate_bar_metric_slide",
   bar_value     = c("joy", "achievement", "meaningfulness"),
-  target        = c("joy_min", "achievement_min", "meaningfulness_min"),
+  target        = NULL,
   unit          = "%",
   title         = "IMPORTANCE OF JAM",
   y_title       = "% High Importance",
@@ -236,14 +240,19 @@ list(
     list(
       name   = comparison_group_1,
       subset = list(title = "gender", value = "Women")
-    ),
-    list(
-      name   = comparison_group_1,
-      subset = list(title = "gender", value = "Men")
     )
-  )
+  ),
+  placeholders = list(
+    list(
+      name     = comparison_group_2,
+      subset   = list(title = "gender", value = "Men")
+    )
+  ),
+  target  = c("joy_min", "achievement_min", "meaningfulness_min"),
+  show_target = TRUE
 )
 ```
+
 #### 2. Category-Based X-Axis
 
 **Function:**
