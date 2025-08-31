@@ -39,26 +39,23 @@ draw_tile_chart_focal <- function(
   # ------ SETTINGS ------------------------------------------------------------
   circle_color <- "#21b2aa"
   # ------- PREPARE DATA -------------------------------------------------------
-  df <- data %>%
-    arrange(desc(duration)) %>%
+  data <- data %>%
     mutate(
       row = row_number(),
       y = rev(row_number()),
       x = 1,
-      activity_label = activity,
-      duration_label = duration,
       lineheight = 1.00
     )
   
   # Format duration label with optional unit and singular "hr" handling.
-  df$label_text <- if (is.null(unit)) {
-    as.character(df$duration_label)
+  data$label_text <- if (is.null(unit)) {
+    as.character(data$avg_hours)
   } else {
-    suffix <- ifelse(df$duration == 1 & unit == "hrs", "hr", unit)
-    paste0(df$duration_label, " ", suffix)
+    suffix <- ifelse(data$avg_hours == 1 & unit == "hrs", "hr", unit)
+    paste0(data$avg_hours, " ", suffix)
   }
   
-  max_nchar <- max(nchar(data$activity), na.rm = TRUE)
+  max_nchar <- max(nchar(data$label ), na.rm = TRUE)
   # ------ DYNAMIC CIRCLE SIZE -------------------------------------------------
   circle_size <- {
     n_min <- 2
@@ -87,9 +84,8 @@ draw_tile_chart_focal <- function(
     dynamic_margin <- base_margin + (max_nchar - 10) * scale_factor
     pmax(100, dynamic_margin)
   }
-  
   # ------ PLOT ----------------------------------------------------------------
-  ggplot(df) +
+  ggplot(data) +
     geom_tile(
       aes(
         x = x,
@@ -125,7 +121,7 @@ draw_tile_chart_focal <- function(
       aes(
         x = x - 0.12,
         y = y,
-        label = activity_label,
+        label = label,
         lineheight = lineheight
       ),
       color = "white",
@@ -193,32 +189,32 @@ draw_tile_chart_groups <- function(
     TRUE ~ 30
   )
   # ------ PREPARE DATA --------------------------------------------------------
-  df <- data %>%
+  data <- data %>%
     group_by(group) %>%
     mutate(
       col = cur_group_id() * group_spacing,
       row = row_number(),
       y = row + 1,
       x = col,
-      activity_label = sapply(
-        activity,
+      label = sapply(
+        label,
         wrap_label,
         width = label_width - 4
       ),
-      duration_label = duration,
-      is_multiline = str_detect(activity_label, "\n"),
+      avg_hours = avg_hours,
+      is_multiline = str_detect(label, "\n"),
       lineheight = ifelse(is_multiline, 1.25, 1.00)
     ) %>%
     ungroup()
   # Format duration label with optional unit and singular "hr" handling.
-  df$label_text <- if (is.null(unit)) {
-    as.character(df$duration_label)
+  data$label_text <- if (is.null(unit)) {
+    as.character(data$avg_hours)
   } else {
-    suffix <- ifelse(df$duration == 1 & unit == "hrs", "hr", unit)
-    paste0(df$duration_label, " ", suffix)
+    suffix <- ifelse(data$avg_hours == 1 & unit == "hrs", "hr", unit)
+    paste0(data$avg_hours, " ", suffix)
   }
   
-  headers <- df %>%
+  headers <- data %>%
     distinct(group, col) %>%
     mutate(y = 1)
   
@@ -233,7 +229,7 @@ draw_tile_chart_groups <- function(
   # ------ PLOT -----------------------------------------------------------------
   ggplot() +
     geom_label(
-      data = df,
+      data = data,
       aes(
         x = col,
         y = y,
@@ -259,11 +255,11 @@ draw_tile_chart_groups <- function(
       size = 12
     ) +
     geom_text(
-      data = df,
+      data = data,
       aes(
         x = col - 0.3,
         y = y,
-        label = activity_label,
+        label = label,
         lineheight = lineheight
       ),
       hjust = 0,
@@ -272,7 +268,7 @@ draw_tile_chart_groups <- function(
       size = 6.5
     ) +
     geom_text(
-      data = df,
+      data = data,
       aes(
         x = col + 0.3,
         y = y,
@@ -295,7 +291,7 @@ draw_tile_chart_groups <- function(
       size = 8
     ) +
     scale_y_reverse(
-      limits = c(max(df$y) + 0.2, 0.7)
+      limits = c(max(data$y) + 0.2, 0.7)
     ) +
     theme_void() +
     theme(
@@ -314,11 +310,12 @@ draw_tile_chart_groups <- function(
 #'
 #' Creates a PowerPoint slide with a tile-based chart showing the top N activities
 #' and their durations for a focal group, with optional comparison groups. 
-#' Tiles are colored based on the preferred value direction (e.g., high = green).
+#' Tiles are colored based on the preferred value direction (e.g.,high = green).
 #'
 #' The chart can be rendered in two modes:
 #' - Focal-only mode: A single vertical column of activity tiles.
-#' - Grouped mode: One column per group (focal + comparisons), each with top activities.
+#' - Grouped mode: One column per group (focal + comparisons), each with top 
+#' activities.
 #'
 #' @param data A data frame containing activity metrics and group identifiers.
 #' @param instruction A list of slide instruction configurations, including:
@@ -331,194 +328,217 @@ generate_tile_slide <- function(
     ppt_doc
 ) {
   
-  # ------ EARLY VALIDATION ----------------------------------------------------
-  # Collect required metric columns
-  metrics <- instruction$metric %||% character()
-  metrics <- metrics[!is.null(metrics) & !is.na(metrics)]
+  # ------ EXTRACT INSTRUCTION FIELDS ------------------------------------------
+  # Centralize all inputs and defaults from `instruction` for clarity
+  metric_names <- instruction$metrics %||% character()
+  metric_hours <- instruction$metric_hours %||% character()
+  focal_group <- instruction$focal_group
+  comparison_groups <- instruction$comparison_groups %||% list()
+  has_comparisons <- length(comparison_groups) > 0
+  unit <- instruction$unit
+  preferred_value <- instruction$preferred_value %||% "high"
+  n_activities <- instruction$n_activities %||% 5
   
-  missing_vars_metrics <- setdiff(metrics, names(data))
-  
-  # Focal group subset
-  subset_cols <- character()
-  fg_subset <- instruction$focal_group$subset
-  if (!is.null(fg_subset) &&
-      !is.null(fg_subset$title) &&
-      !is.na(fg_subset$title)) {
-    subset_cols <- c(subset_cols, fg_subset$title)
+  # ------ HELPERS -------------------------------------------------------------
+  # Avoid repeating null/NA checks when extracting subset titles
+  get_subset_title <- function(x) {
+    if (is.null(x) || is.null(x$title) || is.na(x$title)) return(NULL)
+    x$title
   }
   
-  # Comparison group subsets
-  if (!is.null(instruction$comparison_groups)) {
-    for (cg in instruction$comparison_groups) {
-      if (!is.null(cg$subset) &&
-          !is.null(cg$subset$title) &&
-          !is.na(cg$subset$title)) {
-        subset_cols <- c(subset_cols, cg$subset$title)
+  # ------ EARLY VALIDATION ----------------------------------------------------
+  # Prevent runtime errors by verifying required metrics/subsets exist
+  required_metrics <- c(metric_names, metric_hours)
+  required_metrics <- required_metrics[!is.null(required_metrics) & 
+                                         !is.na(required_metrics)]
+  missing_metric_cols <- setdiff(required_metrics, names(data))
+  
+  subset_titles <- character()
+  fg_subset_title <- get_subset_title(focal_group$subset)
+  if (!is.null(fg_subset_title)){
+    subset_titles <- c(subset_titles, fg_subset_title)
+  }
+  if (has_comparisons) {
+    for (cg in comparison_groups) {
+      cg_subset_title <- get_subset_title(cg$subset)
+      if (!is.null(cg_subset_title)){
+        subset_titles <- c(subset_titles, cg_subset_title)
       }
     }
   }
+  subset_titles <- unique(subset_titles)
+  missing_subset_cols <- setdiff(subset_titles, names(data))
   
-  subset_cols <- unique(subset_cols)
-  missing_vars_subset_cols <- setdiff(subset_cols, names(data))
-  
-  # Combine all missing_vars columns
-  all_missing_vars <- unique(c(missing_vars_metrics, missing_vars_subset_cols))
-  
-  if (length(all_missing_vars) > 0) {
-    message("❌ missing_vars column(s): ", paste(all_missing_vars, collapse = ", "), ". Slide skipped.")
+  all_missing_cols <- unique(c(missing_metric_cols, missing_subset_cols))
+  if (length(all_missing_cols) > 0) {
+    message(
+      "❌ missing_vars column(s): ",
+      paste(all_missing_cols, collapse = ", "),
+      ". Slide skipped."
+    )
     return(NULL)
   }
   
-  # ------ EXTRACT instruction FIELDS ------------------------------------------
-  metric_names <- instruction$metric
-  
-  focal_name <- instruction$focal_group$name
-  comp_groups <- instruction$comparison_groups %||% list()
-  has_comparisons <- length(comp_groups) > 0
-  unit <- instruction$unit
-  
-  # ------ FOCAL GROUP FILTERING -----------------------------------------------
-  data_focal <- data %>% filter(group == focal_name)
-  
-  fg_subset_col <- instruction$focal_group$subset$title %||% NULL
-  fg_subset_val <- instruction$focal_group$subset$value %||% NULL
-  if (!is.null(fg_subset_col) && fg_subset_col %in% names(data)) {
-    data_focal <- data_focal %>%
-      filter(.data[[fg_subset_col]] %in% fg_subset_val)
-    
-    data_focal$group <- if (length(fg_subset_val) == 1) {
-      paste(focal_name, fg_subset_val)
-    } else {
-      focal_name
-    }
-  }
-  
-  # ------ COMPARISON GROUPS FILTERING -----------------------------------------
-  comparison_data_list <- if (!is.null(comp_groups)) {
-    lapply(comp_groups, function(cg) {
-      subset_col <- cg$subset$title %||% NULL
-      subset_val <- cg$subset$value %||% NULL
-      
-      data_comp <- data %>% filter(group == cg$name)
-      
-      if (!is.null(subset_col) && subset_col %in% names(data)) {
-        data_comp <- data_comp %>%
-          filter(.data[[subset_col]] %in% subset_val)
-        
-        data_comp$group <- if (length(subset_val) == 1) {
-          paste(cg$name, subset_val)
-        } else {
-          cg$name
-        }
-      }
-      
-      data_comp
-    })
-  } else {
-    list()
-  }
-  
-  # ------ FINAL SUMMARY -------------------------------------------------------
-  combined_data <- bind_rows(data_focal, !!!comparison_data_list)
-  
-  summary_table <- combined_data %>%
-    group_by(group) %>%
-    summarise(
-      across(
-        all_of(metric_names),
-        ~ mean(.x, na.rm = TRUE)
-      )
-    ) %>%
-    ungroup()
-  
-  # ------ GROUP LEVELS --------------------------------------------------------
-  group_levels <- if (
-    is.null(instruction$focal_group$subset) ||
-    length(instruction$focal_group$subset$value) > 1
-  ) {
-    instruction$focal_group$name
-  } else {
-    paste(
-      instruction$focal_group$name,
-      instruction$focal_group$subset$value
-    )
-  }
-  
-  comp_names <- vapply(
-    comp_groups,
-    function(g) {
-      if (is.null(g$subset) || length(g$subset$value) > 1) {
-        g$name
-      } else {
-        paste(g$name, g$subset$value)
-      }
-    },
-    character(1)
-  )
-  
-  group_levels <- c(group_levels, comp_names)
-  
-  missing_vars <- setdiff(metric_names, variable_map$variable)
+  # ------ VARIABLE MAP SYNC ---------------------------------------------------
+  # Guarantee that every metric is present in `variable_map` for labels
+  missing_vars <- setdiff(metric_hours, variable_map$variable)
   if (length(missing_vars)) {
     variable_map <- bind_rows(
       variable_map,
       tibble(variable = missing_vars, label = missing_vars)
     ) %>% distinct(variable, .keep_all = TRUE)
   }
-  # ------ LOAD VARIABLE LABELS ---------------------------------------------
-  activity_map <- tibble(variable = metric_names) %>%
-    left_join(variable_map %>% select(variable, label), by = "variable") %>%
-    mutate(label = coalesce(label, variable)) %>%
-    select(variable, label)
   
+  # ------ FOCAL GROUP FILTERING -----------------------------------------------
+  # Isolate focal group data and apply subset rules for filtering
+  focal_name <- focal_group$name
+  fg_subset_vals <- focal_group$subset$value %||% NULL
   
-  # ------ PREPARE DATA FOR PLOT -----------------------------------------------
-  tile_data <- summary_table %>%
+  data_focal <- data %>%
+    filter(group == focal_name)
+  
+  if (!is.null(fg_subset_title) && fg_subset_title %in% names(data)) {
+    data_focal <- data_focal %>%
+      filter(.data[[fg_subset_title]] %in% fg_subset_vals)
+    
+    data_focal$group <- if (length(fg_subset_vals) == 1) {
+      paste(focal_name, fg_subset_vals)
+    } else {
+      focal_name
+    }
+  }
+  
+  # ------ COMPARISON GROUPS FILTERING -----------------------------------------
+  # Apply the same logic for comparison groups to allow benchmarking
+  comparison_data_list <- list()
+  if (has_comparisons) {
+    comparison_data_list <- lapply(comparison_groups, function(cg) {
+      cg_name <- cg$name
+      cg_subset_title <- get_subset_title(cg$subset)
+      cg_subset_vals <- cg$subset$value %||% NULL
+      
+      comp_df <- data %>%
+        filter(group == cg_name)
+      
+      if (!is.null(cg_subset_title) && cg_subset_title %in% names(data)) {
+        comp_df <- comp_df %>%
+          filter(.data[[cg_subset_title]] %in% cg_subset_vals)
+        
+        comp_df$group <- if (length(cg_subset_vals) == 1) {
+          paste(cg_name, cg_subset_vals)
+        } else {
+          cg_name
+        }
+      }
+      comp_df
+    })
+  }
+  
+  # ------ FINAL SUMMARY -------------------------------------------------------
+  # Create a unified dataset for subsequent aggregation and plotting
+  combined_data <- bind_rows(c(list(data_focal), comparison_data_list))
+  
+  # ------ GROUP LEVELS (ORDERING) ---------------------------------------------
+  # Ensure group display order matches instructions for consistency
+  focal_level <- if (is.null(fg_subset_title) || is.null(fg_subset_vals) || 
+                     length(fg_subset_vals) != 1) {
+    focal_group$name
+  } else {
+    paste(focal_group$name, fg_subset_vals)
+  }
+  
+  comp_levels <- vapply(
+    comparison_groups,
+    function(g) {
+      has_subset <- !is.null(g$subset) && !is.null(g$subset$title)
+      one_val <- has_subset && !is.null(g$subset$value) && 
+        length(g$subset$value) == 1
+      if (one_val) paste(g$name, g$subset$value) else g$name
+    },
+    character(1)
+  )
+  
+  group_levels <- c(focal_level, comp_levels)
+  
+  # ------ ACTIVITY MAP (VALUE ↔ HOURS WITH LABELS) ----------------------------
+  # Link each value metric to its corresponding hours metric + label
+  activity_mapping <- tibble(
+    activity_value = metric_names,
+    activity_hours = metric_hours
+  ) %>%
+    left_join(variable_map, by = c("activity_hours" = "variable")) 
+  
+  # ------ STEP 2: MEANS (VALUE METRICS) ---------------------------------------
+  # Compute per-group averages for subjective/activity values
+  activity_value_means <- combined_data %>%
+    group_by(group) %>%
+    summarise(
+      across(all_of(metric_names), ~ mean(.x, na.rm = TRUE)),
+      .groups = "drop"
+    ) %>%
     pivot_longer(
       cols = all_of(metric_names),
-      names_to = "activity_id",
-      values_to = "value"
-    ) %>%
-    left_join(activity_map, by = c("activity_id" = "variable")) %>%
-    mutate(
-      activity = label,
-      group = factor(group, levels = group_levels)
+      names_to = "activity_value",
+      values_to = "avg_value"
     )
   
-  preferred_value <- instruction$preferred_value %||% "high"
-  preferred_value <- preferred_value[1]
+  # ------ STEP 3: MEANS (HOURS METRICS) ---------------------------------------
+  # Compute per-group averages for objective time spent (hours)
+  activity_hours_means <- combined_data %>%
+    group_by(group) %>%
+    summarise(
+      across(all_of(metric_hours), ~ mean(.x, na.rm = TRUE)),
+      .groups = "drop"
+    ) %>%
+    pivot_longer(
+      cols = all_of(metric_hours),
+      names_to = "activity_hours",
+      values_to = "avg_hours"
+    )
   
+  # ------ STEP 4: MAP TO HOURS ------------------------------------------------
+  # Merge subjective values and objective hours for each activity
+  tile_data <- activity_value_means %>%
+    left_join(activity_mapping, by = "activity_value") %>%
+    left_join(activity_hours_means, by = c("group", "activity_hours"))
+  
+  # ------ CHOOSE SLICE FUNCTION -----------------------------------------------
+  # Select the slice function based on preferred value direction (high or low)
+  slice_fun <- if (preferred_value == "low") slice_min else slice_max
+  
+  # ------ TILE DATA SELECTION -------------------------------------------------
+  # Select top-N activities, order by group, and clean values
+  tile_data <- tile_data %>%
+    group_by(group) %>%
+    slice_fun(order_by = avg_value, n = n_activities, with_ties = FALSE) %>%
+    arrange(group, desc(avg_hours)) %>%
+    ungroup() %>%
+    mutate(
+      avg_value = round(avg_value, 1),
+      avg_hours = round(avg_hours, 0)
+    )
+  
+  # ------ TILE FILL COLOR -----------------------------------------------------
+  # Visually distinguish high vs low preference tiles
   tile_fill <- switch(
     preferred_value,
     "high" = "#6ec17c",
     "low" = "#d95b61",
-    "#a569bd"
+    "#a569bd" # default
   )
   
-  n_activities <- instruction$n_activities %||% 5
-  
-  tile_data_top <- tile_data %>%
-    group_by(group) %>%
-    slice_max(
-      order_by = value,
-      n = n_activities,
-      with_ties = FALSE
-    ) %>%
-    ungroup() %>%
-    mutate(duration = round(value, 0)) %>%
-    select(group, activity, duration)
-  
   # ------ GENERATE PLOT -------------------------------------------------------
+  # Use correct drawing function depending on comparison presence
   plot_obj <- if (!has_comparisons) {
     draw_tile_chart_focal(
-      data = tile_data_top,
+      data = tile_data,
       n_activities = n_activities,
       unit = unit,
       tile_fill = tile_fill
     )
   } else {
     draw_tile_chart_groups(
-      data = tile_data_top,
+      data = tile_data,
       n_activities = n_activities,
       unit = unit,
       tile_fill = tile_fill
@@ -526,6 +546,7 @@ generate_tile_slide <- function(
   }
   
   # ------ EXPORT TO SLIDE -----------------------------------------------------
+  # Embed final plot into PowerPoint, preserving order and flags
   if (!is.null(ppt_doc)) {
     ppt_doc <- export_plot_to_slide(
       ppt_doc = ppt_doc,
@@ -538,3 +559,4 @@ generate_tile_slide <- function(
   
   return(invisible(NULL))
 }
+
