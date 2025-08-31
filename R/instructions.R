@@ -476,7 +476,7 @@ instructions <- list(
     bar_value = c("meaningfulness"),
     target = c("meaningfulness_min"),
     show_target = FALSE
-    ),
+  ),
   
   # ------ Slide 18: Meaningfulness+ (Women vs Men) w/ target ------------------
   list(
@@ -698,7 +698,18 @@ instructions <- list(
   # ------ Slide 29: High value activities (1st & 10th reunion) ----------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
       "catching_up_hours",
       "reading_hours",
       "care_giving_hours",
@@ -726,7 +737,18 @@ instructions <- list(
   # ------ Slide 30: High value activities (focal vs comparison) ---------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
       "catching_up_hours",
       "reading_hours",
       "care_giving_hours",
@@ -756,7 +778,18 @@ instructions <- list(
   # ------ Slide 31: High value of some reunion focal group  -------------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
       "catching_up_hours",
       "reading_hours",
       "care_giving_hours",
@@ -792,7 +825,18 @@ instructions <- list(
   # ------ Slide 32: High value activities (IWF vs HBS gender groups) ----------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
       "catching_up_hours",
       "reading_hours",
       "care_giving_hours",
@@ -822,11 +866,21 @@ instructions <- list(
     preferred_value = "high",
     n_activities = 5
   ),
-  
   # ------ Slide 33: High value (3 comparison groups) --------------------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
       "catching_up_hours",
       "reading_hours",
       "care_giving_hours",
@@ -870,16 +924,30 @@ instructions <- list(
   # ------ Slide 34: Low value activities (1st & 10th ) ------------------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
-      "social_media_hours",
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
+      "catching_up_hours",
+      "reading_hours",
+      "care_giving_hours",
+      "exercising_hours",
+      "chores_with_others_hours",
+      "chores_with_family_hours",
+      "watching_TV_with_others_hours",
       "watching_TV_alone_hours",
-      "eating_alone_hours",
-      "chores_alone_hours",
-      "commuting_alone_hours",
-      "hanging_out_alone_hours"
+      "eating_with_others_hours"
     ),
     unit = "hrs",
-    title = "MOST COMMON HIGH VALUE ACTIVITIES",
+    title = "MOST COMMON LOW VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
       subset = list(
@@ -895,16 +963,30 @@ instructions <- list(
   # ------ Slide 35: Low value (focal vs comparison) ---------------------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
-      "social_media_hours",
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
+      "catching_up_hours",
+      "reading_hours",
+      "care_giving_hours",
+      "exercising_hours",
+      "chores_with_others_hours",
+      "chores_with_family_hours",
+      "watching_TV_with_others_hours",
       "watching_TV_alone_hours",
-      "eating_alone_hours",
-      "chores_alone_hours",
-      "commuting_alone_hours",
-      "hanging_out_alone_hours"
+      "eating_with_others_hours"
     ),
     unit = "hrs",
-    title = "MOST COMMON HIGH VALUE ACTIVITIES",
+    title = "MOST COMMON LOW VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
       subset = NULL
@@ -922,16 +1004,30 @@ instructions <- list(
   # ------ Slide 36: Low value (reunion class filter) --------------------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
-      "social_media_hours",
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
+      "catching_up_hours",
+      "reading_hours",
+      "care_giving_hours",
+      "exercising_hours",
+      "chores_with_others_hours",
+      "chores_with_family_hours",
+      "watching_TV_with_others_hours",
       "watching_TV_alone_hours",
-      "eating_alone_hours",
-      "chores_alone_hours",
-      "commuting_alone_hours",
-      "hanging_out_alone_hours"
+      "eating_with_others_hours"
     ),
     unit = "hrs",
-    title = "MOST COMMON HIGH VALUE ACTIVITIES",
+    title = "MOST COMMON LOW VALUE ACTIVITIES",
     focal_group = list(
       name = focal_group,
       subset = NULL
@@ -949,19 +1045,33 @@ instructions <- list(
       )
     ),
     preferred_value = "low",
-    n_activities = 4
+    n_activities = 5
   ),
   
   # ------ SLIDE 37: Low value (IWF vs gendered comparison) ----------------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
-      "social_media_hours",
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
+      "catching_up_hours",
+      "reading_hours",
+      "care_giving_hours",
+      "exercising_hours",
+      "chores_with_others_hours",
+      "chores_with_family_hours",
+      "watching_TV_with_others_hours",
       "watching_TV_alone_hours",
-      "eating_alone_hours",
-      "chores_alone_hours",
-      "commuting_alone_hours",
-      "hanging_out_alone_hours"
+      "eating_with_others_hours"
     ),
     unit = "hrs",
     title = "MOST COMMON LOW VALUE ACTIVITIES",
@@ -992,13 +1102,27 @@ instructions <- list(
   # ------ SLIDE 38: Low value (focal group + 3 comparison groups) ---------------
   list(
     function_name = "generate_tile_slide",
-    metric = c(
-      "social_media_hours",
+    metrics = c(
+      "joy_catching_up",
+      "joy_reading",
+      "joy_care_giving",
+      "joy_exercising",
+      "joy_chores_with_others",
+      "joy_chores_with_family",
+      "joy_watching_TV_with_others",
+      "joy_watching_TV_alone",
+      "joy_eating_with_others"
+    ),
+    metric_hours = c(
+      "catching_up_hours",
+      "reading_hours",
+      "care_giving_hours",
+      "exercising_hours",
+      "chores_with_others_hours",
+      "chores_with_family_hours",
+      "watching_TV_with_others_hours",
       "watching_TV_alone_hours",
-      "eating_alone_hours",
-      "chores_alone_hours",
-      "commuting_alone_hours",
-      "hanging_out_alone_hours"
+      "eating_with_others_hours"
     ),
     unit = "hrs",
     title = "MOST COMMON LOW VALUE ACTIVITIES",
