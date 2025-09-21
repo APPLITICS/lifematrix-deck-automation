@@ -37,7 +37,7 @@ mod_line_ui <- function(
 
     # ------ CATEGORY ----------------------------------------------------------
     # Select category variable and optional ordering column
-    h4("Category"),
+    h6("Category"),
     div(
       class = "inline-inputs",
       pickerInput(
@@ -68,7 +68,7 @@ mod_line_ui <- function(
 
     # ------ FOCAL GROUP -------------------------------------------------------
     # Define focal group and optional subset values
-    h4("Focal Group"),
+    h6("Focal Group"),
     div(
       class = "inline-inputs",
       pickerInput(
