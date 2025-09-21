@@ -49,7 +49,7 @@ mod_density_ui <- function(
 
     # ------ FOCAL GROUP -------------------------------------------------------
     # Define the primary group and optional subset
-    h4("Focal Group"),
+    h6("Focal Group"),
     div(
       class = "inline-inputs",
       # Base group name
@@ -63,7 +63,7 @@ mod_density_ui <- function(
       # Optional subset column
       pickerInput(
         ns("focal_subset_title"),
-        "Subset title (optional)",
+        "Subset title",
         choices = c("None" = "", all_cols),
         multiple = FALSE,
         options = list(`live-search` = TRUE)
@@ -71,7 +71,7 @@ mod_density_ui <- function(
       # Optional subset values (updated in server)
       pickerInput(
         ns("focal_subset_value"),
-        "Subset value (optional)",
+        "Subset value",
         choices = character(0),
         multiple = TRUE,
         options = list(
@@ -83,7 +83,7 @@ mod_density_ui <- function(
 
     # ------ COMPARISON GROUPS -------------------------------------------------
     # Define additional groups and subsets to compare with the focal group
-    h4("Comparison Groups"),
+    h6("Comparison Groups"),
     div(
       class = "inline-inputs",
       # Comparison group name
@@ -97,7 +97,7 @@ mod_density_ui <- function(
       # Optional subset column for comparison group
       pickerInput(
         ns("new_subset_title"),
-        "Subset title (optional)",
+        "Subset title",
         choices = c("None" = "", all_cols),
         multiple = FALSE,
         options = list(`live-search` = TRUE)
@@ -105,7 +105,7 @@ mod_density_ui <- function(
       # Optional subset values (updated in server)
       pickerInput(
         ns("new_subset_value"),
-        "Subset value (optional)",
+        "Subset value",
         choices = character(0),
         multiple = TRUE,
         options = list(
