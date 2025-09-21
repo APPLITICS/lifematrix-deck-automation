@@ -41,7 +41,7 @@ mod_donut_ui <- function(
       ),
       pickerInput(
         ns("focal_subset_title"),
-        "Subset title (optional)",
+        "Subset title",
         choices = c("None" = "", all_cols),
         selected = "None",
         multiple = FALSE,
@@ -49,7 +49,7 @@ mod_donut_ui <- function(
       ),
       pickerInput(
         ns("focal_subset_value"),
-        "Subset value (optional)",
+        "Subset value",
         choices = character(0),
         selected = NULL,
         multiple = TRUE,
@@ -75,7 +75,7 @@ mod_donut_ui <- function(
       ),
       pickerInput(
         ns("new_subset_title"),
-        "Subset title (optional)",
+        "Subset title",
         choices = c("None" = "", all_cols),
         selected = "None",
         multiple = FALSE,
@@ -83,7 +83,7 @@ mod_donut_ui <- function(
       ),
       pickerInput(
         ns("new_subset_value"),
-        "Subset value (optional)",
+        "Subset value",
         choices = character(0),
         selected = NULL,
         multiple = TRUE,
