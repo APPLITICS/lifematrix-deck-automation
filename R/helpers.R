@@ -171,9 +171,6 @@ export_plot_to_slide <- function(
   return(ppt_doc)
 }
 
-
-
-
 # ------ STYLE ORDINAL SUFFIX -------------------------------------------------
 #' Format ordinal numbers with superscript suffixes (e.g., 40th+ → 40<sup>th+</sup>)
 #'
@@ -225,4 +222,64 @@ normalize_na_tbl <- function(
   }
   
   return(data)
+}
+
+# ------ SLIDE PREVIEW TITLE ---------------------------------------------------
+
+#' Add slide-style title to a ggplot object
+#'
+#' Adds a formatted slide title above a ggplot object for display in Shiny
+#' previews. The title is left-aligned and styled to match the PowerPoint theme.
+#'
+#' @param plot_obj A `ggplot` object to display below the title.
+#' @param title_text A character string to use as the slide title. Defaults to
+#'   an empty string if `NULL`.
+#'
+#' @return A grob object combining the title and plot arranged vertically.
+add_slide_title <- function(plot_obj, title_text) {
+  if (is.null(title_text)) title_text <- ""
+  
+  title_grob <- textGrob(
+    title_text,
+    gp = gpar(
+      fontsize = 28,
+      fontface = "bold",
+      col = "#323233",
+      fontfamily = "Arial"
+    ),
+    x = 0.02,
+    hjust = 0
+  )
+  
+  grid.arrange(
+    title_grob,
+    plot_obj,
+    ncol = 1,
+    heights = c(0.15, 1)
+  )
+}
+
+# ------ SCALE PLOT THEME -----------------------------------------------------
+#' Scale Plot Theme
+#'
+#' Applies a scaled theme to a ggplot object by adjusting text, axis, and legend
+#' sizes relative to a given base size and scaling factor.
+#'
+#' @param plot A `ggplot` object to which the theme will be applied.
+#' @param base_size Numeric. The base font size for text elements (default = 12).
+#' @param factor Numeric. Scaling factor applied to the base size (default = 1.2).
+#'
+#' @return A `ggplot` object with the updated theme applied.
+scale_plot_theme <- function(
+    plot,
+    base_size = 12,
+    factor = 1.2
+) {
+  plot + theme(
+    text        = element_text(size = base_size * factor),
+    axis.text   = element_text(size = (base_size - 2) * factor),
+    axis.title  = element_text(size = (base_size + 2) * factor),
+    legend.text = element_text(size = (base_size - 2) * factor),
+    legend.title= element_text(size = base_size * factor)
+  )
 }
