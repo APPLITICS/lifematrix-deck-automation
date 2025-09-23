@@ -4,7 +4,6 @@
 #' Each list element defines chart type, metrics, groups, units, and labels.
 #' Used by `generate_*_slide()` functions to create slides.
 
-
 instructions <- list(
   #------ Slide 1: Density without comparisons ---------------------------------
   list(
@@ -20,7 +19,6 @@ instructions <- list(
     ),
     comparison_groups = NULL
   ),
-  
   # ------ Slide 2: Density with group comparison ------------------------------
   list(
     function_name = "generate_density_slide",
@@ -40,7 +38,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ Slide 3: Density with gender comparisons ----------------------------
   list(
     function_name = "generate_density_slide",
@@ -70,7 +67,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ Slide 4: JAM - Focal only -------------------------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -96,7 +92,6 @@ instructions <- list(
     ),
     show_target = FALSE
   ),
-  
   # ------ Slide 5: JAM - NA comparison ----------------------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -130,7 +125,6 @@ instructions <- list(
     ),
     show_target = FALSE
   ),
-  
   # ------ Slide 6: JAM - Gender subset without value --------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -164,7 +158,6 @@ instructions <- list(
     ),
     show_target = FALSE
   ),
-  
   # ------ Slide 7: JAM - Two NA comparisons -----------------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -205,7 +198,6 @@ instructions <- list(
     ),
     show_target = FALSE
   ),
-  
   # ------ Slide 8: JAM - Women + NA comparison --------------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -226,7 +218,6 @@ instructions <- list(
         )
       )
     ),
-    
     placeholders = list(
       list(),
       list(
@@ -237,7 +228,6 @@ instructions <- list(
         )
       )
     ),
-    
     bar_value = c(
       "joy",
       "achievement",
@@ -250,7 +240,6 @@ instructions <- list(
     ),
     show_target = FALSE
   ),
-  
   # ------ Slide 9: JAM - Women + Men with targets -----------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -305,7 +294,6 @@ instructions <- list(
     ),
     comparison_groups = NULL
   ),
-  
   # ------ Slide 11: Reading hours by gender -----------------------------------
   list(
     function_name = "generate_density_slide",
@@ -335,7 +323,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ Slide 12: Sleep hours (no comparison) -------------------------------
   list(
     function_name = "generate_density_slide",
@@ -350,7 +337,6 @@ instructions <- list(
     ),
     comparison_groups = NULL
   ),
-  
   # ------ Slide 13: Sleep hours by gender -------------------------------------
   list(
     function_name = "generate_density_slide",
@@ -380,7 +366,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ Slide 14: Exercise hours (no comparison) ----------------------------
   list(
     function_name = "generate_density_slide",
@@ -395,7 +380,6 @@ instructions <- list(
     ),
     comparison_groups = NULL
   ),
-  
   # ------ Slide 15: Exercise hours by gender ----------------------------------
   list(
     function_name = "generate_density_slide",
@@ -425,7 +409,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ Slide 16: Meaningfulness+ (focal only) ------------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -443,7 +426,6 @@ instructions <- list(
     target = c("meaningfulness_min"),
     show_target = FALSE
   ),
-  
   # ------ Slide 17: Meaningfulness+ (Women + NA) ------------------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -477,7 +459,6 @@ instructions <- list(
     target = c("meaningfulness_min"),
     show_target = FALSE
   ),
-  
   # ------ Slide 18: Meaningfulness+ (Women vs Men) w/ target ------------------
   list(
     function_name = "generate_bar_metric_slide",
@@ -510,7 +491,6 @@ instructions <- list(
     target = c("meaningfulness_min"),
     show_target = TRUE
   ),
-  
   # ------ Slide 19: Life Satisfaction by Income -------------------------------
   list(
     function_name = "generate_bar_category_slide",
@@ -529,7 +509,6 @@ instructions <- list(
     ),
     trend_line = TRUE
   ),
-  
   # ------ Slide 20: Number of Children by Reunion Class -----------------------
   list(
     function_name = "generate_bar_category_slide",
@@ -548,7 +527,6 @@ instructions <- list(
     ),
     trend_line = FALSE
   ),
-  
   # ------ Slide 21: Life Satisfaction by Number of Children -------------------
   list(
     function_name = "generate_bar_category_slide",
@@ -567,7 +545,6 @@ instructions <- list(
     ),
     trend_line = TRUE
   ),
-  
   # ------ Slide 22: Meaningfulness by Reunion Class ---------------------------
   list(
     function_name = "generate_bar_category_slide",
@@ -584,11 +561,8 @@ instructions <- list(
       name = focal_group,
       subset = list(
         title = "reunion_class",
-        value = c(
-          "1st", "5th")
-        
+        value = c("1st", "5th")
       )
-      
     ),
     trend_line = FALSE
   ),
@@ -625,7 +599,6 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
   # ------ Slide 25: Life Satisfaction by reunion class ------------------------
   list(
     function_name = "generate_circle_slide",
@@ -641,7 +614,6 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
   # ------ Slide 26: TQI by reunion class --------------------------------------
   list(
     function_name = "generate_circle_slide",
@@ -657,7 +629,6 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
   # ------ Slide 27: Meaningfulness by reunion class ---------------------------
   list(
     function_name = "generate_circle_slide",
@@ -673,7 +644,6 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
   # ------ Slide 28: Subset reunion classes only -------------------------------
   list(
     function_name = "generate_circle_slide",
@@ -733,7 +703,6 @@ instructions <- list(
     preferred_value = "high",
     n_activities = 5
   ),
-  
   # ------ Slide 30: High value activities (focal vs comparison) ---------------
   list(
     function_name = "generate_tile_slide",
@@ -774,7 +743,6 @@ instructions <- list(
     preferred_value = "high",
     n_activities = 5
   ),
-  
   # ------ Slide 31: High value of some reunion focal group  -------------------
   list(
     function_name = "generate_tile_slide",
@@ -821,7 +789,6 @@ instructions <- list(
     preferred_value = "high",
     n_activities = 5
   ),
-  
   # ------ Slide 32: High value activities (IWF vs HBS gender groups) ----------
   list(
     function_name = "generate_tile_slide",
@@ -920,7 +887,6 @@ instructions <- list(
     preferred_value = "high",
     n_activities = 5
   ),
-  
   # ------ Slide 34: Low value activities (1st & 10th ) ------------------------
   list(
     function_name = "generate_tile_slide",
@@ -959,7 +925,6 @@ instructions <- list(
     preferred_value = "low",
     n_activities = 6
   ),
-  
   # ------ Slide 35: Low value (focal vs comparison) ---------------------------
   list(
     function_name = "generate_tile_slide",
@@ -1000,7 +965,6 @@ instructions <- list(
     preferred_value = "low",
     n_activities = 6
   ),
-  
   # ------ Slide 36: Low value (reunion class filter) --------------------------
   list(
     function_name = "generate_tile_slide",
@@ -1047,8 +1011,7 @@ instructions <- list(
     preferred_value = "low",
     n_activities = 5
   ),
-  
-  # ------ SLIDE 37: Low value (IWF vs gendered comparison) ----------------------
+  # ------ SLIDE 37: Low value (IWF vs gendered comparison) --------------------
   list(
     function_name = "generate_tile_slide",
     metrics = c(
@@ -1098,8 +1061,7 @@ instructions <- list(
     preferred_value = "low",
     n_activities = 5
   ),
-  
-  # ------ SLIDE 38: Low value (focal group + 3 comparison groups) ---------------
+  # ------ SLIDE 38: Low value (focal group + 3 comparison groups) -------------
   list(
     function_name = "generate_tile_slide",
     metrics = c(
@@ -1153,8 +1115,7 @@ instructions <- list(
     preferred_value = "low",
     n_activities = 5
   ),
-  
-  # ------ SLIDE 39: Activities horizontal bar for Xilio women ------------------
+  # ------ SLIDE 39: Activities horizontal bar for Xilio women -----------------
   list(
     function_name = "generate_horizontal_bar_slide",
     metric = c(
@@ -1179,8 +1140,7 @@ instructions <- list(
       )
     )
   ),
-  
-  # ------ SLIDE 40: Activities hours vs subjective values (focal group) ---------
+  # ------ SLIDE 40: Activities hours vs subjective values (focal group) -------
   list(
     function_name = "generate_horizontal_bar_slide",
     metric = c(
@@ -1211,7 +1171,6 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
   # ------ SLIDE 41: JAM type distribution (focal only) ------------------------
   list(
     function_name = "generate_donut_slide",
@@ -1226,7 +1185,6 @@ instructions <- list(
     ),
     comparison_groups = NULL
   ),
-  
   # ------ SLIDE 42: JAM type distribution (focal + placeholder) ---------------
   list(
     function_name = "generate_donut_slide",
@@ -1246,7 +1204,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ SLIDE 43: JAM type distribution (focal + 1 comparison) --------------
   list(
     function_name = "generate_donut_slide",
@@ -1266,7 +1223,6 @@ instructions <- list(
       )
     )
   ),
-  
   # ------ SLIDE 44: JAM type distribution (focal + gendered comparison) -------
   list(
     function_name = "generate_donut_slide",
@@ -1296,349 +1252,424 @@ instructions <- list(
       )
     )
   ),
-  
   # ----- SLIDE 45: Line chart comparing perceived vs behavioral achievement ---
-  list(
-    function_name="generate_line_slide",
-    metric=c(
-      "achievement_behavioral",
-      "achievement_perceived"
-    ),
-    category=list(
-      name="income_range",
-      order="income_range_levels"
-    ),
-    title="PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
-    y_title="Achievement Rating",
-    focal_group=list(
-      name=focal_group,
-      subset=list(
-        title="gender",
-        value="Women"
-      )
-    )
-  ),
-  
-  # ------ SLIDE 46: JAM gap distribution across income levels -----------------
   list(
     function_name = "generate_line_slide",
     metric = c(
-      "joy_gap",
-      "achievement_gap",
-      "meaningfulness_gap"
+      "achievement_behavioral",
+      "achievement_perceived"
     ),
     category = list(
       name = "income_range",
       order = "income_range_levels"
     ),
-    unit = "%",
-    title = "JAM DISTRIBUTION",
-    y_title = "JAM values",
+    title = "PERCEIVED VS BEHAVIORAL ACHIEVEMENT",
+    y_title = "Achievement Rating",
     focal_group = list(
       name = focal_group,
-      subset = NULL
+      subset = list(
+        title = "gender",
+        value = "Women"
+      )
     )
   ),
-  
+  # ------ SLIDE 46: JAM gap distribution across income levels -----------------
+  list(
+    function_name  =  "generate_line_slide",
+    metric  =  c(
+      "joy_gap",
+      "achievement_gap",
+      "meaningfulness_gap"
+    ),
+    category  =  list(
+      name  =  "income_range",
+      order  =  "income_range_levels"
+    ),
+    unit  =  "%",
+    title  =  "JAM DISTRIBUTION",
+    y_title  =  "JAM values",
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
+    )
+  ),
   # ------ SLIDE 47: Share of participants who have children -------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "PERCENT WHO HAVE KIDS",
-    metric = NULL,
-    unit = "N°",
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "PERCENT WHO HAVE KIDS",
+    metric  =  NULL,
+    unit  =  "N°",
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels"
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels"
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "with_child",
-        order = "with_child_levels",
-        value = "Kids"
+        name  =  "with_child",
+        order  =  "with_child_levels",
+        value  =  "Kids"
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
   #------ SLIDE 48: Relationship status (partial: in relationship / married) ---
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "RELATIONSHIP STATUS",
-    metric = NULL,
-    unit = NULL,
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "RELATIONSHIP STATUS",
+    metric  =  NULL,
+    unit  =  NULL,
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "relationship_status",
-        order = NULL,
-        value = c("In a relationship", "Married")
+        name  =  "relationship_status",
+        order  =  NULL,
+        value  =  c("In a relationship", "Married")
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
-  
   # ------ SLIDE 49: Relationship status (all categories) ----------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "RELATIONSHIP STATUS",
-    metric = NULL,
-    unit = NULL,
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "RELATIONSHIP STATUS",
+    metric  =  NULL,
+    unit  =  NULL,
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "relationship_status",
-        order = NULL,
-        value = NULL
+        name  =  "relationship_status",
+        order  =  NULL,
+        value  =  NULL
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
-  
   # ------ SLIDE 50: Work hours by reunion class (Women only) ------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "WORK HOURS",
-    metric = "working_hours",
-    unit = "hrs",
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "WORK HOURS",
+    metric  =  "working_hours",
+    unit  =  "hrs",
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "working_range",
-        order = "working_range_levels",
-        value = NULL
+        name  =  "working_range",
+        order  =  "working_range_levels",
+        value  =  NULL
       )
     ),
-    focal_group = list(
-      name = comparison_group_1,
-      subset = list(
-        title = "gender",
-        value = "Women"
+    focal_group  =  list(
+      name  =  comparison_group_1,
+      subset  =  list(
+        title  =  "gender",
+        value  =  "Women"
       )
     )
   ),
-  
   # ------ SLIDE 51: Industry (Life satisfaction, Women only) ------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "INDUSTRY",
-    metric = "life_satisfaction",
-    unit = NULL,
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "INDUSTRY",
+    metric  =  "life_satisfaction",
+    unit  =  NULL,
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        value = c("5th", "10th", "30th"),
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        value  =  c("5th", "10th", "30th"),
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "industry_graduation",
-        order = NULL,
-        value = NULL
+        name  =  "industry_graduation",
+        order  =  NULL,
+        value  =  NULL
       ),
       list(
-        name = "industry_current",
-        order = NULL,
-        value = NULL
+        name  =  "industry_current",
+        order  =  NULL,
+        value  =  NULL
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = list(
-        title = "gender",
-        value = "Women"
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  list(
+        title  =  "gender",
+        value  =  "Women"
       )
     )
   ),
-  
-  
   # ------ SLIDE 52: Industry (All sectors, ordered fill) ----------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "INDUSTRY",
-    metric = NULL,
-    unit = NULL,
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "INDUSTRY",
+    metric  =  NULL,
+    unit  =  NULL,
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "industry_graduation",
-        order = "industry_graduation_levels",
-        value = NULL
+        name  =  "industry_graduation",
+        order  =  "industry_graduation_levels",
+        value  =  NULL
       ),
       list(
-        name = "industry_current",
-        order = "industry_current_levels",
-        value = NULL
+        name  =  "industry_current",
+        order  =  "industry_current_levels",
+        value  =  NULL
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
-  
   # ------ SLIDE 53: Industry (Filtered to 3 sectors) --------------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "INDUSTRY",
-    metric = NULL,
-    unit = NULL,
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "INDUSTRY",
+    metric  =  NULL,
+    unit  =  NULL,
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "industry_graduation",
-        order = "industry_graduation_levels",
-        value = c("Tech", "Finance", "Healthcare")
+        name  =  "industry_graduation",
+        order  =  "industry_graduation_levels",
+        value  =  c("Tech", "Finance", "Healthcare")
       ),
       list(
-        name = "industry_current",
-        order = "industry_current_levels",
-        value = c("Tech", "Finance", "Healthcare")
+        name  =  "industry_current",
+        order  =  "industry_current_levels",
+        value  =  c("Tech", "Finance", "Healthcare")
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
   # ------ SLIDE 54: Industry (Filtered to 3 sectors) --------------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "INDUSTRY",
-    metric = NULL,
-    unit = NULL,
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "INDUSTRY",
+    metric  =  NULL,
+    unit  =  NULL,
+    category_x  =  list(
       list(
-        name = "reunion_class",
-        order = "reunion_class_levels",
-        subset = NULL
+        name  =  "reunion_class",
+        order  =  "reunion_class_levels",
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "industry_graduation",
-        order = "industry_graduation_levels",
-        value = c("Tech")
+        name  =  "industry_graduation",
+        order  =  "industry_graduation_levels",
+        value  =  c("Tech")
       ),
       list(
-        name = "industry_current",
-        order = "industry_current_levels",
-        value = c("Tech")
+        name  =  "industry_current",
+        order  =  "industry_current_levels",
+        value  =  c("Tech")
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
-  
   # ------ SLIDE 55: Industry (Overall by Gender) ------------------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "INDUSTRY",
-    metric = "working_hours",
-    unit = "hrs",
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "INDUSTRY",
+    metric  =  "working_hours",
+    unit  =  "hrs",
+    category_x  =  list(
       list(
-        name = "gender",
-        order = NULL,
-        subset = NULL
+        name  =  "gender",
+        order  =  NULL,
+        subset  =  NULL
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "working_range",
-        order = "working_range_levels",
-        value = NULL
+        name  =  "working_range",
+        order  =  "working_range_levels",
+        value  =  NULL
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
-  
   # ------ SLIDE 56: Industry (Gender x With Child) ----------------------------
   list(
-    function_name = "generate_stacked_vertical_slide",
-    title = "INDUSTRY",
-    metric = "working_hours",
-    unit = "hrs",
-    category_x = list(
+    function_name  =  "generate_stacked_vertical_slide",
+    title  =  "INDUSTRY",
+    metric  =  "working_hours",
+    unit  =  "hrs",
+    category_x  =  list(
       list(
-        name = "gender",
-        order = NULL,
-        subset = list(
-          title = "with_child",
-          value = "Kids"
+        name  =  "gender",
+        order  =  NULL,
+        subset  =  list(
+          title  =  "with_child",
+          value  =  "Kids"
         )
       ),
       list(
-        name = "gender",
-        order = NULL,
-        subset = list(
-          title = "with_child",
-          value = "No Kids"
+        name  =  "gender",
+        order  =  NULL,
+        subset  =  list(
+          title  =  "with_child",
+          value  =  "No Kids"
         )
       )
     ),
-    category_y = list(
+    category_y  =  list(
       list(
-        name = "working_range",
-        order = "working_range_levels",
-        value = NULL
+        name  =  "working_range",
+        order  =  "working_range_levels",
+        value  =  NULL
       )
     ),
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   ),
   # ------ SLIDE 57: Industry (Horizontal, Gender x With Child) ----------------
   list(
+    function_name  =  "generate_stacked_horizontal_slide",
+    title  =  "INDUSTRY (Horizontal)",
+    metric  =  NULL,
+    unit  =  NULL,
+    category_y  =  list(
+      list(
+        name  =  "gender",
+        subset  =  list(
+          title  =  "with_child",
+          value  =  "Kids"
+        )
+      ),
+      list(
+        name  =  "gender",
+        order  =  NULL,
+        subset  =  list(
+          title  =  "with_child",
+          value  =  "No Kids"
+        )
+      )
+    ),
+    category_x  =  list(
+      list(
+        name  =  "working_range",
+        order  =  "working_range_levels",
+        value  =  NULL
+      )
+    ),
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
+    )
+  ),
+  # ------ SLIDE 58: Gender and Work Hours (5th - 20th) ------------------------
+  list(
     function_name = "generate_stacked_horizontal_slide",
-    title = "INDUSTRY (Horizontal)",
+    title = "GENDER AND WORK HOURS (5th - 20th)",
+    metric = NULL,
+    unit = NULL,
+    category_y = list(
+      list(
+        name = "gender",
+        subset = NULL
+      )
+    ),
+    category_x = list(
+      list(
+        name = "working_range",
+        order = "working_range_levels",
+        value = NULL
+      )
+    ),
+    focal_group = list(
+      name = focal_group,
+      subset = list(
+        title = "reunion_class",
+        value = c("5th", "20th")
+      )
+    )
+  ),
+  # ------ SLIDE 59: Gender and Work Hours (All Focal Group) -------------------
+  list(
+    function_name = "generate_stacked_horizontal_slide",
+    title = "GENDER AND WORK HOURS FOR ALL FOCAL GROUP",
+    metric = "working_hours",
+    unit = "hrs",
+    category_y = list(
+      list(
+        name = "gender",
+        subset = NULL
+      )
+    ),
+    category_x = list(
+      list(
+        name = "working_range",
+        order = "working_range_levels",
+        value = NULL
+      )
+    ),
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
+    )
+  ),
+  # ------ SLIDE 60: Gender and Work Hours by Children (5th - 20th) ------------
+  list(
+    function_name = "generate_stacked_horizontal_slide",
+    title = "GENDER AND WORK HOURS (5th - 20th)",
     metric = NULL,
     unit = NULL,
     category_y = list(
@@ -1651,7 +1682,43 @@ instructions <- list(
       ),
       list(
         name = "gender",
-        order = NULL,
+        subset = list(
+          title = "with_child",
+          value = "No Kids"
+        )
+      )
+    ),
+    category_x = list(
+      list(
+        name = "working_range",
+        order = "working_range_levels",
+        value = NULL
+      )
+    ),
+    focal_group = list(
+      name = focal_group,
+      subset = list(
+        title = "reunion_class",
+        value = c("5th", "20th")
+      )
+    )
+  ),
+  # ------ SLIDE 61: Gender and Work Hours by Children (All Focal Group) -------
+  list(
+    function_name = "generate_stacked_horizontal_slide",
+    title = "GENDER AND WORK HOURS ALL FOCAL GROUP",
+    metric = "working_hours",
+    unit = "hrs",
+    category_y = list(
+      list(
+        name = "gender",
+        subset = list(
+          title = "with_child",
+          value = "Kids"
+        )
+      ),
+      list(
+        name = "gender",
         subset = list(
           title = "with_child",
           value = "No Kids"
@@ -1670,206 +1737,79 @@ instructions <- list(
       subset = NULL
     )
   ),
-  
-  # ------ SLIDE 58: Gender and Work Hours (5th - 20th) ------------------------
-  list(
-    function_name="generate_stacked_horizontal_slide",
-    title="GENDER AND WORK HOURS (5th - 20th)",
-    metric=NULL,
-    unit=NULL,
-    category_y=list(
-      list(
-        name="gender",
-        subset=NULL
-      )
-    ),
-    category_x=list(
-      list(
-        name="working_range",
-        order="working_range_levels",
-        value=NULL
-      )
-    ),
-    focal_group=list(
-      name=focal_group,
-      subset=list(
-        title="reunion_class",
-        value=c("5th", "20th")
-      )
-    )
-  ),
-  
-  # ------ SLIDE 59: Gender and Work Hours (All Focal Group) -------------------
-  list(
-    function_name="generate_stacked_horizontal_slide",
-    title="GENDER AND WORK HOURS FOR ALL FOCAL GROUP",
-    metric="working_hours",
-    unit="hrs",
-    category_y=list(
-      list(
-        name="gender",
-        subset=NULL
-      )
-    ),
-    category_x=list(
-      list(
-        name="working_range",
-        order="working_range_levels",
-        value=NULL
-      )
-    ),
-    focal_group=list(
-      name=focal_group,
-      subset=NULL
-    )
-  ),
-  
-  # ------ SLIDE 60: Gender and Work Hours by Children (5th - 20th) ------------
-  list(
-    function_name="generate_stacked_horizontal_slide",
-    title="GENDER AND WORK HOURS (5th - 20th)",
-    metric=NULL,
-    unit=NULL,
-    category_y=list(
-      list(
-        name="gender",
-        subset=list(
-          title="with_child",
-          value="Kids"
-        )
-      ),
-      list(
-        name="gender",
-        subset=list(
-          title="with_child",
-          value="No Kids"
-        )
-      )
-    ),
-    category_x=list(
-      list(
-        name="working_range",
-        order="working_range_levels",
-        value=NULL
-      )
-    ),
-    focal_group=list(
-      name=focal_group,
-      subset=list(
-        title="reunion_class",
-        value=c("5th", "20th")
-      )
-    )
-  ),
-  
-  # ------ SLIDE 61: Gender and Work Hours by Children (All Focal Group) -------
-  list(
-    function_name="generate_stacked_horizontal_slide",
-    title="GENDER AND WORK HOURS ALL FOCAL GROUP",
-    metric="working_hours",
-    unit="hrs",
-    category_y=list(
-      list(
-        name="gender",
-        subset=list(
-          title="with_child",
-          value="Kids"
-        )
-      ),
-      list(
-        name="gender",
-        subset=list(
-          title="with_child",
-          value="No Kids"
-        )
-      )
-    ),
-    category_x=list(
-      list(
-        name="working_range",
-        order="working_range_levels",
-        value=NULL
-      )
-    ),
-    focal_group=list(
-      name=focal_group,
-      subset=NULL
-    )
-  ),
   # ------ SLIDE 62: Status and Work Hours (< 45 Hours) ------------------------
   list(
-    function_name="generate_stacked_horizontal_slide",
-    title="STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
-    metric= NULL,
-    unit= NULL,
-    category_y=list(
+    function_name = "generate_stacked_horizontal_slide",
+    title = "STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
+    metric =  NULL,
+    unit =  NULL,
+    category_y = list(
       list(
-        name="relationship_status",
-        subset=NULL
+        name = "relationship_status",
+        subset = NULL
       )
     ),
-    category_x=list(
+    category_x = list(
       list(
-        name="working_range",
-        order="working_range_levels",
-        value=c("0 - 35", "45 - 55", "35 - 45")
+        name = "working_range",
+        order = "working_range_levels",
+        value = c("0 - 35", "45 - 55", "35 - 45")
       )
     ),
-    focal_group=list(
-      name=focal_group,
-      subset=NULL
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
     )
   ),
   # ------ SLIDE 63: Status and Work Hours (< 45 Hours) ------------------------
   list(
-    function_name="generate_stacked_horizontal_slide",
-    title="STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
-    metric="working_hours",
-    unit="hrs",
-    category_y=list(
+    function_name = "generate_stacked_horizontal_slide",
+    title = "STATUS AND WORK HOURS FOR HOURS LESS THAN 45",
+    metric = "working_hours",
+    unit = "hrs",
+    category_y = list(
       list(
-        name="relationship_status",
-        subset=list(
-          title="with_child",
-          value="Kids"
+        name = "relationship_status",
+        subset = list(
+          title = "with_child",
+          value = "Kids"
         )
       ),
       list(
-        name="relationship_status",
-        subset=list(
-          title="with_child",
-          value="No Kids"
+        name = "relationship_status",
+        subset = list(
+          title = "with_child",
+          value = "No Kids"
         )
       )
     ),
-    category_x=list(
+    category_x = list(
       list(
-        name="working_range",
-        order="working_range_levels",
-        value=c("0 - 35", "45 - 55", "35 - 45")
+        name = "working_range",
+        order = "working_range_levels",
+        value = c("0 - 35", "45 - 55", "35 - 45")
       )
     ),
-    focal_group=list(
-      name=focal_group,
-      subset=NULL
+    focal_group = list(
+      name = focal_group,
+      subset = NULL
     )
   ),
-  
   # ------ SLIDE 64: Time vs Subjective Value Scatter Plot ---------------------
   list(
-    function_name = "generate_scatter_slide",
-    metric = c(
+    function_name  =  "generate_scatter_slide",
+    metric  =  c(
       "volunteering_hours",
       "therapy_hours",
       "gaming_hours",
       "school_learning_hours",
       "side_projects_hours",
-      "job_searching_hours", 
+      "job_searching_hours",
       "napping_hours",
       "hobbies_hours"
     ),
-    subjective_value = c(
-      "volunteering_subj_value", 
+    subjective_value  =  c(
+      "volunteering_subj_value",
       "therapy_subj_value",
       "gaming_subj_value",
       "school_learning_subj_value",
@@ -1878,12 +1818,12 @@ instructions <- list(
       "napping_subj_value",
       "hobbies_subj_value"
     ),
-    title = "TIME VS VALUE FROM DISCRETIONARY ACTIVITIES",
-    x_title = "Hours/Week",
-    y_title = "Subjective Value",
-    focal_group = list(
-      name = focal_group,
-      subset = NULL
+    title  =  "TIME VS VALUE FROM DISCRETIONARY ACTIVITIES",
+    x_title  =  "Hours/Week",
+    y_title  =  "Subjective Value",
+    focal_group  =  list(
+      name  =  focal_group,
+      subset  =  NULL
     )
   )
 )

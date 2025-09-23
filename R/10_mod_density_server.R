@@ -104,12 +104,12 @@ mod_density_server <- function(id, pipeline_data) {
           datatable(data.frame())
         )
       }
-      
+
       comparison_df$delete <- sprintf(
         '<button id="delete_%s" class="btn btn-danger btn-sm">🗑</button>',
         seq_len(nrow(comparison_df))
       )
-      
+
       datatable(
         comparison_df,
         escape = FALSE,

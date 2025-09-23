@@ -2,13 +2,13 @@ ui <- fluidPage(
   theme = bslib::bs_theme(bootswatch = "flatly"),
   shinyjs::useShinyjs(),
   includeCSS("www/css/custom.css"),
-  
+
   # ------ CUSTOM TITLE BAR ----------------------------------------------------
   tags$div(
     class = "app-title",
     "Automated Slide Builder"
   ),
-  
+
   # ------ APP DESCRIPTION -----------------------------------------------------
   div(
     class = "description",
@@ -19,17 +19,14 @@ ui <- fluidPage(
       "it to your deck."
     )
   ),
-  
+
   # ------ LAYOUT --------------------------------------------------------------
   sidebarLayout(
-    
-    # ------ SIDEBAR -----------------------------------------------------------
     sidebarPanel(
       width = 4,
       bslib::card(
         bslib::card_body(
           h3("Slide Builder Controls", class = "sidebar-title"),
-          
           # Function selector
           pickerInput(
             inputId = "fn_choice",
@@ -38,10 +35,8 @@ ui <- fluidPage(
             options = list(`live-search` = TRUE),
             multiple = FALSE
           ),
-          
           # Dynamic module UI placeholder
           uiOutput("module_ui"),
-          
           tags$hr(),
           fluidRow(
             column(
@@ -64,7 +59,7 @@ ui <- fluidPage(
         )
       )
     ),
-    
+
     # ------ MAIN PANEL --------------------------------------------------------
     mainPanel(
       class = "main-panel",

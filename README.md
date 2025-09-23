@@ -17,7 +17,7 @@ R/
 ├── 70_mod_bar_metric_*              # Metric-based bar chart module
 ├── 71_mod_bar_category_*            # Category-based bar chart module
 ├── 72_mod_bar_horizontal_*          # Horizontal bar chart module
-├── 73_mod_bar_stacked_vertical_*   # Stacked vertical bar chart module
+├── 73_mod_bar_stacked_vertical_*    # Stacked vertical bar chart module
 ├── 74_mod_bar_stacked_horizontal_*  # Stacked horizontal bar chart module
 ├── helpers_data.R                   # Data helpers (e.g., NA normalization)
 ├── helpers_graph.R                  # Chart helper functions (themes, scales, etc.)

@@ -26,7 +26,7 @@ mod_bar_metric_ui <- function(
       ""
     ),
 
-    # ------ UNIT ----------------------------------------------------------------
+    # ------ UNIT --------------------------------------------------------------
     # Select the unit of measurement (none or percentage)
     pickerInput(
       ns("unit"),
