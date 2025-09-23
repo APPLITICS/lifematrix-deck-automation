@@ -205,33 +205,14 @@ generate_density_slide <- function(
   }
 
   # ------ INSERT SLIDE --------------------------------------------------------
-  if (is.null(instruction$is_first) || !instruction$is_first) {
-    ppt_doc <- add_slide(ppt_doc, layout = "Title and Content")
-  }
-
-  dims <- slide_size(ppt_doc)
-
-  ppt_doc <- ppt_doc %>%
-    ph_with(
-      value = block_list(
-        fpar(ftext(
-          instruction$title %||% " ",
-          fp_text(font.size = 28, bold = TRUE,
-                  font.family = "Arial", color = "#323233")
-        ))
-      ),
-      location = ph_location(
-        left = 0.4, top = 0.2,
-        width = dims$width - 1, height = 0.8
-      )
-    ) %>%
-    ph_with(
-      value = dml(ggobj = plot_obj, bg = "transparent"),
-      location = ph_location(
-        left = 0, top = 1.0,
-        width = dims$width, height = dims$height - 1.4
-      )
+  if (!is.null(ppt_doc)) {
+    ppt_doc <- export_plot_to_slide(
+      ppt_doc = ppt_doc,
+      plot_obj = plot_obj,
+      title_text = instruction$title %||% " ",
+      is_first = instruction$is_first
     )
+  }
 
   return(
     list(
