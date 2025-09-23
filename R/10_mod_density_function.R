@@ -64,7 +64,8 @@ generate_density_slide <- function(
   }
 
   if (length(missing_cols) > 0) {
-    message("❌ Missing column(s): ", paste(unique(missing_cols), collapse = ", "),
+    message("❌ Missing column(s): ", 
+            paste(unique(missing_cols), collapse = ", "),
             ". Slide skipped.")
     return(invisible(NULL))
   }
@@ -161,12 +162,16 @@ generate_density_slide <- function(
     ) +
     global_theme() +
     theme(
-      plot.title = element_text(color = "white", face = "bold", size = 26, hjust = 0),
+      plot.title = element_text(color = "white",
+                                face = "bold",
+                                size = 26,
+                                hjust = 0
+      ),
       plot.margin = margin(t = 90, r = 20, b = 10, l = 20),
       legend.position = "none"
     )
-  
-  # ------ ADD COMPARISON LABELS (TOP-RIGHT BOX OUTSIDE PLOT) --------------------
+
+  # ------ ADD COMPARISON LABELS (TOP-RIGHT BOX OUTSIDE PLOT) ------------------
   if (!is.null(comparison_data_list) && length(comparison_data_list) > 0) {
     metric_col <- instruction$metric
     labels <- mapply(

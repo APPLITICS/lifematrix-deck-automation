@@ -104,12 +104,12 @@ mod_density_server <- function(id, pipeline_data) {
           datatable(data.frame())
         )
       }
-
+      
       comparison_df$delete <- sprintf(
         '<button id="delete_%s" class="btn btn-danger btn-sm">🗑</button>',
         seq_len(nrow(comparison_df))
       )
-
+      
       datatable(
         comparison_df,
         escape = FALSE,
@@ -169,28 +169,27 @@ mod_density_server <- function(id, pipeline_data) {
 
       # Build comparison group list
       comparison_list <- if (nrow(comparison_groups_state()) > 0) {
-        lapply(
-          seq_len(
-            nrow(comparison_groups_state()
-            )
-          ), function(i) {
-            comparison_row <- comparison_groups_state()[i, ]
-            list(
-              name = comparison_row$name,
-              subset = if (comparison_row$subset != "No subset") {
-                parts <- strsplit(
-                  comparison_row$subset,
-                  " = "
-                )[[1]]
-                list(
-                  title = parts[1],
-                  value = unlist(strsplit(parts[2], ", "))
-                )
-              } else {
-                NULL
-              }
-            )
-          })
+        lapply(seq_len(
+          nrow(comparison_groups_state()
+          )
+        ), function(i) {
+          comparison_row <- comparison_groups_state()[i, ]
+          list(
+            name = comparison_row$name,
+            subset = if (comparison_row$subset != "No subset") {
+              parts <- strsplit(
+                comparison_row$subset,
+                " = "
+              )[[1]]
+              list(
+                title = parts[1],
+                value = unlist(strsplit(parts[2], ", "))
+              )
+            } else {
+              NULL
+            }
+          )
+        })
       } else {
         NULL
       }
