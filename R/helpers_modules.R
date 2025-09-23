@@ -23,9 +23,9 @@ module_registry <- list(
   generate_density_slide = list(
     ui = function(id) mod_density_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_density_server(id, pipeline_data),
     id = "dens"
@@ -35,9 +35,9 @@ module_registry <- list(
   generate_circle_slide = list(
     ui = function(id) mod_circle_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_circle_server(id, pipeline_data),
     id = "circle"
@@ -47,9 +47,9 @@ module_registry <- list(
   generate_tile_slide = list(
     ui = function(id) mod_tile_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_tile_server(id, pipeline_data),
     id = "tile"
@@ -59,9 +59,9 @@ module_registry <- list(
   generate_bar_metric_slide = list(
     ui = function(id) mod_bar_metric_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_bar_metric_server(id, pipeline_data),
     id = "bar_metric"
@@ -71,9 +71,9 @@ module_registry <- list(
   generate_bar_category_slide = list(
     ui = function(id) mod_bar_category_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_bar_category_server(id, pipeline_data),
     id = "bar_category"
@@ -83,8 +83,8 @@ module_registry <- list(
   generate_donut_slide = list(
     ui = function(id) mod_donut_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS
+      unique_groups,
+      all_columns
     ),
     server = function(id) mod_donut_server(id, pipeline_data),
     id = "donut"
@@ -94,9 +94,9 @@ module_registry <- list(
   generate_line_slide = list(
     ui = function(id) mod_line_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_line_server(id, pipeline_data),
     id = "line"
@@ -106,9 +106,9 @@ module_registry <- list(
   generate_stacked_vertical_slide = list(
     ui = function(id) mod_stacked_vertical_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_stacked_vertical_server(id, pipeline_data),
     id = "stacked_v"
@@ -118,9 +118,9 @@ module_registry <- list(
   generate_stacked_horizontal_slide = list(
     ui = function(id) mod_stacked_horizontal_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_stacked_horizontal_server(id, pipeline_data),
     id = "stacked_h"
@@ -130,9 +130,9 @@ module_registry <- list(
   generate_horizontal_bar_slide = list(
     ui = function(id) mod_horizontal_bar_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_horizontal_bar_server(id, pipeline_data),
     id = "hbar"
@@ -142,9 +142,9 @@ module_registry <- list(
   generate_scatter_slide = list(
     ui = function(id) mod_scatter_ui(
       id,
-      UNIQUE_GROUPS,
-      ALL_COLS,
-      NUM_COLS
+      unique_groups,
+      all_columns,
+      numerical_columns
     ),
     server = function(id) mod_scatter_server(id, pipeline_data),
     id = "scatter"

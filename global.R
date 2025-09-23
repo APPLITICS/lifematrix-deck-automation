@@ -43,11 +43,11 @@ pipeline_data <- normalize_na_tbl(
 )
 
 # ------ EXTRACT METADATA ------------------------------------------------------
-ALL_COLS <- names(pipeline_data)
-NUM_COLS <- names(pipeline_data)[
+all_columns <- names(pipeline_data)
+numerical_columns <- names(pipeline_data)[
   vapply(pipeline_data, is.numeric, logical(1))
 ]
-UNIQUE_GROUPS <- unique(pipeline_data$group[!is.na(pipeline_data$group)])
+unique_groups <- unique(pipeline_data$group[!is.na(pipeline_data$group)])
 
 # ------ SLIDE FUNCTIONS -------------------------------------------------------
 slide_functions <- c(
