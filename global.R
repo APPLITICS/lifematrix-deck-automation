@@ -1,5 +1,4 @@
 # ------ LIBRARIES -------------------------------------------------------------
-library(bslib)
 library(cowplot)
 library(DT)
 library(dplyr)
@@ -14,27 +13,14 @@ library(patchwork)
 library(readr)
 library(rvg)
 library(scales)
-library(shinyjs)
 library(shinyWidgets)
 library(stringr)
 library(tibble)
 library(tidyr)
 
-options(shiny.usecairo = FALSE)  # ensures ragg is used
+# ------ PATHS $ SOURCING ------------------------------------------------------
+source("R/helpers_data.R")
 
-
-# ------ LOAD FUNCTIONS & INSTRUCTIONS ----------------------------------------
-
-invisible(lapply(
-  list.files(
-    path = "R",
-    pattern = "\\.R$",
-    full.names = TRUE
-  ),
-  source
-))
-
-# ------ PATHS -----------------------------------------------------------------
 data_path <- "data/Corrupted_Simulated_Data.csv"
 map_path <- "inputs/mapping_file.csv"
 ppt_template_path <- "inputs/template.pptx"
@@ -62,3 +48,18 @@ NUM_COLS <- names(pipeline_data)[
   vapply(pipeline_data, is.numeric, logical(1))
 ]
 UNIQUE_GROUPS <- unique(pipeline_data$group[!is.na(pipeline_data$group)])
+
+# ------ SLIDE FUNCTIONS -------------------------------------------------------
+slide_functions <- c(
+  "generate_density_slide",
+  "generate_bar_metric_slide",
+  "generate_bar_category_slide",
+  "generate_circle_slide",
+  "generate_donut_slide",
+  "generate_line_slide",
+  "generate_stacked_vertical_slide",
+  "generate_stacked_horizontal_slide",
+  "generate_horizontal_bar_slide",
+  "generate_scatter_slide",
+  "generate_tile_slide"
+)
