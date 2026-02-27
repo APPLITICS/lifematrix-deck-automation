@@ -21,7 +21,7 @@ generate_density_slide <- function(
     target_lines <- 5
     raw_step <- y_max / (target_lines - 1)
     nice_steps <- c(0.01, 0.02, 0.05, 0.1, 0.2, 0.25, 0.5,
-                      1, 2, 5, 10, 20, 50, 100)
+                    1, 2, 5, 10, 20, 50, 100)
     step <- nice_steps[which.min(abs(nice_steps - raw_step))]
     return(step)
   }
@@ -42,7 +42,7 @@ generate_density_slide <- function(
     labels <- mapply(
       function(data_comp, cg) {
         avg <- round(mean(data_comp[[metric_col]], na.rm = TRUE), 1)
-        paste0(cg$name, " ", cg$subset$value, " Avg. = ", avg)
+        paste0(cg$name, " ", cg$subset$value, " Avg. = ",  sprintf("%.1f", avg))
       },
       comparison_data_list,
       instruction$comparison_groups,
@@ -77,18 +77,41 @@ generate_density_slide <- function(
   
   # ------ DATA FILTERING ------------------------------------------------------
   # Filter data for focal group and validate required columns
+  unit <- instruction$unit
   metric_col <- instruction$metric
-  if (!(metric_col %in% names(data))) {
-    message(paste0("⚠️ Metric '", metric_col, "' not found in the dataset."))
-    return(ppt_doc)
+  subset_col <- instruction$focal_group$subset$title %||% NULL
+  
+  # ------ VALIDATION: REQUIRED COLUMNS -----------------------------------------
+  missing_cols <- character()
+  
+  # Check main metric column
+  if (!(instruction$metric %in% names(data))) {
+    missing_cols <- c(missing_cols, instruction$metric)
   }
   
+  # Check focal group subset column
   subset_col <- instruction$focal_group$subset$title %||% NULL
   if (!is.null(subset_col) && !(subset_col %in% names(data))) {
-    message(paste0("⚠️ Subset column '", subset_col, "' not found."))
-    return(ppt_doc)
+    missing_cols <- c(missing_cols, subset_col)
   }
   
+  # Check comparison group subset columns
+  if (!is.null(instruction$comparison_groups)) {
+    for (cg in instruction$comparison_groups) {
+      subset_col_cg <- cg$subset$title %||% NULL
+      if (!is.null(subset_col_cg) && !(subset_col_cg %in% names(data))) {
+        missing_cols <- c(missing_cols, subset_col_cg)
+      }
+    }
+  }
+  
+  # If any are missing, report them all and exit
+  if (length(missing_cols) > 0) {
+    message("❌ Missing column(s): ", paste(unique(missing_cols), collapse = ", "),
+            ". Slide skipped.")
+    return(invisible(NULL))
+  }
+  # ------ FILTER FOCAL DATA ----------------------------------------------------
   data_focal <- data %>% filter(group == instruction$focal_group$name)
   if (!is.null(subset_col)) {
     data_focal <- data_focal %>%
@@ -124,15 +147,19 @@ generate_density_slide <- function(
   x_min <- min(values_focal, na.rm = TRUE)
   x_max <- max(values_focal, na.rm = TRUE)
   x_min <- if (x_min < 5) 0 else x_min
-  
   dens <- density(
-    values_focal,
+    values_focal[!is.na(values_focal)],
     adjust = 1.2,
     from = x_min,
     to = x_max,
     n = 100
   )
-  data_dens <- data.frame(x = dens$x, y = dens$y * 100)
+  
+  
+  data_dens <- data.frame(
+    x = dens$x,
+    y = if (!is.null(unit) && unit == "%") dens$y * 100 else dens$y
+  )
   
   y_max <- max(data_dens$y)
   y_step <- get_y_step(y_max)
@@ -160,7 +187,7 @@ generate_density_slide <- function(
       "text",
       x = avg_focal - 0.5,
       y = y_max_pad * 1.05,
-      label = paste("Avg. =", avg_focal),
+      label = paste("Avg. =", sprintf("%.1f", avg_focal)),
       color = "yellow",
       size = 7,
       fontface = "bold",
@@ -172,10 +199,14 @@ generate_density_slide <- function(
       expand = c(0, 1)
     ) +
     scale_y_continuous(
-      breaks = seq(0, y_max_pad, by = y_step),
-      labels = label_percent(scale = 1),
-      expand = c(0, 0)
-    ) +
+      limits = c(0, NA),
+      expand = c(0, 0),
+      labels = if (!is.null(unit) && unit == "%") {
+        label_percent(scale = 1, accuracy = 1)
+      } else {
+        label_number(accuracy = 0.01)
+      }
+    ) + 
     coord_cartesian(ylim = c(0, y_max_pad * 1.1)) +
     labs(
       title = NULL,
@@ -187,7 +218,7 @@ generate_density_slide <- function(
       plot.title = element_text(
         color = "white", face = "bold", size = 26, hjust = 0
       ),
-      plot.margin = margin(t = 30, r = 20, b = 15, l = 20),
+      plot.margin = margin(t = 90, r = 20, b = 10, l = 20),
       legend.position = "none"
     )
   

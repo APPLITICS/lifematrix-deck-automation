@@ -1,0 +1,58 @@
+variable,label
+n_children,Number Of Children
+relationship_status,Status
+reunion_class,Reunion Class
+achievement_gap,Achievement
+achievement,Achievement
+achievement_min,Achievement
+joy_gap,Joy
+joy,Joy
+joy_min,Joy
+meaningfulness_gap,Meaningfulness
+meaningfulness,Meaningfulness
+meaningfulness_work,Meaningfulness
+meaningfulness_min,Meaningfulness
+life_satisfaction,Life Satisfaction
+tqi,TQI
+working_hours,Working
+reading_hours,Reading
+catching_up_hours,Catching Up
+social_media_hours,Social Media
+watching_tv_hours,Watching TV
+exercising_hours,Exercising
+sleeping_hours,Sleeping
+care_giving_hours,Caregiving
+parting_hosting_hours,Partying
+eating_with_family_hours,Eating with Family
+eating_with_others_hours,Eating with Others
+eating_alone_hours,Eating Alone
+watching_TV_with_family_hours,Watching TV with Family
+watching_TV_with_others_hours,Watching TV with Others
+watching_TV_alone_hours,Watching TV Alone
+hanging_out_alone_hours,Hanging Out Alone
+hanging_out_with_family_hours,Hanging Out with Family
+hanging_out_with_others_hours,Hanging Out with Others
+chores_alone_hours,Chores Alone
+chores_with_others_hours,Chores with Others
+chores_with_family_hours,Chores with Family
+commuting_alone_hours,Commuting Alone
+volunteering_hours,Volunteering
+therapy_hours,Therapy
+gaming_hours,Games
+school_learning_hours,School/learning
+side_projects_hours,Side Projects
+job_searching_hours,Job searching
+napping_hours,Napping
+hobbies_hours,Hobbies
+volunteering_subj_value,Volunteering
+therapy_subj_value,Therapy
+gaming_subj_value,Games
+school_learning_subj_value,School/learning
+side_projects_subj_value,Side Projects
+job_searching_subj_value,Job searching
+napping_subj_value,Napping
+hobbies_subj_value,Hobbies
+achievement_behavioral,Behavioral Achievement
+achievement_perceived,Perceived Achievement
+industry_graduation,Graduated
+industry_current,Now

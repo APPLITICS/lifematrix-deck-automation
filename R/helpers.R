@@ -170,3 +170,59 @@ export_plot_to_slide <- function(
   
   return(ppt_doc)
 }
+
+
+
+
+# ------ STYLE ORDINAL SUFFIX -------------------------------------------------
+#' Format ordinal numbers with superscript suffixes (e.g., 40th+ → 40<sup>th+</sup>)
+#'
+#' @param x A character or numeric vector of ordinal labels.
+#' @return A character vector with HTML-styled ordinal suffixes.
+style_ordinal_suffix <- function(x) {
+  x <- as.character(x)
+  
+  x <- ifelse(
+    grepl("^[0-9]+(st|nd|rd|th)(\\+?)$", x),
+    sub(
+      pattern = "^(\\d+)(st\\+|nd\\+|rd\\+|th\\+|st|nd|rd|th)$",
+      replacement = "\\1<sup>\\2</sup>",
+      x,
+      perl = TRUE
+    ),
+    x
+  )
+  
+  return(x)
+}
+
+# ------ NORMALIZE NAs ---------------------------------------------------------
+#' Normalize NA-like values in a data frame.
+#'
+#' This helper replaces user-defined values with NA after loading. Unlike the
+#' `na` parameter in `readr::read_csv()`, this function applies consistent NA 
+#' cleaning across any data source (`fread()`, `read.csv()`, or in-memory 
+#' data frames).
+#'
+#' @param data A data frame to clean.
+#' @param na_equivalent Character vector of values to be converted to NA
+#'
+#' @return The input data frame with normalized missing values.
+normalize_na_tbl <- function(
+    data,
+    na_equivalent
+) {
+  for (col in names(data)) {
+    if (is.numeric(data[[col]])) {
+      # Replace +/- Inf with NA for numeric columns
+      data[[col]][is.infinite(data[[col]])] <- NA_real_
+    } else if (is.character(data[[col]]) || is.factor(data[[col]])) {
+      # Trim whitespace and normalize NA-like values (case-insensitive)
+      x <- trimws(as.character(data[[col]]))
+      x[tolower(x) %in% tolower(na_equivalent)] <- NA_character_
+      data[[col]] <- x
+    }
+  }
+  
+  return(data)
+}
